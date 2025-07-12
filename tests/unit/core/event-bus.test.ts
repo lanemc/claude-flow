@@ -59,7 +59,7 @@ describe('EventBus', () => {
     eventBus.emit(SystemEvents.AGENT_SPAWNED as any, eventData);
 
     assertSpyCalls(handler, 1);
-    expect(handler.calls[0].args[0]).toBe(eventData);
+    expect(handler).toHaveBeenCalledWith(eventData);
   });
 
   it('should handle multiple listeners', () => {
@@ -129,7 +129,7 @@ describe('EventBus', () => {
     eventBus.emit(SystemEvents.TASK_COMPLETED as any, { taskId: 'task-2', result: 'success' });
 
     assertSpyCalls(handler, 1);
-    expect(handler.calls[0].args[0].taskId).toBe('task-1');
+    expect(handler).toHaveBeenCalledWith(expect.objectContaining({ taskId: 'task-1' }));
   });
 
   it('should remove event listeners', () => {
