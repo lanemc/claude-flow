@@ -8,6 +8,55 @@ import { spawn } from 'node:child_process';
 
 console.log('Installing Claude-Flow...');
 
+// Check SQLite bindings and rebuild if necessary
+async function checkSQLiteBindings() {
+  try {
+    const Database = (await import('better-sqlite3')).default;
+    const db = new Database(':memory:');
+    db.close();
+    console.log('✅ SQLite bindings working correctly');
+    return true;
+  } catch (error) {
+    console.log('❌ SQLite bindings failed:', error.message);
+    
+    if (error.message.includes('Could not locate the bindings file')) {
+      console.log('🔧 Attempting to rebuild better-sqlite3...');
+      return rebuildSQLite();
+    }
+    return false;
+  }
+}
+
+// Rebuild SQLite bindings
+function rebuildSQLite() {
+  return new Promise((resolve) => {
+    console.log('Running: npm rebuild better-sqlite3');
+    const rebuild = spawn('npm', ['rebuild', 'better-sqlite3'], { 
+      stdio: 'inherit',
+      shell: true 
+    });
+    
+    rebuild.on('close', (code) => {
+      if (code === 0) {
+        console.log('✅ SQLite rebuild successful');
+        resolve(true);
+      } else {
+        console.log('❌ SQLite rebuild failed');
+        console.log('Manual steps to fix:');
+        console.log('1. rm -rf node_modules package-lock.json');
+        console.log('2. npm install');
+        console.log('3. Or try: npm install better-sqlite3 --build-from-source');
+        resolve(false);
+      }
+    });
+    
+    rebuild.on('error', (error) => {
+      console.log('❌ Rebuild error:', error.message);
+      resolve(false);
+    });
+  });
+}
+
 // Check if Deno is available
 function checkDeno() {
   return new Promise((resolve) => {
@@ -53,6 +102,10 @@ async function installDeno() {
 // Main installation process
 async function main() {
   try {
+    // Check SQLite bindings first
+    console.log('🔍 Checking SQLite bindings...');
+    await checkSQLiteBindings();
+    
     const denoAvailable = await checkDeno();
     
     if (!denoAvailable) {
