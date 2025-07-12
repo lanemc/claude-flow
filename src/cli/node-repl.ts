@@ -387,8 +387,8 @@ export async function startNodeREPL(options: any = {}): Promise<void> {
   
   // Set completer function
   // rl.completer = (line: string) => {
-    return completer.complete(line);
-  };
+  //   return completer.complete(line);
+  // };
   
   // Show initial status
   if (options.banner !== false) {
