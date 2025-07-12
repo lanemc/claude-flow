@@ -236,18 +236,26 @@ async function runTddFlow(ctx: CommandContext): Promise<void> {
 
       // Store phase completion in memory for next step
       if (ctx.flags.sequential !== false) {
-        console.log("Phase completed. Press Enter to continue to next phase, or Ctrl+C to stop...");
-        await new Promise<void>(async (resolve) => {
-          const readline = await import("readline");
-          const rl = readline.createInterface({
-            input: process.stdin,
-            output: process.stdout
+        // Only prompt for input if we're in an interactive TTY environment
+        if (process.stdin.isTTY && !ctx.flags["non-interactive"] && !ctx.flags.n) {
+          console.log("Phase completed. Press Enter to continue to next phase, or Ctrl+C to stop...");
+          await new Promise<void>(async (resolve) => {
+            const readline = await import("readline");
+            const rl = readline.createInterface({
+              input: process.stdin,
+              output: process.stdout,
+              terminal: false // Disable raw mode to prevent TTY errors
+            });
+            rl.question("", () => {
+              rl.close();
+              resolve();
+            });
           });
-          rl.question("", () => {
-            rl.close();
-            resolve();
-          });
-        });
+        } else {
+          // In non-interactive environments, add a brief delay and continue
+          console.log("Phase completed. Continuing to next phase in non-interactive mode...");
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
       }
     }
 
