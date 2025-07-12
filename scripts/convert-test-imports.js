@@ -4,9 +4,9 @@
  * Script to convert Deno imports to Node.js/Jest imports in test files
  */
 
-const fs = require('fs');
-const path = require('path');
-const glob = require('glob');
+import fs from 'fs';
+import path from 'path';
+import { glob } from 'glob';
 
 // Conversion mappings
 const IMPORT_REPLACEMENTS = {
@@ -98,11 +98,11 @@ function convertFile(filePath) {
   return changed;
 }
 
-function main() {
+async function main() {
   console.log('🔄 Converting Deno test imports to Node.js/Jest...\n');
   
   // Find all test files
-  const testFiles = glob.sync('tests/**/*.{test,spec}.{ts,js}', {
+  const testFiles = await glob('tests/**/*.{test,spec}.{ts,js}', {
     ignore: ['node_modules/**', 'dist/**', 'bin/**']
   });
   
@@ -127,8 +127,9 @@ function main() {
   }
 }
 
-if (require.main === module) {
-  main();
+// Run main function if this script is executed directly
+if (import.meta.url === `file://${process.argv[1]}`) {
+  main().catch(console.error);
 }
 
-module.exports = { convertFile, IMPORT_REPLACEMENTS, ASSERTION_REPLACEMENTS };
+export { convertFile, IMPORT_REPLACEMENTS, ASSERTION_REPLACEMENTS };
