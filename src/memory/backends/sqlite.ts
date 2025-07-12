@@ -30,8 +30,27 @@ export class SQLiteBackend implements IMemoryBackend {
       const dir = path.dirname(this.dbPath);
       await fs.mkdir(dir, { recursive: true });
 
-      // Open SQLite connection
-      this.db = new Database(this.dbPath);
+      // Open SQLite connection with better error handling
+      try {
+        this.db = new Database(this.dbPath);
+      } catch (bindings_error) {
+        // Enhanced error handling for better-sqlite3 bindings issues
+        const errorMessage = getErrorMessage(bindings_error);
+        if (errorMessage.includes('Could not locate the bindings file')) {
+          throw new MemoryBackendError(
+            'Failed to initialize SQLite database due to missing native bindings. ' +
+            'This is likely due to Node.js version incompatibility. ' +
+            'Please try the following solutions:\n' +
+            '1. Run: npm rebuild better-sqlite3\n' +
+            '2. Delete node_modules and package-lock.json, then run: npm install\n' +
+            '3. Ensure you are using Node.js version 18.x, 20.x, or 22.x\n' +
+            '4. If using Node.js 22.x, ensure better-sqlite3 is version 11.10.0 or higher\n' +
+            'Original error: ' + errorMessage,
+            { error: bindings_error, nodeVersion: process.version }
+          );
+        }
+        throw bindings_error;
+      }
 
       // Enable WAL mode for better performance
       this.db.pragma('journal_mode = WAL');

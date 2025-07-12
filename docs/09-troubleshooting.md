@@ -1,6 +1,84 @@
-# Troubleshooting Guide
+# 🛠️ Troubleshooting Guide
 
 This comprehensive troubleshooting guide covers common issues, diagnostic procedures, and solutions for Claude-Flow system problems. Use this guide to quickly identify and resolve issues in your Claude-Flow deployment.
+
+## ⚠️ Critical SQLite Database Issues
+
+### Issue: "Could not locate the bindings file" Error
+
+**Error Message:**
+```
+⚠️ Could not initialize memory database: Could not locate the bindings file. Tried:
+→ /home/user/.npm/_npx/7cfa166e65244432/node_modules/better-sqlite3/...
+```
+
+**Root Cause:**
+This error occurs when the `better-sqlite3` native bindings are incompatible with your Node.js version, particularly with Node.js v22.x.
+
+**Solutions (in order of preference):**
+
+1. **Rebuild native bindings:**
+   ```bash
+   npm rebuild better-sqlite3
+   ```
+
+2. **Clean install dependencies:**
+   ```bash
+   rm -rf node_modules package-lock.json
+   npm install
+   ```
+
+3. **Use npx with clean cache:**
+   ```bash
+   npx --cache /tmp/fresh-npx claude-flow@alpha init --force
+   ```
+
+4. **Switch Node.js version (if using v22.x):**
+   ```bash
+   # Using nvm
+   nvm use 20
+   # Or use 18
+   nvm use 18
+   ```
+
+5. **Force rebuild for npx usage:**
+   ```bash
+   npx --package=better-sqlite3 npm rebuild better-sqlite3
+   npx claude-flow@alpha init --force
+   ```
+
+**Node.js Version Compatibility:**
+- ✅ **Node.js 18.x**: Fully supported
+- ✅ **Node.js 20.x**: Fully supported  
+- ⚠️ **Node.js 22.x**: Requires `better-sqlite3` v11.10.0 or higher
+
+**Verification:**
+After applying a solution, verify it works:
+```bash
+node -e "console.log(require('better-sqlite3')(':memory:'))"
+```
+
+### Issue: Database Memory Store Corruption
+
+**Error Message:**
+```
+SQLite database is locked or corrupted
+Memory store not initialized
+```
+
+**Solutions:**
+```bash
+# Backup current memory
+cp .swarm/memory.db .swarm/memory.db.backup
+
+# Reset memory store
+npx claude-flow@alpha memory reset
+
+# Restore from backup if needed
+npx claude-flow@alpha memory restore .swarm/memory.db.backup
+```
+
+---
 
 ## Common Installation and Setup Issues
 

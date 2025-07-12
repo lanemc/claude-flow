@@ -52,9 +52,32 @@ class SqliteMemoryStore {
       // Ensure directory exists
       await fs.mkdir(this.options.directory, { recursive: true });
       
-      // Open database
+      // Open database with better error handling
       const dbPath = path.join(this.options.directory, this.options.dbName);
-      this.db = new Database(dbPath);
+      
+      try {
+        this.db = new Database(dbPath);
+      } catch (bindings_error) {
+        // Enhanced error handling for better-sqlite3 bindings issues
+        const errorMessage = bindings_error instanceof Error ? bindings_error.message : String(bindings_error);
+        if (errorMessage.includes('Could not locate the bindings file')) {
+          const troubleshootingMessage = 
+            'Failed to initialize memory database due to missing native bindings. ' +
+            'This is likely due to Node.js version incompatibility with better-sqlite3. ' +
+            'Please try the following solutions:\n' +
+            '1. Run: npm rebuild better-sqlite3\n' +
+            '2. Delete node_modules and package-lock.json, then run: npm install\n' +
+            '3. Ensure you are using Node.js version 18.x, 20.x, or 22.x\n' +
+            '4. If using Node.js 22.x, ensure better-sqlite3 is version 11.10.0 or higher\n' +
+            `Node.js version: ${process.version}\n` +
+            `Database path: ${dbPath}\n` +
+            `Original error: ${errorMessage}`;
+          
+          console.error(`[${new Date().toISOString()}] ERROR [memory-store] ${troubleshootingMessage}`);
+          throw new Error(troubleshootingMessage);
+        }
+        throw bindings_error;
+      }
       
       // Enable WAL mode for better concurrency
       this.db.pragma('journal_mode = WAL');

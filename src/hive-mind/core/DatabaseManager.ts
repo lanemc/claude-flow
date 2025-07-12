@@ -41,26 +41,51 @@ export class DatabaseManager extends EventEmitter {
    * Initialize database
    */
   async initialize(): Promise<void> {
-    // Ensure data directory exists
-    const dataDir = path.join(process.cwd(), 'data');
-    await fs.mkdir(dataDir, { recursive: true });
-    
-    // Set database path
-    this.dbPath = path.join(dataDir, 'hive-mind.db');
-    
-    // Open database
-    this.db = new Database(this.dbPath);
-    
-    // Enable foreign keys
-    this.db.pragma('foreign_keys = ON');
-    
-    // Load schema
-    await this.loadSchema();
-    
-    // Prepare statements
-    this.prepareStatements();
-    
-    this.emit('initialized');
+    try {
+      // Ensure data directory exists
+      const dataDir = path.join(process.cwd(), 'data');
+      await fs.mkdir(dataDir, { recursive: true });
+      
+      // Set database path
+      this.dbPath = path.join(dataDir, 'hive-mind.db');
+      
+      // Open database with better error handling
+      try {
+        this.db = new Database(this.dbPath);
+      } catch (bindings_error) {
+        // Enhanced error handling for better-sqlite3 bindings issues
+        const errorMessage = bindings_error instanceof Error ? bindings_error.message : String(bindings_error);
+        if (errorMessage.includes('Could not locate the bindings file')) {
+          throw new Error(
+            'Failed to initialize Hive Mind database due to missing native bindings. ' +
+            'This is likely due to Node.js version incompatibility with better-sqlite3. ' +
+            'Please try the following solutions:\n' +
+            '1. Run: npm rebuild better-sqlite3\n' +
+            '2. Delete node_modules and package-lock.json, then run: npm install\n' +
+            '3. Ensure you are using Node.js version 18.x, 20.x, or 22.x\n' +
+            '4. If using Node.js 22.x, ensure better-sqlite3 is version 11.10.0 or higher\n' +
+            `Node.js version: ${process.version}\n` +
+            `Original error: ${errorMessage}`
+          );
+        }
+        throw bindings_error;
+      }
+      
+      // Enable foreign keys
+      this.db.pragma('foreign_keys = ON');
+      
+      // Load schema
+      await this.loadSchema();
+      
+      // Prepare statements
+      this.prepareStatements();
+      
+      this.emit('initialized');
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error('DatabaseManager initialization failed:', errorMessage);
+      throw new Error(`Database initialization failed: ${errorMessage}`);
+    }
   }
 
   /**
