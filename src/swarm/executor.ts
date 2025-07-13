@@ -66,7 +66,7 @@ export interface ExecutionConfig {
 }
 
 export class TaskExecutor extends EventEmitter {
-  private logger: Logger;
+  protected logger: Logger;
   private config: ExecutionConfig;
   private activeExecutions: Map<string, ExecutionSession> = new Map();
   private resourceMonitor: ResourceMonitor;

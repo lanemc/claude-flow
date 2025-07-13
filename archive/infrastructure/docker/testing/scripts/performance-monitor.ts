@@ -5,9 +5,71 @@
  * Monitors resource usage, response times, and system metrics
  */
 
-const os = require('os');
-const fs = require('fs');
-const { execSync } = require('child_process');
+import * as os from 'os';
+import * as fs from 'fs';
+import { execSync } from 'child_process';
+
+interface PerformanceMetrics {
+    timestamp: string;
+    system: any;
+    docker: any;
+    application: any;
+    network: any;
+    collection_duration?: number;
+}
+
+interface SystemMetrics {
+    uptime: number;
+    loadavg: number[];
+    memory: {
+        total: number;
+        free: number;
+        used: number;
+        usage_percent: string;
+    };
+    cpu: {
+        count: number;
+        model: string;
+    };
+}
+
+interface DockerContainer {
+    container: string;
+    cpu_percent: string;
+    memory_usage: string;
+    network_io: string;
+}
+
+interface DockerImage {
+    name: string;
+    size: string;
+}
+
+interface EndpointCheck {
+    endpoint: string;
+    status: string;
+    response_time?: number;
+    error?: string;
+}
+
+interface ContainerStatus {
+    container: string;
+    status: string;
+}
+
+interface NetworkInterface {
+    name: string;
+    addresses: Array<{
+        address: string;
+        family: string;
+        internal: boolean;
+    }>;
+}
+
+interface DockerNetwork {
+    name: string;
+    driver: string;
+}
 
 // Configuration
 const MONITOR_INTERVAL = process.env.MONITOR_INTERVAL || 30; // seconds
@@ -16,6 +78,9 @@ const LOG_FILE = '/shared/performance-monitor.log';
 
 // Metrics collection
 class PerformanceMonitor {
+    private metrics: PerformanceMetrics;
+    private startTime: number;
+
     constructor() {
         this.metrics = {
             timestamp: new Date().toISOString(),
@@ -29,7 +94,7 @@ class PerformanceMonitor {
         this.log('🚀 Performance monitor started');
     }
     
-    log(message) {
+    log(message: string): void {
         const timestamp = new Date().toISOString();
         const logMessage = `[${timestamp}] ${message}\n`;
         
@@ -37,13 +102,13 @@ class PerformanceMonitor {
         
         try {
             fs.appendFileSync(LOG_FILE, logMessage);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Failed to write to log file:', error);
         }
     }
     
     // System metrics
-    collectSystemMetrics() {
+    collectSystemMetrics(): void {
         try {
             this.metrics.system = {
                 uptime: os.uptime(),
@@ -59,13 +124,13 @@ class PerformanceMonitor {
                     model: os.cpus()[0]?.model || 'unknown'
                 }
             };
-        } catch (error) {
+        } catch (error: any) {
             this.log(`❌ Error collecting system metrics: ${error.message}`);
         }
     }
     
     // Docker metrics
-    collectDockerMetrics() {
+    collectDockerMetrics(): void {
         try {
             // Get container stats
             const dockerStats = execSync('docker stats --no-stream --format "table {{.Container}}\\t{{.CPUPerc}}\\t{{.MemUsage}}\\t{{.NetIO}}"', { encoding: 'utf8' });
@@ -75,12 +140,12 @@ class PerformanceMonitor {
                 images: this.getDockerImages(),
                 volumes: this.getDockerVolumes()
             };
-        } catch (error) {
+        } catch (error: any) {
             this.log(`❌ Error collecting Docker metrics: ${error.message}`);
         }
     }
     
-    parseDockerStats(stats) {
+    parseDockerStats(stats: string): DockerContainer[] {
         const lines = stats.split('\n').slice(1); // Skip header
         return lines.filter(line => line.trim()).map(line => {
             const parts = line.split('\t');
@@ -93,43 +158,43 @@ class PerformanceMonitor {
         });
     }
     
-    getDockerImages() {
+    getDockerImages(): DockerImage[] {
         try {
             const images = execSync('docker images --format "{{.Repository}}:{{.Tag}}\\t{{.Size}}"', { encoding: 'utf8' });
             return images.split('\n').filter(line => line.trim()).map(line => {
                 const [name, size] = line.split('\t');
                 return { name, size };
             });
-        } catch (error) {
+        } catch (error: any) {
             this.log(`❌ Error getting Docker images: ${error.message}`);
             return [];
         }
     }
     
-    getDockerVolumes() {
+    getDockerVolumes(): string[] {
         try {
             const volumes = execSync('docker volume ls --format "{{.Name}}"', { encoding: 'utf8' });
             return volumes.split('\n').filter(line => line.trim());
-        } catch (error) {
+        } catch (error: any) {
             this.log(`❌ Error getting Docker volumes: ${error.message}`);
             return [];
         }
     }
     
     // Application metrics
-    collectApplicationMetrics() {
+    collectApplicationMetrics(): void {
         try {
             this.metrics.application = {
                 endpoints: this.checkApplicationEndpoints(),
                 response_times: this.measureResponseTimes(),
                 health_status: this.checkHealthStatus()
             };
-        } catch (error) {
+        } catch (error: any) {
             this.log(`❌ Error collecting application metrics: ${error.message}`);
         }
     }
     
-    checkApplicationEndpoints() {
+    checkApplicationEndpoints(): EndpointCheck[] {
         const endpoints = [
             'http://claude-flow-dev:3000/health',
             'http://claude-flow-prod:3000/health'
@@ -146,7 +211,7 @@ class PerformanceMonitor {
                     status: 'healthy',
                     response_time: end - start
                 };
-            } catch (error) {
+            } catch (error: any) {
                 return {
                     endpoint,
                     status: 'unhealthy',
@@ -156,7 +221,7 @@ class PerformanceMonitor {
         });
     }
     
-    measureResponseTimes() {
+    measureResponseTimes(): EndpointCheck[] {
         const urls = [
             'http://claude-flow-dev:3000/api/status',
             'http://claude-flow-dev:3000/api/agents',
@@ -174,7 +239,7 @@ class PerformanceMonitor {
                     response_time: end - start,
                     status: 'success'
                 };
-            } catch (error) {
+            } catch (error: any) {
                 return {
                     url,
                     response_time: -1,
@@ -185,32 +250,32 @@ class PerformanceMonitor {
         });
     }
     
-    checkHealthStatus() {
+    checkHealthStatus(): ContainerStatus[] {
         try {
             const containers = execSync('docker ps --format "{{.Names}}\\t{{.Status}}"', { encoding: 'utf8' });
             return containers.split('\n').filter(line => line.trim()).map(line => {
                 const [name, status] = line.split('\t');
                 return { container: name, status };
             });
-        } catch (error) {
+        } catch (error: any) {
             this.log(`❌ Error checking health status: ${error.message}`);
             return [];
         }
     }
     
     // Network metrics
-    collectNetworkMetrics() {
+    collectNetworkMetrics(): void {
         try {
             this.metrics.network = {
                 interfaces: this.getNetworkInterfaces(),
                 docker_networks: this.getDockerNetworks()
             };
-        } catch (error) {
+        } catch (error: any) {
             this.log(`❌ Error collecting network metrics: ${error.message}`);
         }
     }
     
-    getNetworkInterfaces() {
+    getNetworkInterfaces(): NetworkInterface[] {
         const interfaces = os.networkInterfaces();
         return Object.keys(interfaces).map(name => ({
             name,
@@ -222,21 +287,21 @@ class PerformanceMonitor {
         }));
     }
     
-    getDockerNetworks() {
+    getDockerNetworks(): DockerNetwork[] {
         try {
             const networks = execSync('docker network ls --format "{{.Name}}\\t{{.Driver}}"', { encoding: 'utf8' });
             return networks.split('\n').filter(line => line.trim()).map(line => {
                 const [name, driver] = line.split('\t');
                 return { name, driver };
             });
-        } catch (error) {
+        } catch (error: any) {
             this.log(`❌ Error getting Docker networks: ${error.message}`);
             return [];
         }
     }
     
     // Collect all metrics
-    collectAllMetrics() {
+    collectAllMetrics(): void {
         this.log('📊 Collecting performance metrics...');
         
         this.collectSystemMetrics();
@@ -251,18 +316,18 @@ class PerformanceMonitor {
     }
     
     // Save metrics
-    saveMetrics() {
+    saveMetrics(): void {
         try {
             const metricsJson = JSON.stringify(this.metrics, null, 2);
             fs.writeFileSync(METRICS_OUTPUT, metricsJson);
             this.log(`📝 Metrics saved to ${METRICS_OUTPUT}`);
-        } catch (error) {
+        } catch (error: any) {
             this.log(`❌ Error saving metrics: ${error.message}`);
         }
     }
     
     // Generate performance report
-    generateReport() {
+    generateReport(): void {
         const report = {
             summary: {
                 timestamp: this.metrics.timestamp,
@@ -278,12 +343,12 @@ class PerformanceMonitor {
             const reportPath = '/shared/performance-report.json';
             fs.writeFileSync(reportPath, JSON.stringify(report, null, 2));
             this.log(`📋 Performance report generated: ${reportPath}`);
-        } catch (error) {
+        } catch (error: any) {
             this.log(`❌ Error generating report: ${error.message}`);
         }
     }
     
-    assessSystemHealth() {
+    assessSystemHealth(): string {
         const memoryUsage = parseFloat(this.metrics.system.memory?.usage_percent || 0);
         const loadAvg = this.metrics.system.loadavg?.[0] || 0;
         
@@ -292,7 +357,7 @@ class PerformanceMonitor {
         return 'healthy';
     }
     
-    assessDockerHealth() {
+    assessDockerHealth(): string {
         const containers = this.metrics.docker.containers || [];
         const unhealthyContainers = containers.filter(c => 
             c.cpu_percent && parseFloat(c.cpu_percent.replace('%', '')) > 90
@@ -302,7 +367,7 @@ class PerformanceMonitor {
         return 'healthy';
     }
     
-    assessApplicationHealth() {
+    assessApplicationHealth(): string {
         const endpoints = this.metrics.application.endpoints || [];
         const unhealthyEndpoints = endpoints.filter(e => e.status !== 'healthy');
         
@@ -310,7 +375,7 @@ class PerformanceMonitor {
         return 'healthy';
     }
     
-    generateRecommendations() {
+    generateRecommendations(): string[] {
         const recommendations = [];
         
         const memoryUsage = parseFloat(this.metrics.system.memory?.usage_percent || 0);
@@ -333,7 +398,7 @@ class PerformanceMonitor {
     }
     
     // Main monitoring loop
-    async startMonitoring() {
+    async startMonitoring(): Promise<void> {
         this.log(`🔄 Starting monitoring loop (interval: ${MONITOR_INTERVAL}s)`);
         
         while (true) {
@@ -343,7 +408,7 @@ class PerformanceMonitor {
                 this.generateReport();
                 
                 await new Promise(resolve => setTimeout(resolve, MONITOR_INTERVAL * 1000));
-            } catch (error) {
+            } catch (error: any) {
                 this.log(`❌ Error in monitoring loop: ${error.message}`);
                 await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5s before retry
             }
@@ -364,7 +429,7 @@ process.on('SIGTERM', () => {
 
 // Start monitoring
 const monitor = new PerformanceMonitor();
-monitor.startMonitoring().catch(error => {
+monitor.startMonitoring().catch((error: any) => {
     console.error('❌ Fatal error in performance monitor:', error);
     process.exit(1);
 });

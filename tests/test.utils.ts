@@ -25,6 +25,10 @@ export function assertThrows(fn: () => any, message?: string): void {
   expect(fn).toThrow();
 }
 
+export function assertStringIncludes(actual: string, expected: string, message?: string): void {
+  expect(actual).toContain(expected);
+}
+
 // Re-export Jest testing utilities
 export {
   describe,

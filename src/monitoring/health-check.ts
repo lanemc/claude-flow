@@ -262,14 +262,14 @@ export class HealthCheckManager {
       let queuedTasks = 0;
       let completedTasks = 0;
 
-      if (agentManager && typeof agentManager.getMetrics === 'function') {
-        const agentMetrics = await agentManager.getMetrics();
-        activeAgents = agentMetrics.activeAgents || 0;
+      if (agentManager && typeof (agentManager as any).getMetrics === 'function') {
+        const agentMetrics = await (agentManager as any).getMetrics();
+        activeAgents = (agentMetrics as any)?.activeAgents || 0;
       }
 
-      if (taskEngine && typeof taskEngine.getMetrics === 'function') {
-        const taskMetrics = await taskEngine.getMetrics();
-        activeTasks = taskMetrics.activeTasks || 0;
+      if (taskEngine && typeof (taskEngine as any).getMetrics === 'function') {
+        const taskMetrics = await (taskEngine as any).getMetrics();
+        activeTasks = (taskMetrics as any)?.activeTasks || 0;
         queuedTasks = taskMetrics.queuedTasks || 0;
         completedTasks = taskMetrics.completedTasks || 0;
       }

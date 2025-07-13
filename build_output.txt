@@ -1,0 +1,565 @@
+
+> claude-flow@2.0.0-alpha.49 build
+> npm run clean && npm run update-version && npm run build:esm && npm run build:cjs && npm run build:binary
+
+
+> claude-flow@2.0.0-alpha.49 clean
+> rm -rf dist dist-cjs
+
+
+> claude-flow@2.0.0-alpha.49 update-version
+> node scripts/update-bin-version.js
+
+✅ Updated bin/claude-flow VERSION to 2.0.0-alpha.49
+
+> claude-flow@2.0.0-alpha.49 build:esm
+> tsc
+
+src/cli/index.ts(62,15): error TS2345: Argument of type 'import("@cliffy/command", { with: { "resolution-mode": "import" } }).Command' is not assignable to parameter of type 'import("/Users/lanemc/sites/repo-claude-flow/claude-flow/node_modules/commander/typings/index").Command'.
+  Type 'Command' is missing the following properties from type 'Command': args, processedArgs, commands, options, and 48 more.
+src/cli/index.ts(71,15): error TS2345: Argument of type 'import("@cliffy/command", { with: { "resolution-mode": "import" } }).Command' is not assignable to parameter of type 'import("/Users/lanemc/sites/repo-claude-flow/claude-flow/node_modules/commander/typings/index").Command'.
+  Type 'Command' is missing the following properties from type 'Command': args, processedArgs, commands, options, and 48 more.
+src/cli/index.ts(73,20): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(nameAndArgs: string, opts?: CommandOptions | undefined): Command', gave the following error.
+    Type 'Command' has no properties in common with type 'CommandOptions'.
+  Overload 2 of 2, '(nameAndArgs: string, description: string, opts?: ExecutableCommandOptions | undefined): Command', gave the following error.
+    Argument of type 'Command' is not assignable to parameter of type 'string'.
+src/cli/index.ts(85,23): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(nameAndArgs: string, opts?: CommandOptions | undefined): Command', gave the following error.
+    Type 'Command' has no properties in common with type 'CommandOptions'.
+  Overload 2 of 2, '(nameAndArgs: string, description: string, opts?: ExecutableCommandOptions | undefined): Command', gave the following error.
+    Argument of type 'Command' is not assignable to parameter of type 'string'.
+src/cli/index.ts(96,26): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(nameAndArgs: string, opts?: CommandOptions | undefined): Command', gave the following error.
+    Type 'Command' has no properties in common with type 'CommandOptions'.
+  Overload 2 of 2, '(nameAndArgs: string, description: string, opts?: ExecutableCommandOptions | undefined): Command', gave the following error.
+    Argument of type 'Command' is not assignable to parameter of type 'string'.
+src/cli/simple-cli.ts(1204,21): error TS2339: Property 'tools' does not exist on type '{}'.
+src/cli/simple-cli.ts(1206,21): error TS2339: Property 'noPermissions' does not exist on type '{}'.
+src/cli/simple-cli.ts(1208,21): error TS2339: Property 'config' does not exist on type '{}'.
+src/cli/simple-cli.ts(1210,21): error TS2339: Property 'mode' does not exist on type '{}'.
+src/cli/simple-cli.ts(1212,21): error TS2339: Property 'parallel' does not exist on type '{}'.
+src/cli/simple-cli.ts(1214,21): error TS2339: Property 'research' does not exist on type '{}'.
+src/cli/simple-cli.ts(1216,21): error TS2339: Property 'coverage' does not exist on type '{}'.
+src/cli/simple-cli.ts(1218,21): error TS2339: Property 'commit' does not exist on type '{}'.
+src/cli/simple-cli.ts(1220,21): error TS2339: Property 'verbose' does not exist on type '{}'.
+src/cli/simple-cli.ts(1222,21): error TS2339: Property 'dryRun' does not exist on type '{}'.
+src/cli/simple-cli.ts(1227,29): error TS2339: Property 'tools' does not exist on type '{}'.
+src/cli/simple-cli.ts(1228,21): error TS2339: Property 'parallel' does not exist on type '{}'.
+src/cli/simple-cli.ts(1231,21): error TS2339: Property 'research' does not exist on type '{}'.
+src/cli/simple-cli.ts(1237,21): error TS2339: Property 'dryRun' does not exist on type '{}'.
+src/cli/simple-cli.ts(1243,40): error TS2339: Property 'mode' does not exist on type '{}'.
+src/cli/simple-cli.ts(1244,44): error TS2339: Property 'coverage' does not exist on type '{}'.
+src/cli/simple-cli.ts(1245,42): error TS2339: Property 'commit' does not exist on type '{}'.
+src/cli/simple-cli.ts(1248,51): error TS2339: Property 'parallel' does not exist on type '{}'.
+src/cli/simple-cli.ts(1254,44): error TS2339: Property 'mode' does not exist on type '{}'.
+src/cli/simple-cli.ts(1255,47): error TS2339: Property 'coverage' does not exist on type '{}'.
+src/cli/simple-cli.ts(1256,45): error TS2339: Property 'commit' does not exist on type '{}'.
+src/cli/simple-cli.ts(1278,29): error TS2339: Property 'mode' does not exist on type '{}'.
+src/cli/simple-cli.ts(1279,9): error TS2339: Property 'coverage' does not exist on type '{}'.
+src/cli/simple-cli.ts(1279,53): error TS2339: Property 'coverage' does not exist on type '{}'.
+src/cli/simple-cli.ts(1280,9): error TS2339: Property 'commit' does not exist on type '{}'.
+src/cli/simple-cli.ts(1280,50): error TS2339: Property 'commit' does not exist on type '{}'.
+src/cli/simple-cli.ts(1281,9): error TS2339: Property 'config' does not exist on type '{}'.
+src/cli/simple-cli.ts(1281,41): error TS2339: Property 'config' does not exist on type '{}'.
+src/cli/simple-cli.ts(1285,9): error TS2339: Property 'tools' does not exist on type '{}'.
+src/cli/simple-cli.ts(1285,52): error TS2339: Property 'tools' does not exist on type '{}'.
+src/cli/simple-cli.ts(1306,23): error TS2339: Property 'parallel' does not exist on type '{}'.
+src/cli/simple-cli.ts(1312,23): error TS2339: Property 'research' does not exist on type '{}'.
+src/cli/simple-cli.ts(1326,12): error TS2339: Property 'mode' does not exist on type '{}'.
+src/cli/simple-cli.ts(1327,12): error TS2339: Property 'mode' does not exist on type '{}'.
+src/cli/simple-cli.ts(1328,12): error TS2339: Property 'mode' does not exist on type '{}'.
+src/cli/simple-cli.ts(1334,12): error TS2339: Property 'coverage' does not exist on type '{}'.
+src/cli/simple-cli.ts(1334,64): error TS2339: Property 'coverage' does not exist on type '{}'.
+src/cli/simple-cli.ts(1335,12): error TS2339: Property 'commit' does not exist on type '{}'.
+src/cli/simple-cli.ts(1336,12): error TS2339: Property 'commit' does not exist on type '{}'.
+src/cli/simple-cli.ts(1337,12): error TS2339: Property 'commit' does not exist on type '{}'.
+src/cli/simple-cli.ts(1343,12): error TS2339: Property 'parallel' does not exist on type '{}'.
+src/cli/simple-cli.ts(1344,12): error TS2339: Property 'research' does not exist on type '{}'.
+src/cli/simple-cli.ts(1345,12): error TS2339: Property 'noPermissions' does not exist on type '{}'.
+src/cli/simple-cli.ts(1346,12): error TS2339: Property 'verbose' does not exist on type '{}'.
+src/cli/simple-cli.ts(1368,30): error TS2339: Property 'mode' does not exist on type '{}'.
+src/cli/simple-cli.ts(1369,9): error TS2339: Property 'mode' does not exist on type '{}'.
+src/cli/simple-cli.ts(1370,9): error TS2339: Property 'mode' does not exist on type '{}'.
+src/cli/simple-cli.ts(1371,9): error TS2339: Property 'mode' does not exist on type '{}'.
+src/cli/simple-cli.ts(1372,9): error TS2339: Property 'mode' does not exist on type '{}'.
+src/cli/simple-cli.ts(1372,35): error TS2339: Property 'mode' does not exist on type '{}'.
+src/cli/simple-cli.ts(1385,23): error TS2339: Property 'noPermissions' does not exist on type '{}'.
+src/cli/simple-cli.ts(1389,23): error TS2339: Property 'config' does not exist on type '{}'.
+src/cli/simple-cli.ts(1390,53): error TS2339: Property 'config' does not exist on type '{}'.
+src/cli/simple-cli.ts(1393,23): error TS2339: Property 'verbose' does not exist on type '{}'.
+src/cli/simple-cli.ts(1400,25): error TS2339: Property 'verbose' does not exist on type '{}'.
+src/cli/simple-cli.ts(1410,43): error TS2339: Property 'mode' does not exist on type '{}'.
+src/cli/simple-cli.ts(1411,48): error TS2339: Property 'coverage' does not exist on type '{}'.
+src/cli/simple-cli.ts(1412,45): error TS2339: Property 'commit' does not exist on type '{}'.
+src/cli/simple-cli.ts(1416,59): error TS2339: Property 'parallel' does not exist on type '{}'.
+src/cli/simple-cli.ts(2119,35): error TS2345: Argument of type 'Buffer<ArrayBufferLike>' is not assignable to parameter of type 'string'.
+src/cli/simple-cli.ts(2142,28): error TS2345: Argument of type 'string' is not assignable to parameter of type 'never'.
+src/cli/simple-cli.ts(2176,59): error TS2339: Property 'includes' does not exist on type 'never'.
+src/cli/simple-cli.ts(2192,9): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{ help: () => void; status: () => void; clear: () => void; history: () => void; config: (key: string) => Promise<void>; }'.
+  No index signature with a parameter of type 'string' was found on type '{ help: () => void; status: () => void; clear: () => void; history: () => void; config: (key: string) => Promise<void>; }'.
+src/cli/simple-cli.ts(2193,13): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{ help: () => void; status: () => void; clear: () => void; history: () => void; config: (key: string) => Promise<void>; }'.
+  No index signature with a parameter of type 'string' was found on type '{ help: () => void; status: () => void; clear: () => void; history: () => void; config: (key: string) => Promise<void>; }'.
+src/cli/simple-cli.ts(3236,17): error TS2339: Property 'main' does not exist on type 'ImportMeta'.
+src/cli/simple-orchestrator.ts(475,44): error TS7030: Not all code paths return a value.
+src/cli/ui/compatible-ui.ts(94,14): error TS2339: Property 'outputHelp' does not exist on type 'CompatibleUI'.
+src/cli/ui/index.ts(28,27): error TS2339: Property 'launchUI' does not exist on type 'typeof import("/Users/lanemc/sites/repo-claude-flow/claude-flow/src/cli/ui/fallback-handler", { with: { "resolution-mode": "import" } })'.
+src/cli/ui/index.ts(44,59): error TS5097: An import path can only end with a '.ts' extension when 'allowImportingTsExtensions' is enabled.
+src/cli/utils/environment-detector.ts(232,14): error TS2339: Property 'skipPermissions' does not exist on type 'T & { appliedDefaults: string[]; }'.
+src/cli/utils/environment-detector.ts(233,14): error TS2339: Property 'dangerouslySkipPermissions' does not exist on type 'T & { appliedDefaults: string[]; }'.
+src/cli/utils/environment-detector.ts(239,14): error TS2339: Property 'nonInteractive' does not exist on type 'T & { appliedDefaults: string[]; }'.
+src/cli/utils/environment-detector.ts(244,14): error TS2339: Property 'json' does not exist on type 'T & { appliedDefaults: string[]; }'.
+src/cli/utils/environment-detector.ts(249,14): error TS2339: Property 'noColor' does not exist on type 'T & { appliedDefaults: string[]; }'.
+src/communication/message-bus.ts(284,35): error TS2345: Argument of type '{ id: string; }' is not assignable to parameter of type 'AgentId'.
+  Type '{ id: string; }' is missing the following properties from type 'AgentId': swarmId, type, instance
+src/communication/message-bus.ts(290,38): error TS2345: Argument of type '{ id: string; }' is not assignable to parameter of type 'AgentId'.
+  Type '{ id: string; }' is missing the following properties from type 'AgentId': swarmId, type, instance
+src/config/ruv-swarm-config.ts(165,40): error TS2345: Argument of type 'RuvSwarmConfig' is not assignable to parameter of type 'Record<string, unknown>'.
+  Index signature for type 'string' is missing in type 'RuvSwarmConfig'.
+src/config/ruv-swarm-config.ts(172,9): error TS2740: Type 'Record<string, unknown>' is missing the following properties from type 'RuvSwarmConfig': swarm, agents, tasks, memory, and 3 more.
+src/config/ruv-swarm-config.ts(218,5): error TS2740: Type 'Record<string, unknown>' is missing the following properties from type 'RuvSwarmConfig': swarm, agents, tasks, memory, and 3 more.
+src/config/ruv-swarm-config.ts(218,29): error TS2345: Argument of type 'RuvSwarmConfig' is not assignable to parameter of type 'Record<string, unknown>'.
+  Index signature for type 'string' is missing in type 'RuvSwarmConfig'.
+src/config/ruv-swarm-integration.ts(228,54): error TS2304: Cannot find name 'logger'.
+src/coordination/advanced-task-executor.ts(398,11): error TS2322: Type 'ResourceUsage' is not assignable to type 'Record<string, number>'.
+  Index signature for type 'string' is missing in type 'ResourceUsage'.
+src/coordination/advanced-task-executor.ts(410,11): error TS2322: Type 'ResourceUsage' is not assignable to type 'Record<string, number>'.
+  Index signature for type 'string' is missing in type 'ResourceUsage'.
+src/coordination/advanced-task-executor.ts(614,28): error TS2683: 'this' implicitly has type 'any' because it does not have a type annotation.
+src/coordination/background-executor.ts(52,30): error TS2345: Argument of type 'string' is not assignable to parameter of type 'LoggingConfig'.
+src/coordination/background-executor.ts(226,13): error TS7022: 'process' implicitly has type 'any' because it does not have a type annotation and is referenced directly or indirectly in its own initializer.
+src/coordination/background-executor.ts(228,19): error TS2448: Block-scoped variable 'process' used before its declaration.
+src/coordination/background-executor.ts(240,35): error TS7006: Parameter 'data' implicitly has an 'any' type.
+src/coordination/background-executor.ts(245,35): error TS7006: Parameter 'data' implicitly has an 'any' type.
+src/coordination/background-executor.ts(251,34): error TS7006: Parameter 'code' implicitly has an 'any' type.
+src/coordination/hive-protocol.ts(460,25): error TS2345: Argument of type 'HiveMessage' is not assignable to parameter of type 'never'.
+src/coordination/hive-protocol.ts(464,35): error TS2339: Property 'timestamp' does not exist on type 'never'.
+src/coordination/hive-protocol.ts(464,49): error TS2339: Property 'timestamp' does not exist on type 'never'.
+src/coordination/load-balancer.ts(123,7): error TS2322: Type '"hybrid"' is not assignable to type 'LoadBalancingStrategy'.
+src/coordination/load-balancer.ts(157,30): error TS2345: Argument of type '{ id: string; }' is not assignable to parameter of type 'string'.
+src/coordination/load-balancer.ts(163,30): error TS2345: Argument of type '{ id: string; }' is not assignable to parameter of type 'string'.
+src/coordination/load-balancer.ts(169,30): error TS2345: Argument of type '{ id: string; }' is not assignable to parameter of type 'string'.
+src/coordination/load-balancer.ts(175,34): error TS2345: Argument of type '{ id: string; }' is not assignable to parameter of type 'string'.
+src/coordination/load-balancer.ts(180,38): error TS18046: 'data' is of type 'unknown'.
+src/coordination/load-balancer.ts(180,52): error TS18046: 'data' is of type 'unknown'.
+src/coordination/load-balancer.ts(329,14): error TS2678: Type '"load-based"' is not comparable to type 'LoadBalancingStrategy'.
+src/coordination/load-balancer.ts(334,14): error TS2678: Type '"performance-based"' is not comparable to type 'LoadBalancingStrategy'.
+src/coordination/load-balancer.ts(339,14): error TS2678: Type '"capability-based"' is not comparable to type 'LoadBalancingStrategy'.
+src/coordination/load-balancer.ts(344,14): error TS2678: Type '"affinity-based"' is not comparable to type 'LoadBalancingStrategy'.
+src/coordination/load-balancer.ts(349,14): error TS2678: Type '"cost-based"' is not comparable to type 'LoadBalancingStrategy'.
+src/coordination/load-balancer.ts(354,14): error TS2678: Type '"hybrid"' is not comparable to type 'LoadBalancingStrategy'.
+src/coordination/metrics.ts(136,5): error TS2322: Type 'Timeout' is not assignable to type 'number'.
+src/coordination/scheduler.ts(355,5): error TS2322: Type 'Timeout' is not assignable to type 'number'.
+src/coordination/swarm-coordinator.ts(86,30): error TS2345: Argument of type 'string' is not assignable to parameter of type 'LoggingConfig'.
+src/coordination/swarm-coordinator.ts(112,7): error TS2353: Object literal may only specify known properties, and 'namespace' does not exist in type 'MemoryConfig'.
+src/coordination/swarm-coordinator.ts(182,11): error TS2532: Object is possibly 'undefined'.
+src/coordination/swarm-coordinator.ts(249,7): error TS2322: Type '"objective"' is not assignable to type '"error" | "observation" | "insight" | "decision" | "artifact"'.
+src/coordination/swarm-coordinator.ts(469,7): error TS2322: Type '"task-result"' is not assignable to type '"error" | "observation" | "insight" | "decision" | "artifact"'.
+src/coordination/swarm-coordinator.ts(674,9): error TS2322: Type '"swarm-state"' is not assignable to type '"error" | "observation" | "insight" | "decision" | "artifact"'.
+src/coordination/swarm-coordinator.ts(695,39): error TS2304: Cannot find name 'Message'.
+src/coordination/swarm-monitor.ts(81,30): error TS2345: Argument of type 'string' is not assignable to parameter of type 'LoggingConfig'.
+src/coordination/swarm-monitor.ts(365,5): error TS7053: Element implicitly has an 'any' type because expression of type '"info" | "error" | "critical" | "warning"' can't be used to index type 'Logger'.
+  Property 'critical' does not exist on type 'Logger'.
+src/core/event-bus.ts(140,9): error TS2322: Type 'Timeout' is not assignable to type 'number'.
+src/core/orchestrator.ts(776,5): error TS2322: Type 'Timeout' is not assignable to type 'number'.
+src/core/orchestrator.ts(794,5): error TS2322: Type 'Timeout' is not assignable to type 'number'.
+src/core/orchestrator.ts(800,5): error TS2322: Type 'Timeout' is not assignable to type 'number'.
+src/core/persistence.ts(38,11): error TS2564: Property 'db' has no initializer and is not definitely assigned in the constructor.
+src/core/persistence.ts(58,13): error TS2339: Property 'execute' does not exist on type 'Database'.
+src/core/persistence.ts(73,13): error TS2339: Property 'execute' does not exist on type 'Database'.
+src/core/persistence.ts(91,13): error TS2339: Property 'execute' does not exist on type 'Database'.
+src/enterprise/analytics-manager.ts(1087,36): error TS2345: Argument of type '{ name: string; description: string; type: "operational"; widgets: ({ title: string; type: "gauge"; size: "medium"; position: { x: number; y: number; width: number; height: number; }; dataSource: { query: string; metrics: string[]; aggregation: "avg"; timeRange: string; groupBy: never[]; }; visualization: { ...; }; ...' is not assignable to parameter of type '{ name: string; description: string; type: "custom" | "security" | "business" | "technical" | "operational" | "executive"; widgets: Omit<DashboardWidget, "id">[]; permissions?: Partial<...> | undefined; }'.
+  Type '{ name: string; description: string; type: "operational"; widgets: ({ title: string; type: "gauge"; size: "medium"; position: { x: number; y: number; width: number; height: number; }; dataSource: { query: string; metrics: string[]; aggregation: "avg"; timeRange: string; groupBy: never[]; }; visualization: { ...; }; ...' is not assignable to type '{ name: string; description: string; type: "custom" | "security" | "business" | "technical" | "operational" | "executive"; widgets: Omit<DashboardWidget, "id">[]; permissions?: Partial<...> | undefined; }'.
+    Types of property 'widgets' are incompatible.
+      Type '({ title: string; type: "gauge"; size: "medium"; position: { x: number; y: number; width: number; height: number; }; dataSource: { query: string; metrics: string[]; aggregation: "avg"; timeRange: string; groupBy: never[]; }; visualization: { ...; }; alerts: { ...; }; } | { ...; })[]' is not assignable to type 'Omit<DashboardWidget, "id">[]'.
+        Type '{ title: string; type: "gauge"; size: "medium"; position: { x: number; y: number; width: number; height: number; }; dataSource: { query: string; metrics: string[]; aggregation: "avg"; timeRange: string; groupBy: never[]; }; visualization: { ...; }; alerts: { ...; }; } | { ...; }' is not assignable to type 'Omit<DashboardWidget, "id">'.
+          Type '{ title: string; type: "gauge"; size: "medium"; position: { x: number; y: number; width: number; height: number; }; dataSource: { query: string; metrics: string[]; aggregation: "avg"; timeRange: string; groupBy: never[]; }; visualization: { ...; }; alerts: { ...; }; }' is not assignable to type 'Omit<DashboardWidget, "id">'.
+            The types of 'visualization.chartType' are incompatible between these types.
+              Type '"gauge"' is not assignable to type '"line" | "bar" | "pie" | "scatter" | "heatmap" | "area" | undefined'.
+src/enterprise/audit-manager.ts(499,11): error TS2783: 'enabled' is specified more than once, so this usage will be overwritten.
+src/enterprise/audit-manager.ts(500,11): error TS2783: 'frequency' is specified more than once, so this usage will be overwritten.
+src/enterprise/audit-manager.ts(501,11): error TS2783: 'query' is specified more than once, so this usage will be overwritten.
+src/enterprise/cloud-manager.ts(1102,11): error TS2322: Type '{ defaultRegion: string; availableRegions: string[]; services: string[]; endpoints: { ec2: string; s3: string; rds: string; compute?: undefined; storage?: undefined; sql?: undefined; }; features: string[]; } | { ...; } | { ...; }' is not assignable to type '{ defaultRegion: string; availableRegions: string[]; services: string[]; endpoints: Record<string, string>; features: string[]; }'.
+  Type '{ defaultRegion: string; availableRegions: string[]; services: string[]; endpoints: { ec2: string; s3: string; rds: string; compute?: undefined; storage?: undefined; sql?: undefined; }; features: string[]; }' is not assignable to type '{ defaultRegion: string; availableRegions: string[]; services: string[]; endpoints: Record<string, string>; features: string[]; }'.
+    Types of property 'endpoints' are incompatible.
+      Type '{ ec2: string; s3: string; rds: string; compute?: undefined; storage?: undefined; sql?: undefined; }' is not assignable to type 'Record<string, string>'.
+        Property 'compute' is incompatible with index signature.
+          Type 'undefined' is not assignable to type 'string'.
+src/features/adapters/CliFeatureAdapter.ts(17,42): error TS2554: Expected 1 arguments, but got 0.
+src/features/adapters/CliFeatureAdapter.ts(41,42): error TS2554: Expected 1 arguments, but got 0.
+src/features/adapters/CliFeatureAdapter.ts(55,27): error TS2339: Property 'update' does not exist on type 'ConfigManager'.
+src/features/adapters/CliFeatureAdapter.ts(66,42): error TS2554: Expected 1 arguments, but got 0.
+src/features/adapters/CliFeatureAdapter.ts(80,27): error TS2339: Property 'update' does not exist on type 'ConfigManager'.
+src/features/adapters/CliFeatureAdapter.ts(91,42): error TS2554: Expected 1 arguments, but got 0.
+src/features/adapters/CliFeatureAdapter.ts(105,27): error TS2339: Property 'update' does not exist on type 'ConfigManager'.
+src/features/adapters/CliFeatureAdapter.ts(117,42): error TS2554: Expected 1 arguments, but got 0.
+src/features/adapters/CliFeatureAdapter.ts(132,27): error TS2339: Property 'update' does not exist on type 'ConfigManager'.
+src/features/adapters/CliFeatureAdapter.ts(143,42): error TS2554: Expected 1 arguments, but got 0.
+src/hive-mind/core/Agent.ts(34,11): error TS2564: Property 'db' has no initializer and is not definitely assigned in the constructor.
+src/hive-mind/core/Agent.ts(35,11): error TS2564: Property 'mcpWrapper' has no initializer and is not definitely assigned in the constructor.
+src/hive-mind/core/Agent.ts(272,5): error TS2322: Type '{ name: string; passed: boolean; }[]' is not assignable to type 'never[]'.
+  Type '{ name: string; passed: boolean; }' is not assignable to type 'never'.
+src/hive-mind/core/Agent.ts(299,7): error TS2322: Type 'string' is not assignable to type 'MessageType'.
+src/hive-mind/core/Agent.ts(609,54): error TS2345: Argument of type 'string' is not assignable to parameter of type 'AgentCapability'.
+src/hive-mind/core/Communication.ts(21,11): error TS2564: Property 'db' has no initializer and is not definitely assigned in the constructor.
+src/hive-mind/core/Communication.ts(44,7): error TS2740: Type '{}' is missing the following properties from type 'Record<MessageType, number>': coordination, direct, broadcast, query, and 6 more.
+src/hive-mind/core/DatabaseManager.ts(20,11): error TS2564: Property 'db' has no initializer and is not definitely assigned in the constructor.
+src/hive-mind/core/DatabaseManager.ts(22,11): error TS2564: Property 'dbPath' has no initializer and is not definitely assigned in the constructor.
+src/hive-mind/core/DatabaseManager.ts(196,28): error TS2339: Property 'id' does not exist on type '{}'.
+src/hive-mind/core/DatabaseManager.ts(232,55): error TS2339: Property '_raw' does not exist on type 'object'.
+src/hive-mind/core/DatabaseManager.ts(233,43): error TS2339: Property '_raw' does not exist on type 'object'.
+src/hive-mind/core/DatabaseManager.ts(531,39): error TS2339: Property 'votes' does not exist on type '{}'.
+src/hive-mind/core/DatabaseManager.ts(538,45): error TS2339: Property 'required_threshold' does not exist on type '{}'.
+src/hive-mind/core/DatabaseManager.ts(579,7): error TS2698: Spread types may only be created from object types.
+src/hive-mind/core/DatabaseManager.ts(580,7): error TS2698: Spread types may only be created from object types.
+src/hive-mind/core/DatabaseManager.ts(581,25): error TS18046: 'agentStats' is of type 'unknown'.
+src/hive-mind/core/DatabaseManager.ts(582,11): error TS18046: 'agentStats' is of type 'unknown'.
+src/hive-mind/core/DatabaseManager.ts(582,35): error TS18046: 'agentStats' is of type 'unknown'.
+src/hive-mind/core/DatabaseManager.ts(601,19): error TS18046: 'result' is of type 'unknown'.
+src/hive-mind/core/DatabaseManager.ts(602,22): error TS18046: 'result' is of type 'unknown'.
+src/hive-mind/core/DatabaseManager.ts(602,42): error TS18046: 'result' is of type 'unknown'.
+src/hive-mind/core/DatabaseManager.ts(603,28): error TS18046: 'result' is of type 'unknown'.
+src/hive-mind/core/DatabaseManager.ts(604,21): error TS18046: 'result' is of type 'unknown'.
+src/hive-mind/core/HiveMind.ts(32,11): error TS2564: Property 'queen' has no initializer and is not definitely assigned in the constructor.
+src/hive-mind/core/HiveMind.ts(34,11): error TS2564: Property 'memory' has no initializer and is not definitely assigned in the constructor.
+src/hive-mind/core/HiveMind.ts(35,11): error TS2564: Property 'communication' has no initializer and is not definitely assigned in the constructor.
+src/hive-mind/core/HiveMind.ts(36,11): error TS2564: Property 'orchestrator' has no initializer and is not definitely assigned in the constructor.
+src/hive-mind/core/HiveMind.ts(37,11): error TS2564: Property 'consensus' has no initializer and is not definitely assigned in the constructor.
+src/hive-mind/core/HiveMind.ts(38,11): error TS2564: Property 'db' has no initializer and is not definitely assigned in the constructor.
+src/hive-mind/core/HiveMind.ts(202,7): error TS2322: Type 'string[]' is not assignable to type 'AgentCapability[]'.
+  Type 'string' is not assignable to type 'AgentCapability'.
+src/hive-mind/core/HiveMind.ts(315,7): error TS2322: Type 'string' is not assignable to type '"healthy" | "degraded" | "critical" | "unknown"'.
+src/hive-mind/core/HiveMind.ts(471,83): error TS2345: Argument of type 'string' is not assignable to parameter of type 'AgentCapability'.
+src/hive-mind/core/Memory.ts(163,11): error TS2564: Property 'db' has no initializer and is not definitely assigned in the constructor.
+src/hive-mind/core/Memory.ts(164,11): error TS2564: Property 'mcpWrapper' has no initializer and is not definitely assigned in the constructor.
+src/hive-mind/core/Memory.ts(262,55): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{}'.
+  No index signature with a parameter of type 'string' was found on type '{}'.
+src/hive-mind/core/Memory.ts(1192,34): error TS2339: Property 'size' does not exist on type 'HighPerformanceCache<any>'.
+src/hive-mind/core/Memory.ts(1253,37): error TS2488: Type 'HighPerformanceCache<any>' must have a '[Symbol.iterator]()' method that returns an iterator.
+src/hive-mind/core/Memory.ts(1268,20): error TS2339: Property 'size' does not exist on type 'HighPerformanceCache<any>'.
+src/hive-mind/core/Memory.ts(1270,45): error TS2339: Property 'entries' does not exist on type 'HighPerformanceCache<any>'.
+src/hive-mind/core/Memory.ts(1271,25): error TS18046: 'a' is of type 'unknown'.
+src/hive-mind/core/Memory.ts(1271,57): error TS18046: 'b' is of type 'unknown'.
+src/hive-mind/core/Memory.ts(1275,18): error TS2488: Type 'unknown' must have a '[Symbol.iterator]()' method that returns an iterator.
+src/hive-mind/core/MemoryMonitor.ts(324,36): error TS2339: Property 'healthCheck' does not exist on type 'DatabaseManager'.
+src/hive-mind/core/MemoryMonitor.ts(622,36): error TS2339: Property 'healthCheck' does not exist on type 'DatabaseManager'.
+src/hive-mind/core/Queen.ts(35,11): error TS2564: Property 'db' has no initializer and is not definitely assigned in the constructor.
+src/hive-mind/core/Queen.ts(36,11): error TS2564: Property 'mcpWrapper' has no initializer and is not definitely assigned in the constructor.
+src/hive-mind/core/Queen.ts(221,35): error TS2345: Argument of type 'string' is not assignable to parameter of type 'AgentCapability'.
+src/hive-mind/core/Queen.ts(622,11): error TS18046: 'performance' is of type 'unknown'.
+src/hive-mind/integration/ConsensusEngine.ts(21,11): error TS2564: Property 'db' has no initializer and is not definitely assigned in the constructor.
+src/hive-mind/integration/ConsensusEngine.ts(22,11): error TS2564: Property 'mcpWrapper' has no initializer and is not definitely assigned in the constructor.
+src/hive-mind/integration/ConsensusEngine.ts(113,38): error TS2551: Property 'getConsensusProposal' does not exist on type 'DatabaseManager'. Did you mean 'createConsensusProposal'?
+src/hive-mind/integration/ConsensusEngine.ts(336,19): error TS2339: Property 'updateConsensusStatus' does not exist on type 'DatabaseManager'.
+src/hive-mind/integration/ConsensusEngine.ts(364,19): error TS2339: Property 'updateConsensusStatus' does not exist on type 'DatabaseManager'.
+src/hive-mind/integration/ConsensusEngine.ts(511,47): error TS2551: Property 'getRecentConsensusProposals' does not exist on type 'DatabaseManager'. Did you mean 'createConsensusProposal'?
+src/hive-mind/integration/ConsensusEngine.ts(515,21): error TS7006: Parameter 'p' implicitly has an 'any' type.
+src/hive-mind/integration/ConsensusEngine.ts(516,18): error TS7006: Parameter 'p' implicitly has an 'any' type.
+src/hive-mind/integration/ConsensusEngine.ts(520,35): error TS7006: Parameter 'a' implicitly has an 'any' type.
+src/hive-mind/integration/ConsensusEngine.ts(520,38): error TS7006: Parameter 'b' implicitly has an 'any' type.
+src/hive-mind/integration/ConsensusEngine.ts(550,20): error TS2339: Property 'prepare' does not exist on type 'DatabaseManager'.
+src/hive-mind/integration/ConsensusEngine.ts(554,13): error TS2339: Property 'prepare' does not exist on type 'DatabaseManager'.
+src/hive-mind/integration/ConsensusEngine.ts(559,20): error TS2339: Property 'prepare' does not exist on type 'DatabaseManager'.
+src/hive-mind/integration/SwarmOrchestrator.ts(23,11): error TS2564: Property 'db' has no initializer and is not definitely assigned in the constructor.
+src/hive-mind/integration/SwarmOrchestrator.ts(24,11): error TS2564: Property 'mcpWrapper' has no initializer and is not definitely assigned in the constructor.
+src/hive-mind/integration/SwarmOrchestrator.ts(93,18): error TS7006: Parameter 'phase' implicitly has an 'any' type.
+src/hive-mind/integration/SwarmOrchestrator.ts(138,17): error TS2339: Property 'error' does not exist on type '{ taskId: string; plan: ExecutionPlan; startTime: number; currentPhase: number; phaseResults: never[]; status: string; }'.
+src/hive-mind/integration/SwarmOrchestrator.ts(513,69): error TS2345: Argument of type 'string' is not assignable to parameter of type 'AgentCapability'.
+src/hive-mind/integration/SwarmOrchestrator.ts(682,60): error TS7006: Parameter 'r' implicitly has an 'any' type.
+src/hive-mind/integration/SwarmOrchestrator.ts(700,31): error TS2341: Property 'id' is private and only accessible within class 'HiveMind'.
+src/hive-mind/integration/SwarmOrchestrator.ts(712,62): error TS2341: Property 'id' is private and only accessible within class 'HiveMind'.
+src/hive-mind/integration/SwarmOrchestrator.ts(771,31): error TS2341: Property 'id' is private and only accessible within class 'HiveMind'.
+src/hive-mind/integration/SwarmOrchestrator.ts(784,31): error TS2341: Property 'id' is private and only accessible within class 'HiveMind'.
+src/integration/system-integration.ts(150,30): error TS2554: Expected 3 arguments, but got 0.
+src/integration/system-integration.ts(177,29): error TS2554: Expected 4 arguments, but got 2.
+src/integration/system-integration.ts(195,11): error TS2554: Expected 0-1 arguments, but got 3.
+src/integration/system-integration.ts(230,11): error TS2554: Expected 0-2 arguments, but got 3.
+src/integration/system-integration.ts(261,24): error TS2554: Expected 4 arguments, but got 2.
+src/integration/system-integration.ts(276,17): error TS2339: Property 'McpServer' does not exist on type 'typeof import("/Users/lanemc/sites/repo-claude-flow/claude-flow/src/mcp/server", { with: { "resolution-mode": "import" } })'.
+src/integration/system-integration.ts(342,34): error TS18046: 'event' is of type 'unknown'.
+src/integration/system-integration.ts(342,51): error TS18046: 'event' is of type 'unknown'.
+src/integration/system-integration.ts(342,65): error TS18046: 'event' is of type 'unknown'.
+src/integration/system-integration.ts(347,44): error TS18046: 'event' is of type 'unknown'.
+src/integration/system-integration.ts(347,64): error TS18046: 'event' is of type 'unknown'.
+src/integration/system-integration.ts(348,34): error TS18046: 'event' is of type 'unknown'.
+src/integration/system-integration.ts(348,64): error TS18046: 'event' is of type 'unknown'.
+src/integration/system-integration.ts(353,48): error TS18046: 'event' is of type 'unknown'.
+src/integration/system-integration.ts(353,66): error TS18046: 'event' is of type 'unknown'.
+src/mcp/claude-code-wrapper.ts(248,24): error TS2339: Property 'output' does not exist on type 'never'.
+src/mcp/claude-code-wrapper.ts(679,34): error TS2304: Cannot find name 'executeSparcMode'.
+src/mcp/client.ts(36,9): error TS2345: Argument of type 'MCPConfig | {}' is not assignable to parameter of type 'MCPConfig'.
+  Property 'transport' is missing in type '{}' but required in type 'MCPConfig'.
+src/mcp/client.ts(104,37): error TS2345: Argument of type 'string | number' is not assignable to parameter of type 'string'.
+  Type 'number' is not assignable to type 'string'.
+src/mcp/client.ts(108,32): error TS2345: Argument of type 'string | number' is not assignable to parameter of type 'string'.
+  Type 'number' is not assignable to type 'string'.
+src/mcp/client.ts(115,48): error TS2345: Argument of type 'string | number' is not assignable to parameter of type 'string'.
+  Type 'number' is not assignable to type 'string'.
+src/mcp/client.ts(118,37): error TS2345: Argument of type 'string | number' is not assignable to parameter of type 'string'.
+  Type 'number' is not assignable to type 'string'.
+src/mcp/client.ts(122,25): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(message?: string | undefined, options?: ErrorOptions | undefined): Error', gave the following error.
+    Argument of type 'MCPError | undefined' is not assignable to parameter of type 'string | undefined'.
+      Type 'MCPError' is not assignable to type 'string'.
+  Overload 2 of 2, '(message?: string | undefined): Error', gave the following error.
+    Argument of type 'MCPError | undefined' is not assignable to parameter of type 'string | undefined'.
+      Type 'MCPError' is not assignable to type 'string'.
+src/mcp/client.ts(128,48): error TS2345: Argument of type 'string | number' is not assignable to parameter of type 'string'.
+  Type 'number' is not assignable to type 'string'.
+src/mcp/client.ts(131,37): error TS2345: Argument of type 'string | number' is not assignable to parameter of type 'string'.
+  Type 'number' is not assignable to type 'string'.
+src/mcp/index.ts(108,35): error TS2304: Cannot find name 'MCPOrchestrationConfig'.
+src/mcp/index.ts(109,26): error TS2304: Cannot find name 'OrchestrationComponents'.
+src/mcp/index.ts(111,15): error TS2304: Cannot find name 'MCPOrchestrationIntegration'.
+src/mcp/index.ts(114,29): error TS2304: Cannot find name 'MCPOrchestrationIntegration'.
+src/mcp/index.ts(150,13): error TS2304: Cannot find name 'MCPServer'.
+src/mcp/index.ts(151,24): error TS2304: Cannot find name 'MCPLifecycleManager'.
+src/mcp/index.ts(152,26): error TS2304: Cannot find name 'MCPPerformanceMonitor'.
+src/mcp/index.ts(162,24): error TS2304: Cannot find name 'MCPServer'.
+src/mcp/index.ts(164,27): error TS2304: Cannot find name 'MCPLifecycleManager'.
+src/mcp/index.ts(165,29): error TS2304: Cannot find name 'MCPPerformanceMonitor'.
+src/mcp/index.ts(168,30): error TS2304: Cannot find name 'MCPLifecycleManager'.
+src/mcp/index.ts(176,32): error TS2304: Cannot find name 'MCPPerformanceMonitor'.
+src/mcp/index.ts(190,13): error TS2304: Cannot find name 'MCPServer'.
+src/mcp/index.ts(191,23): error TS2304: Cannot find name 'MCPLifecycleManager'.
+src/mcp/index.ts(192,25): error TS2304: Cannot find name 'MCPPerformanceMonitor'.
+src/mcp/index.ts(193,22): error TS2304: Cannot find name 'MCPProtocolManager'.
+src/mcp/index.ts(211,33): error TS2304: Cannot find name 'MCPProtocolManager'.
+src/mcp/integrate-wrapper.ts(69,44): error TS2345: Argument of type 'string' is not assignable to parameter of type '{ [x: string]: unknown; name: string; _meta?: { [x: string]: unknown; progressToken?: string | number | undefined; } | undefined; arguments?: { [x: string]: unknown; } | undefined; }'.
+src/mcp/ruv-swarm-tools.ts(15,18): error TS2430: Interface 'RuvSwarmToolContext' incorrectly extends interface 'MCPContext'.
+  Types of property 'sessionId' are incompatible.
+    Type 'string | undefined' is not assignable to type 'string'.
+      Type 'undefined' is not assignable to type 'string'.
+src/mcp/ruv-swarm-tools.ts(562,9): error TS2741: Property 'logger' is missing in type '{ workingDirectory: string; sessionId: string; }' but required in type 'RuvSwarmToolContext'.
+src/mcp/server-with-wrapper.ts(18,16): error TS2551: Property 'runMCPServer' does not exist on type 'typeof import("/Users/lanemc/sites/repo-claude-flow/claude-flow/src/mcp/server", { with: { "resolution-mode": "import" } })'. Did you mean 'MCPServer'?
+src/mcp/server-with-wrapper.ts(19,20): error TS2551: Property 'runMCPServer' does not exist on type 'typeof import("/Users/lanemc/sites/repo-claude-flow/claude-flow/src/mcp/server", { with: { "resolution-mode": "import" } })'. Did you mean 'MCPServer'?
+src/mcp/server-with-wrapper.ts(20,23): error TS2339: Property 'default' does not exist on type 'typeof import("/Users/lanemc/sites/repo-claude-flow/claude-flow/src/mcp/server", { with: { "resolution-mode": "import" } })'.
+src/mcp/server-with-wrapper.ts(21,20): error TS2339: Property 'default' does not exist on type 'typeof import("/Users/lanemc/sites/repo-claude-flow/claude-flow/src/mcp/server", { with: { "resolution-mode": "import" } })'.
+src/mcp/server-wrapper-mode.ts(23,13): error TS2339: Property 'runMCPServer' does not exist on type 'typeof import("/Users/lanemc/sites/repo-claude-flow/claude-flow/src/mcp/server", { with: { "resolution-mode": "import" } })'.
+src/mcp/server.ts(588,17): error TS2322: Type '{ workingDirectory: string; sessionId: string; swarmId: string; agentId?: string; logger?: ILogger | undefined; }' is not assignable to type 'RuvSwarmToolContext'.
+  Types of property 'logger' are incompatible.
+    Type 'ILogger | undefined' is not assignable to type 'ILogger'.
+      Type 'undefined' is not assignable to type 'ILogger'.
+src/mcp/server.ts(595,47): error TS2345: Argument of type 'RuvSwarmToolContext' is not assignable to parameter of type 'MCPContext'.
+  Types of property 'sessionId' are incompatible.
+    Type 'string | undefined' is not assignable to type 'string'.
+      Type 'undefined' is not assignable to type 'string'.
+src/mcp/server.ts(611,27): error TS7006: Parameter 'error' implicitly has an 'any' type.
+src/mcp/session-manager.ts(54,5): error TS2322: Type 'Timeout' is not assignable to type 'number'.
+src/mcp/transports/http.ts(168,11): error TS7022: '__filename' implicitly has type 'any' because it does not have a type annotation and is referenced directly or indirectly in its own initializer.
+src/mcp/transports/http.ts(170,9): error TS2448: Block-scoped variable '__filename' used before its declaration.
+src/mcp/transports/http.ts(170,23): error TS2448: Block-scoped variable '__dirname' used before its declaration.
+src/mcp/transports/http.ts(170,23): error TS2454: Variable '__dirname' is used before being assigned.
+src/memory/advanced-memory-manager.ts(1649,82): error TS2339: Property '0' does not exist on type '{ namespace: string; maxAge?: number | undefined; maxCount?: number | undefined; sizeLimit?: number | undefined; }[] | undefined'.
+src/memory/backends/markdown.ts(210,11): error TS18046: 'error' is of type 'unknown'.
+src/memory/distributed-memory.ts(634,7): error TS2353: Object literal may only specify known properties, and 'filter' does not exist in type 'MemoryQuery'.
+src/memory/manager.ts(431,5): error TS2322: Type 'Timeout' is not assignable to type 'number'.
+src/memory/sqlite-store.js(16,7): error TS9006: Declaration emit for this file requires using private name 'BetterSqlite3.Database' from module '"/Users/lanemc/sites/repo-claude-flow/claude-flow/node_modules/@types/better-sqlite3/index"'. An explicit type annotation may unblock declaration emit.
+src/memory/swarm-memory.ts(74,30): error TS2345: Argument of type 'string' is not assignable to parameter of type 'LoggingConfig'.
+src/memory/swarm-memory.ts(95,7): error TS2353: Object literal may only specify known properties, and 'namespace' does not exist in type 'MemoryConfig'.
+src/memory/swarm-memory.ts(175,27): error TS2339: Property 'remember' does not exist on type 'MemoryManager'.
+src/memory/swarm-memory.ts(273,9): error TS2353: Object literal may only specify known properties, and 'originalId' does not exist in type '{ taskId?: string | undefined; objectiveId?: string | undefined; tags?: string[] | undefined; priority?: number | undefined; shareLevel?: "private" | "team" | "public" | undefined; }'.
+src/migration/index.ts(24,4): error TS2554: Expected 2 arguments, but got 1.
+src/migration/index.ts(28,37): error TS7006: Parameter 'options' implicitly has an 'any' type.
+src/migration/index.ts(46,4): error TS2554: Expected 2 arguments, but got 1.
+src/migration/index.ts(54,37): error TS7006: Parameter 'options' implicitly has an 'any' type.
+src/migration/index.ts(74,4): error TS2554: Expected 2 arguments, but got 1.
+src/migration/index.ts(79,37): error TS7006: Parameter 'options' implicitly has an 'any' type.
+src/migration/index.ts(96,4): error TS2554: Expected 2 arguments, but got 1.
+src/migration/index.ts(99,37): error TS7006: Parameter 'options' implicitly has an 'any' type.
+src/migration/index.ts(121,4): error TS2554: Expected 2 arguments, but got 1.
+src/migration/index.ts(124,37): error TS7006: Parameter 'options' implicitly has an 'any' type.
+src/migration/index.ts(141,11): error TS2339: Property 'outputHelp' does not exist on type 'Command'.
+src/migration/migration-runner.ts(4,41): error TS1470: The 'import.meta' meta-property is not allowed in files which will build into CommonJS output.
+src/migration/migration-runner.ts(110,100): error TS18046: 'error' is of type 'unknown'.
+src/migration/migration-runner.ts(163,27): error TS2488: Type 'Record<string, CommandMigration>' must have a '[Symbol.iterator]()' method that returns an iterator.
+src/migration/migration-runner.ts(375,38): error TS2339: Property 'prompt' does not exist on type 'typeof import("/Users/lanemc/sites/repo-claude-flow/claude-flow/node_modules/@types/inquirer/index", { with: { "resolution-mode": "import" } })'.
+src/migration/migration-runner.ts(465,36): error TS2339: Property 'prompt' does not exist on type 'typeof import("/Users/lanemc/sites/repo-claude-flow/claude-flow/node_modules/@types/inquirer/index", { with: { "resolution-mode": "import" } })'.
+src/migration/migration-runner.ts(479,9): error TS2322: Type '{ source: string; target: string; }[]' is not assignable to type 'Record<string, CommandMigration>'.
+  Index signature for type 'string' is missing in type '{ source: string; target: string; }[]'.
+src/migration/rollback-manager.ts(149,7): error TS2322: Type 'MigrationBackup | undefined' is not assignable to type 'MigrationBackup'.
+  Type 'undefined' is not assignable to type 'MigrationBackup'.
+src/migration/rollback-manager.ts(163,38): error TS2339: Property 'prompt' does not exist on type 'typeof import("/Users/lanemc/sites/repo-claude-flow/claude-flow/node_modules/@types/inquirer/index", { with: { "resolution-mode": "import" } })'.
+src/migration/rollback-manager.ts(213,35): error TS2339: Property 'prompt' does not exist on type 'typeof import("/Users/lanemc/sites/repo-claude-flow/claude-flow/node_modules/@types/inquirer/index", { with: { "resolution-mode": "import" } })'.
+src/monitoring/diagnostics.ts(225,28): error TS2339: Property 'getMetrics' does not exist on type '{}'.
+src/monitoring/diagnostics.ts(226,44): error TS2339: Property 'getMetrics' does not exist on type '{}'.
+src/monitoring/diagnostics.ts(644,40): error TS18046: 'metric' is of type 'unknown'.
+src/monitoring/diagnostics.ts(645,37): error TS18046: 'metric' is of type 'unknown'.
+src/monitoring/diagnostics.ts(648,51): error TS18046: 'metric' is of type 'unknown'.
+src/monitoring/diagnostics.ts(649,20): error TS18046: 'metric' is of type 'unknown'.
+src/monitoring/diagnostics.ts(659,25): error TS18046: 'error' is of type 'unknown'.
+src/monitoring/diagnostics.ts(667,18): error TS18046: 'error' is of type 'unknown'.
+src/monitoring/diagnostics.ts(667,35): error TS18046: 'error' is of type 'unknown'.
+src/monitoring/diagnostics.ts(669,16): error TS18046: 'error' is of type 'unknown'.
+src/monitoring/health-check.ts(215,28): error TS2339: Property 'healthCheck' does not exist on type '{}'.
+src/monitoring/health-check.ts(217,21): error TS2339: Property 'healthCheck' does not exist on type '{}'.
+src/monitoring/health-check.ts(265,47): error TS2339: Property 'getMetrics' does not exist on type '{}'.
+src/monitoring/health-check.ts(266,49): error TS2339: Property 'getMetrics' does not exist on type '{}'.
+src/monitoring/health-check.ts(270,43): error TS2339: Property 'getMetrics' does not exist on type '{}'.
+src/monitoring/health-check.ts(271,46): error TS2339: Property 'getMetrics' does not exist on type '{}'.
+src/monitoring/health-check.ts(442,50): error TS2345: Argument of type '(status: ComponentStatus) => void' is not assignable to parameter of type '(data: unknown) => void'.
+  Types of parameters 'status' and 'data' are incompatible.
+    Type 'unknown' is not assignable to type 'ComponentStatus'.
+src/monitoring/real-time-monitor.ts(201,31): error TS18046: 'data' is of type 'unknown'.
+src/monitoring/real-time-monitor.ts(201,45): error TS18046: 'data' is of type 'unknown'.
+src/monitoring/real-time-monitor.ts(206,18): error TS18046: 'data' is of type 'unknown'.
+src/monitoring/real-time-monitor.ts(207,15): error TS18046: 'data' is of type 'unknown'.
+src/monitoring/real-time-monitor.ts(208,13): error TS18046: 'data' is of type 'unknown'.
+src/monitoring/real-time-monitor.ts(214,54): error TS18046: 'data' is of type 'unknown'.
+src/monitoring/real-time-monitor.ts(214,76): error TS18046: 'data' is of type 'unknown'.
+src/monitoring/real-time-monitor.ts(218,56): error TS18046: 'data' is of type 'unknown'.
+src/monitoring/real-time-monitor.ts(219,42): error TS18046: 'data' is of type 'unknown'.
+src/monitoring/real-time-monitor.ts(219,67): error TS18046: 'data' is of type 'unknown'.
+src/monitoring/real-time-monitor.ts(223,53): error TS18046: 'data' is of type 'unknown'.
+src/monitoring/real-time-monitor.ts(223,73): error TS18046: 'data' is of type 'unknown'.
+src/monitoring/real-time-monitor.ts(228,32): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Partial<SystemMetrics>'.
+src/monitoring/real-time-monitor.ts(232,31): error TS18046: 'data' is of type 'unknown'.
+src/resources/resource-manager.ts(390,32): error TS18046: 'data' is of type 'unknown'.
+src/resources/resource-manager.ts(390,49): error TS18046: 'data' is of type 'unknown'.
+src/swarm/claude-flow-executor.ts(82,9): error TS2353: Object literal may only specify known properties, and 'error' does not exist in type 'TaskResult'.
+src/swarm/claude-flow-executor.ts(98,9): error TS2353: Object literal may only specify known properties, and 'error' does not exist in type 'TaskResult'.
+src/swarm/claude-flow-executor.ts(149,12): error TS7053: Element implicitly has an 'any' type because expression of type 'AgentType' can't be used to index type '{ coding: string; testing: string; analysis: string; documentation: string; research: string; review: string; deployment: string; optimization: string; integration: string; coder: string; tester: string; ... 4 more ...; coordinator: string; }'.
+  Property 'architect' does not exist on type '{ coding: string; testing: string; analysis: string; documentation: string; research: string; review: string; deployment: string; optimization: string; integration: string; coder: string; tester: string; ... 4 more ...; coordinator: string; }'.
+src/swarm/claude-flow-executor.ts(149,35): error TS7053: Element implicitly has an 'any' type because expression of type 'TaskType' can't be used to index type '{ coding: string; testing: string; analysis: string; documentation: string; research: string; review: string; deployment: string; optimization: string; integration: string; coder: string; tester: string; ... 4 more ...; coordinator: string; }'.
+  Property 'custom' does not exist on type '{ coding: string; testing: string; analysis: string; documentation: string; research: string; review: string; deployment: string; optimization: string; integration: string; coder: string; tester: string; ... 4 more ...; coordinator: string; }'.
+src/swarm/claude-flow-executor.ts(220,33): error TS7006: Parameter 'match' implicitly has an 'any' type.
+src/swarm/coordinator.ts(187,31): error TS2345: Argument of type 'AgentId' is not assignable to parameter of type 'string'.
+src/swarm/coordinator.ts(213,32): error TS2345: Argument of type 'AgentId' is not assignable to parameter of type 'string'.
+src/swarm/coordinator.ts(256,7): error TS2741: Property 'resourceLimits' is missing in type '{ minQuality: number; requiredApprovals: never[]; allowedFailures: number; recoveryTime: number; milestones: never[]; }' but required in type 'SwarmConstraints'.
+src/swarm/coordinator.ts(518,16): error TS18046: 'error' is of type 'unknown'.
+src/swarm/coordinator.ts(674,7): error TS2322: Type 'string | null' is not assignable to type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.
+src/swarm/coordinator.ts(1546,35): error TS2367: This comparison appears to be unintentional because the types 'SwarmMode' and '"parallel"' have no overlap.
+src/swarm/coordinator.ts(1670,67): error TS2345: Argument of type '"generic"' is not assignable to parameter of type 'TaskType'.
+src/swarm/coordinator.ts(1839,9): error TS2322: Type '"task.queued"' is not assignable to type 'EventType'.
+src/swarm/coordinator.ts(1938,13): error TS2322: Type '"task.queued"' is not assignable to type 'EventType'.
+src/swarm/coordinator.ts(2030,13): error TS2322: Type '"objective.completed" | "objective.failed"' is not assignable to type 'EventType'.
+  Type '"objective.completed"' is not assignable to type 'EventType'.
+src/swarm/coordinator.ts(2179,51): error TS5097: An import path can only end with a '.ts' extension when 'allowImportingTsExtensions' is enabled.
+src/swarm/coordinator.ts(2184,30): error TS2339: Property 'logging' does not exist on type 'SwarmConfig'.
+src/swarm/coordinator.ts(2188,62): error TS2345: Argument of type 'string | null' is not assignable to parameter of type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.
+src/swarm/coordinator.ts(2524,25): error TS2339: Property 'createGradioApp' does not exist on type 'SwarmCoordinator'.
+src/swarm/coordinator.ts(2527,25): error TS2339: Property 'createPythonRestAPI' does not exist on type 'SwarmCoordinator'.
+src/swarm/direct-executor.ts(113,50): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/swarm/direct-executor.ts(114,47): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/swarm/direct-executor.ts(115,47): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/swarm/direct-executor.ts(116,51): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/swarm/direct-executor.ts(117,56): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/swarm/direct-executor.ts(118,56): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/swarm/direct-executor.ts(119,38): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/swarm/executor-v2.ts(19,51): error TS2304: Cannot find name 'ClaudeExecutionOptions'.
+src/swarm/executor-v2.ts(27,37): error TS2304: Cannot find name 'TaskExecutor'.
+src/swarm/executor-v2.ts(30,31): error TS2304: Cannot find name 'ExecutionConfig'.
+src/swarm/executor-v2.ts(34,10): error TS2339: Property 'logger' does not exist on type 'TaskExecutorV2'.
+src/swarm/executor-v2.ts(45,14): error TS2304: Cannot find name 'ExecutionResult'.
+src/swarm/executor-v2.ts(51,12): error TS2339: Property 'logger' does not exist on type 'TaskExecutorV2'.
+src/swarm/executor-v2.ts(62,20): error TS2339: Property 'createExecutionContext' does not exist on type 'TaskExecutorV2'.
+src/swarm/executor-v2.ts(68,14): error TS2339: Property 'logger' does not exist on type 'TaskExecutorV2'.
+src/swarm/executor-v2.ts(69,18): error TS18046: 'error' is of type 'unknown'.
+src/swarm/executor-v2.ts(74,25): error TS2339: Property 'dangerouslySkipPermissions' does not exist on type 'ClaudeExecutionOptionsV2 & { appliedDefaults: string[]; }'.
+src/swarm/executor-v2.ts(80,22): error TS2339: Property 'createExecutionContext' does not exist on type 'TaskExecutorV2'.
+src/swarm/executor-v2.ts(93,14): error TS2304: Cannot find name 'ExecutionContext'.
+src/swarm/executor-v2.ts(95,14): error TS2304: Cannot find name 'ExecutionResult'.
+src/swarm/executor-v2.ts(97,29): error TS2339: Property 'timeout' does not exist on type 'ClaudeExecutionOptionsV2'.
+src/swarm/executor-v2.ts(97,45): error TS2339: Property 'config' does not exist on type 'TaskExecutorV2'.
+src/swarm/executor-v2.ts(120,10): error TS2339: Property 'logger' does not exist on type 'TaskExecutorV2'.
+src/swarm/executor-v2.ts(139,16): error TS2339: Property 'logger' does not exist on type 'TaskExecutorV2'.
+src/swarm/executor-v2.ts(150,19): error TS2339: Property 'config' does not exist on type 'TaskExecutorV2'.
+src/swarm/executor-v2.ts(160,29): error TS2339: Property 'detached' does not exist on type 'ClaudeExecutionOptionsV2'.
+src/swarm/executor-v2.ts(171,14): error TS2339: Property 'logger' does not exist on type 'TaskExecutorV2'.
+src/swarm/executor-v2.ts(184,22): error TS2339: Property 'config' does not exist on type 'TaskExecutorV2'.
+src/swarm/executor-v2.ts(185,20): error TS2339: Property 'emit' does not exist on type 'TaskExecutorV2'.
+src/swarm/executor-v2.ts(201,20): error TS2339: Property 'logger' does not exist on type 'TaskExecutorV2'.
+src/swarm/executor-v2.ts(207,22): error TS2339: Property 'config' does not exist on type 'TaskExecutorV2'.
+src/swarm/executor-v2.ts(208,20): error TS2339: Property 'emit' does not exist on type 'TaskExecutorV2'.
+src/swarm/executor-v2.ts(220,16): error TS2339: Property 'logger' does not exist on type 'TaskExecutorV2'.
+src/swarm/executor-v2.ts(235,16): error TS2339: Property 'logger' does not exist on type 'TaskExecutorV2'.
+src/swarm/executor-v2.ts(246,46): error TS2339: Property 'collectResourceUsage' does not exist on type 'TaskExecutorV2'.
+src/swarm/executor-v2.ts(249,42): error TS2339: Property 'collectArtifacts' does not exist on type 'TaskExecutorV2'.
+src/swarm/executor-v2.ts(251,27): error TS2304: Cannot find name 'ExecutionResult'.
+src/swarm/executor-v2.ts(275,18): error TS2339: Property 'logger' does not exist on type 'TaskExecutorV2'.
+src/swarm/executor-v2.ts(277,22): error TS18046: 'collectionError' is of type 'unknown'.
+src/swarm/executor-v2.ts(296,14): error TS2339: Property 'logger' does not exist on type 'TaskExecutorV2'.
+src/swarm/executor-v2.ts(298,18): error TS18046: 'spawnError' is of type 'unknown'.
+src/swarm/executor-v2.ts(309,6): error TS2304: Cannot find name 'ClaudeCommand'.
+src/swarm/executor-v2.ts(314,25): error TS2339: Property 'buildClaudePrompt' does not exist on type 'TaskExecutorV2'.
+src/swarm/executor-v2.ts(316,17): error TS2339: Property 'useStdin' does not exist on type 'ClaudeExecutionOptionsV2'.
+src/swarm/executor-v2.ts(328,17): error TS2339: Property 'model' does not exist on type 'ClaudeExecutionOptionsV2'.
+src/swarm/executor-v2.ts(329,36): error TS2339: Property 'model' does not exist on type 'ClaudeExecutionOptionsV2'.
+src/swarm/executor-v2.ts(333,17): error TS2339: Property 'maxTokens' does not exist on type 'ClaudeExecutionOptionsV2'.
+src/swarm/executor-v2.ts(334,41): error TS2339: Property 'maxTokens' does not exist on type 'ClaudeExecutionOptionsV2'.
+src/swarm/executor-v2.ts(338,17): error TS2339: Property 'temperature' does not exist on type 'ClaudeExecutionOptionsV2'.
+src/swarm/executor-v2.ts(339,42): error TS2339: Property 'temperature' does not exist on type 'ClaudeExecutionOptionsV2'.
+src/swarm/executor-v2.ts(343,43): error TS2339: Property 'dangerouslySkipPermissions' does not exist on type 'ClaudeExecutionOptionsV2'.
+src/swarm/executor-v2.ts(359,17): error TS2339: Property 'outputFormat' does not exist on type 'ClaudeExecutionOptionsV2'.
+src/swarm/executor-v2.ts(360,44): error TS2339: Property 'outputFormat' does not exist on type 'ClaudeExecutionOptionsV2'.
+src/swarm/executor-v2.ts(374,24): error TS2339: Property 'claudePath' does not exist on type 'ClaudeExecutionOptionsV2'.
+src/swarm/executor-v2.ts(399,38): error TS2304: Cannot find name 'ResourceUsage'.
+src/swarm/executor.ts(80,9): error TS2322: Type 'string' is not assignable to type '"debug" | "info" | "warn" | "error"'.
+src/swarm/executor.ts(162,16): error TS18046: 'error' is of type 'unknown'.
+src/swarm/json-output-aggregator.ts(252,25): error TS2532: Object is possibly 'undefined'.
+src/swarm/memory.ts(863,7): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type 'Record<MemoryType, number>'.
+  No index signature with a parameter of type 'string' was found on type 'Record<MemoryType, number>'.
+src/swarm/memory.ts(1332,25): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/swarm/optimizations/async-file-manager.ts(57,5): error TS2322: Type 'void | { path: string; operation: "write"; success: true; duration: number; size: number; error?: undefined; } | { path: string; operation: "write"; success: false; duration: number; error: Error; size?: undefined; }' is not assignable to type 'FileOperationResult'.
+  Type 'void' is not assignable to type 'FileOperationResult'.
+src/swarm/optimizations/async-file-manager.ts(99,5): error TS2322: Type 'void | { path: string; operation: "read"; success: true; duration: number; size: number; data: string; error?: undefined; } | { path: string; operation: "read"; success: false; duration: number; error: Error; size?: undefined; data?: undefined; }' is not assignable to type 'FileOperationResult & { data?: string | undefined; }'.
+  Type 'void' is not assignable to type 'FileOperationResult & { data?: string | undefined; }'.
+    Type 'void' is not assignable to type 'FileOperationResult'.
+src/swarm/optimizations/async-file-manager.ts(160,5): error TS2322: Type 'void | { path: string; operation: "delete"; success: true; duration: number; error?: undefined; } | { path: string; operation: "delete"; success: false; duration: number; error: Error; }' is not assignable to type 'FileOperationResult'.
+  Type 'void' is not assignable to type 'FileOperationResult'.
+src/swarm/optimizations/async-file-manager.ts(234,5): error TS2322: Type 'void | { path: string; operation: "write"; success: true; duration: number; size: number; error?: undefined; } | { path: string; operation: "write"; success: false; duration: number; error: Error; size?: undefined; }' is not assignable to type 'FileOperationResult'.
+  Type 'void' is not assignable to type 'FileOperationResult'.
+src/swarm/optimizations/index.ts(26,30): error TS2304: Cannot find name 'ClaudeConnectionPool'.
+src/swarm/optimizations/index.ts(27,27): error TS2304: Cannot find name 'AsyncFileManager'.
+src/swarm/optimizations/index.ts(28,24): error TS2304: Cannot find name 'OptimizedExecutor'.
+src/swarm/optimizations/optimized-executor.ts(144,31): error TS2345: Argument of type 'TaskId' is not assignable to parameter of type 'string'.
+src/swarm/optimizations/optimized-executor.ts(153,25): error TS2339: Property 'metadata' does not exist on type 'TaskDefinition'.
+src/swarm/optimizations/optimized-executor.ts(155,31): error TS2339: Property 'metadata' does not exist on type 'TaskDefinition'.
+src/swarm/optimizations/optimized-executor.ts(181,11): error TS2353: Object literal may only specify known properties, and 'taskId' does not exist in type 'TaskResult'.
+src/swarm/optimizations/optimized-executor.ts(203,11): error TS2322: Type 'TaskId' is not assignable to type 'string'.
+src/swarm/optimizations/optimized-executor.ts(227,11): error TS2353: Object literal may only specify known properties, and 'taskId' does not exist in type 'TaskResult'.
+src/swarm/optimizations/optimized-executor.ts(246,11): error TS2322: Type 'TaskId' is not assignable to type 'string'.
+src/swarm/optimizations/optimized-executor.ts(255,38): error TS2345: Argument of type 'TaskId' is not assignable to parameter of type 'string'.
+src/swarm/optimizations/optimized-executor.ts(259,5): error TS2322: Type 'void | TaskResult' is not assignable to type 'TaskResult'.
+  Type 'void' is not assignable to type 'TaskResult'.
+src/swarm/optimizations/optimized-executor.ts(275,14): error TS2339: Property 'metadata' does not exist on type 'TaskDefinition'.
+src/swarm/optimizations/optimized-executor.ts(278,23): error TS2339: Property 'metadata' does not exist on type 'TaskDefinition'.
+src/swarm/optimizations/optimized-executor.ts(285,21): error TS2339: Property 'objective' does not exist on type 'TaskDefinition'.
+src/swarm/optimizations/optimized-executor.ts(294,46): error TS7006: Parameter 'r' implicitly has an 'any' type.
+src/swarm/optimizations/optimized-executor.ts(302,43): error TS7006: Parameter 't' implicitly has an 'any' type.
+src/swarm/optimizations/optimized-executor.ts(312,33): error TS2339: Property 'objective' does not exist on type 'TaskDefinition'.
+src/swarm/optimizations/optimized-executor.ts(312,66): error TS2339: Property 'metadata' does not exist on type 'TaskDefinition'.
+src/swarm/prompt-cli.ts(72,19): error TS2339: Property 'progressCallback' does not exist on type '{ backup: boolean; verify: boolean; parallel: boolean; maxWorkers: number; conflictResolution: "merge" | "overwrite" | "backup" | "skip"; includePatterns: string[]; excludePatterns: string[]; source: any; destination: any; } | { ...; }'.
+  Property 'progressCallback' does not exist on type '{ backup: boolean; verify: boolean; parallel: boolean; maxWorkers: number; conflictResolution: "merge" | "overwrite" | "backup" | "skip"; includePatterns: string[]; excludePatterns: string[]; source: any; destination: any; }'.
+src/swarm/prompt-cli.ts(72,39): error TS7006: Parameter 'progress' implicitly has an 'any' type.
+src/swarm/prompt-copier-enhanced.ts(18,14): error TS2415: Class 'EnhancedPromptCopier' incorrectly extends base class 'PromptCopier'.
+  Property 'copyFilesParallel' is private in type 'PromptCopier' but not in type 'EnhancedPromptCopier'.
+src/swarm/prompt-copier-enhanced.ts(26,19): error TS4114: This member must have an 'override' modifier because it overrides a member in the base class 'PromptCopier'.
+src/swarm/prompt-copier-enhanced.ts(174,10): error TS2341: Property 'reportProgress' is private and only accessible within class 'PromptCopier'.
+src/swarm/prompt-copier-enhanced.ts(194,19): error TS4114: This member must have an 'override' modifier because it overrides a member in the base class 'PromptCopier'.
+src/swarm/sparc-executor.ts(30,11): error TS2564: Property 'phases' has no initializer and is not definitely assigned in the constructor.
+src/swarm/sparc-executor.ts(462,12): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{ 'rest-api': { id: string; story: string; priority: string; }[]; 'python-web': { id: string; story: string; priority: string; }[]; 'data-pipeline': { id: string; story: string; priority: string; }[]; }'.
+  No index signature with a parameter of type 'string' was found on type '{ 'rest-api': { id: string; story: string; priority: string; }[]; 'python-web': { id: string; story: string; priority: string; }[]; 'data-pipeline': { id: string; story: string; priority: string; }[]; }'.
+src/swarm/sparc-executor.ts(481,12): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{ 'rest-api': { endpoints: string[]; performance: string[]; security: string[]; }; 'python-web': { functionality: string[]; usability: string[]; compatibility: string[]; }; }'.
+  No index signature with a parameter of type 'string' was found on type '{ 'rest-api': { endpoints: string[]; performance: string[]; security: string[]; }; 'python-web': { functionality: string[]; usability: string[]; compatibility: string[]; }; }'.
+src/swarm/sparc-executor.ts(566,12): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{ python: string; javascript: string; typescript: string; java: string; }'.
+  No index signature with a parameter of type 'string' was found on type '{ python: string; javascript: string; typescript: string; java: string; }'.
+src/swarm/sparc-executor.ts(581,12): error TS7053: Element implicitly has an 'any' type because expression of type '`${string}-${string}`' can't be used to index type '{ 'python-rest-api': { directories: string[]; files: string[]; }; 'javascript-rest-api': { directories: string[]; files: string[]; }; }'.
+src/swarm/sparc-executor.ts(607,23): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{ python: string; javascript: string; typescript: string; java: string; }'.
+  No index signature with a parameter of type 'string' was found on type '{ python: string; javascript: string; typescript: string; java: string; }'.
+src/swarm/sparc-executor.ts(637,12): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{ 'rest-api': string[]; 'data-pipeline': string[]; 'ml-app': string[]; }'.
+  No index signature with a parameter of type 'string' was found on type '{ 'rest-api': string[]; 'data-pipeline': string[]; 'ml-app': string[]; }'.
+src/swarm/sparc-executor.ts(668,12): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{ 'rest-api': string[]; 'data-pipeline': string[]; }'.
+  No index signature with a parameter of type 'string' was found on type '{ 'rest-api': string[]; 'data-pipeline': string[]; }'.
+src/task/engine.ts(643,5): error TS2322: Type 'string | boolean | undefined' is not assignable to type 'boolean'.
+  Type 'undefined' is not assignable to type 'boolean'.

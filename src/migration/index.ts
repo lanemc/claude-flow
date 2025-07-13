@@ -5,7 +5,7 @@ import { getErrorMessage } from '../utils/error-handler.js';
  * Helps existing projects migrate to optimized prompts and configurations
  */
 
-import { Command } from "@cliffy/command";
+import { Command } from "commander";
 import { MigrationRunner } from './migration-runner.js';
 import { MigrationAnalyzer } from './migration-analyzer.js';
 import type { MigrationStrategy } from './types.js';

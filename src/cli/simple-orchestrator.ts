@@ -488,9 +488,9 @@ function startWebUI(host: string, port: number) {
       
       executeCliCommand(command, null);
       
-      res.json({ success: true, message: 'Command executed' });
+      return res.json({ success: true, message: 'Command executed' });
     } catch (error) {
-      res.status(500).json({ error: (error instanceof Error ? error.message : String(error)) });
+      return res.status(500).json({ error: (error instanceof Error ? error.message : String(error)) });
     }
   });
   

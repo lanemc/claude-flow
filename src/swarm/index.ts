@@ -1,22 +1,58 @@
 import { getErrorMessage } from '../utils/error-handler.js';
 // Main exports for the swarm system
-export * from './coordinator.js';
-export * from './executor.js';
+
+// Coordinator exports
+export { SwarmCoordinator } from './coordinator.js';
+
+// Executor exports
+export { TaskExecutor } from './executor.js';
+export type {
+  ExecutionContext,
+  ExecutionResources,
+  ExecutionResult,
+  ResourceUsage,
+  ExecutionConfig,
+  ClaudeExecutionOptions,
+  ClaudeCommand,
+  ExecutionMetrics
+} from './executor.js';
+
+// Type exports - safe to use export * for type-only files
 export * from './types.js';
-export * from './strategies/base.js';
-export * from './strategies/auto.js';
-export * from './strategies/research.js';
-export * from './memory.js';
+
+// Strategy exports
+export { BaseStrategy } from './strategies/base.js';
+export { AutoStrategy } from './strategies/auto.js';
+export { ResearchStrategy } from './strategies/research.js';
+
+// Memory exports
+export { SwarmMemoryManager } from './memory.js';
+export type { MemoryConfig, MemoryQuery, MemorySearchOptions, MemoryStatistics, MemoryBackup } from './memory.js';
 
 // Prompt copying system exports
-export * from './prompt-copier.js';
-export * from './prompt-copier-enhanced.js';
+export { PromptCopier, copyPrompts } from './prompt-copier.js';
+export type { CopyOptions, CopyResult, CopyProgress, CopyError, FileInfo } from './prompt-copier.js';
+export { EnhancedPromptCopier, copyPromptsEnhanced } from './prompt-copier-enhanced.js';
 export * from './prompt-utils.js';
-export * from './prompt-manager.js';
-export * from './prompt-cli.js';
+export { PromptManager } from './prompt-manager.js';
 
-// Optimizations
-export * from './optimizations/index.js';
+// Optimizations - explicit exports to avoid conflicts
+export {
+  ClaudeConnectionPool,
+  AsyncFileManager,
+  CircularBuffer,
+  TTLMap,
+  OptimizedExecutor,
+  createOptimizedSwarmStack
+} from './optimizations/index.js';
+export type {
+  PoolConfig,
+  PooledConnection,
+  FileOperationResult,
+  TTLMapOptions,
+  ExecutorConfig as OptimizedExecutorConfig,
+  ExecutionMetrics as OptimizedExecutionMetrics
+} from './optimizations/index.js';
 
 // Utility function to get all exports
 export function getSwarmComponents() {

@@ -15,6 +15,7 @@ import {
   TaskDefinition, AgentState, TaskResult, SwarmEvent, EventType,
   SWARM_CONSTANTS
 } from './types.js';
+import { TaskExecutor, ClaudeExecutionOptions, ExecutionConfig, ExecutionResult } from './executor.js';
 
 export interface ClaudeExecutionOptionsV2 extends ClaudeExecutionOptions {
   nonInteractive?: boolean;

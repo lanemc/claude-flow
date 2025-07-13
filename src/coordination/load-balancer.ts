@@ -1,4 +1,4 @@
-import { getErrorMessage, hasAgentLoad, hasAgentTask, hasWorkStealingData } from '../utils/type-guards.js';
+import { getErrorMessage, hasAgentLoad, hasAgentTask, hasWorkStealingData, isObject } from '../utils/type-guards.js';
 /**
  * Advanced load balancing and work stealing implementation
  */
@@ -154,30 +154,33 @@ export class LoadBalancer extends EventEmitter {
   private setupEventHandlers(): void {
     this.eventBus.on('agent:load-update', (data) => {
       if (hasAgentLoad(data)) {
-        this.updateAgentLoad(data.agentId, data.load);
+        this.updateAgentLoad(data.agentId.id, { cpuUsage: data.load });
       }
     });
 
     this.eventBus.on('task:queued', (data) => {
-      if (hasAgentTask(data)) {
-        this.updateTaskQueue(data.agentId, data.task, 'add');
+      if (hasAgentTask(data) && isObject(data.task) && 'id' in data.task) {
+        this.updateTaskQueue(data.agentId.id, data.task as unknown as TaskDefinition, 'add');
       }
     });
 
     this.eventBus.on('task:started', (data) => {
-      if (hasAgentTask(data)) {
-        this.updateTaskQueue(data.agentId, data.task, 'remove');
+      if (hasAgentTask(data) && isObject(data.task) && 'id' in data.task) {
+        this.updateTaskQueue(data.agentId.id, data.task as unknown as TaskDefinition, 'remove');
       }
     });
 
     this.eventBus.on('workstealing:request', (data) => {
       if (hasWorkStealingData(data)) {
-        this.executeWorkStealing(data.sourceAgent, data.targetAgent, data.taskCount);
+        this.executeWorkStealing(data.sourceAgent.id, data.targetAgent.id, data.taskCount);
       }
     });
 
-    this.eventBus.on('agent:performance-update', (data) => {
-      this.updatePerformanceBaseline(data.agentId, data.metrics);
+    this.eventBus.on('agent:performance-update', (data: unknown) => {
+      if (isObject(data) && 'agentId' in data && 'metrics' in data && 
+          isObject(data.agentId) && 'id' in data.agentId && typeof data.agentId.id === 'string') {
+        this.updatePerformanceBaseline(data.agentId.id, data.metrics);
+      }
     });
   }
 

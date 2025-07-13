@@ -5,8 +5,40 @@
  * Combines test results from multiple test suites into comprehensive reports
  */
 
-const fs = require('fs');
-const path = require('path');
+import * as fs from 'fs';
+import * as path from 'path';
+import { fileURLToPath } from 'url';
+
+interface TestResult {
+  timestamp: string;
+  summary: {
+    total_suites: number;
+    passed_suites: number;
+    failed_suites: number;
+    total_tests: number;
+    passed_tests: number;
+    failed_tests: number;
+    skipped_tests: number;
+    success_rate: number;
+    duration: number;
+  };
+  suites: Record<string, any>;
+  coverage: any;
+  performance: any;
+  errors: Array<{
+    type: string;
+    message: string;
+    timestamp: string;
+    file?: string;
+  }>;
+  environment?: {
+    node_version: string;
+    platform: string;
+    arch: string;
+    docker: boolean;
+    timestamp: string;
+  };
+}
 
 const TEST_RESULTS_DIR = '/app/tests/results';
 const OUTPUT_DIR = '/app/tests/results/aggregated';
@@ -18,6 +50,8 @@ if (!fs.existsSync(OUTPUT_DIR)) {
 }
 
 class TestResultAggregator {
+    private results: TestResult;
+
     constructor() {
         this.results = {
             timestamp: new Date().toISOString(),
@@ -39,12 +73,12 @@ class TestResultAggregator {
         };
     }
 
-    log(message) {
+    log(message: string): void {
         console.log(`[${new Date().toISOString()}] ${message}`);
     }
 
     // Aggregate Jest test results
-    aggregateJestResults() {
+    aggregateJestResults(): void {
         const jestResultsPath = path.join(TEST_RESULTS_DIR, 'junit.xml');
         const jestJsonPath = path.join(TEST_RESULTS_DIR, 'jest-results.json');
         
@@ -79,7 +113,7 @@ class TestResultAggregator {
     }
 
     // Aggregate coverage results
-    aggregateCoverageResults() {
+    aggregateCoverageResults(): void {
         const coverageDir = path.join(TEST_RESULTS_DIR, '../coverage');
         const coverageJsonPath = path.join(coverageDir, 'coverage-final.json');
         
@@ -154,7 +188,7 @@ class TestResultAggregator {
     }
 
     // Aggregate performance test results
-    aggregatePerformanceResults() {
+    aggregatePerformanceResults(): void {
         const performanceFiles = [
             'performance-tests.log',
             'performance-results.json',
@@ -192,7 +226,7 @@ class TestResultAggregator {
     }
 
     // Aggregate individual test suite results
-    aggregateTestSuiteResults() {
+    aggregateTestSuiteResults(): void {
         const suiteFiles = [
             'unit-tests.log',
             'integration-tests.log',
@@ -243,7 +277,7 @@ class TestResultAggregator {
     }
 
     // Calculate final metrics
-    calculateMetrics() {
+    calculateMetrics(): void {
         // Calculate success rate
         if (this.results.summary.total_tests > 0) {
             this.results.summary.success_rate = (
@@ -264,7 +298,7 @@ class TestResultAggregator {
     }
 
     // Generate comprehensive report
-    generateReport() {
+    generateReport(): void {
         const reportPath = path.join(OUTPUT_DIR, `test-report-${TIMESTAMP}.json`);
         
         try {
@@ -276,7 +310,7 @@ class TestResultAggregator {
     }
 
     // Generate HTML report
-    generateHtmlReport() {
+    generateHtmlReport(): void {
         const htmlPath = path.join(OUTPUT_DIR, `test-report-${TIMESTAMP}.html`);
         
         const html = `
@@ -355,7 +389,7 @@ class TestResultAggregator {
     }
 
     // Run complete aggregation
-    async aggregate() {
+    async aggregate(): Promise<void> {
         this.log('🚀 Starting test result aggregation...');
         
         this.aggregateJestResults();

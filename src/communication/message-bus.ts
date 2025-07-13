@@ -1082,12 +1082,12 @@ export class MessageBus extends EventEmitter {
     queue.statistics.depth = queue.messages.length;
   }
 
-  private handleAgentConnected(agentId: AgentId): void {
+  private handleAgentConnected(agentId: { id: string }): void {
     this.logger.info('Agent connected to message bus', { agentId: agentId.id });
     this.emit('agent:connected', { agentId });
   }
 
-  private handleAgentDisconnected(agentId: AgentId): void {
+  private handleAgentDisconnected(agentId: { id: string }): void {
     this.logger.info('Agent disconnected from message bus', { agentId: agentId.id });
     
     // Remove from all channels

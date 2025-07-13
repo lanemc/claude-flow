@@ -96,7 +96,7 @@ export function formatMemoryEntry(entry: MemoryEntry): string {
     chalk.gray(`Version: ${entry.version}`),
   ];
 
-  if (entry.tags.length > 0) {
+  if (entry.tags && entry.tags.length > 0) {
     lines.push(chalk.gray(`Tags: ${entry.tags.join(', ')}`));
   }
 

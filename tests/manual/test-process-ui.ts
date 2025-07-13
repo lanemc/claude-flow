@@ -5,14 +5,14 @@
 
 import { ProcessManager } from '../../src/cli/commands/start/process-manager.ts';
 import { ProcessUI } from '../../src/cli/commands/start/process-ui.ts';
-import { colors } from '@cliffy/ansi/colors';
+import chalk from 'chalk';
 
 async function testProcessUI() {
-  console.log(colors.cyan.bold('Testing ProcessUI...'));
-  console.log(colors.gray('─'.repeat(60)));
+  console.log(chalk.cyan.bold('Testing ProcessUI...'));
+  console.log(chalk.gray('─'.repeat(60)));
   console.log('This will launch the interactive UI for 10 seconds');
   console.log('Try pressing: r (refresh), h (help), a (start all), z (stop all)');
-  console.log(colors.gray('─'.repeat(60)));
+  console.log(chalk.gray('─'.repeat(60)));
   console.log();
   
   // Wait a moment

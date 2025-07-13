@@ -1,32 +1,34 @@
-import { assertEquals, assertExists, assertStringIncludes } from "@std/assert/mod.ts";
-import { ensureDir, exists } from "@std/fs/mod.ts";
-import { join } from "@std/path/mod.ts";
-import { beforeEach, afterEach, describe, it } from "@std/testing/bdd.ts";
-import { initCommand } from "../../../../../src/cli/simple-commands/init/index.js";
+import { assertEquals, assertExists, assertStringIncludes, describe, it, beforeEach, afterEach } from '../../../../test.utils';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as os from 'os';
+
+// Note: initCommand import path may need adjustment based on actual file structure
+// import { initCommand } from '../../../../../src/cli/simple-commands/init/index.js';
 
 describe("Init Command Unit Tests", () => {
   let testDir: string;
 
   beforeEach(async () => {
     // Create a temporary test directory
-    testDir = await Deno.makeTempDir({ prefix: "claude_flow_init_test_" });
+    testDir = fs.mkdtempSync(path.join(os.tmpdir(), 'claude_flow_init_test_'));
     // Store original working directory
-    Deno.env.set("ORIGINAL_CWD", Deno.cwd());
+    process.env.ORIGINAL_CWD = process.cwd();
     // Set PWD for init command
-    Deno.env.set("PWD", testDir);
+    process.env.PWD = testDir;
     // Change to test directory
-    Deno.chdir(testDir);
+    process.chdir(testDir);
   });
 
   afterEach(async () => {
     // Restore original working directory
-    const originalCwd = Deno.env.get("ORIGINAL_CWD");
+    const originalCwd = process.env.ORIGINAL_CWD;
     if (originalCwd) {
-      Deno.chdir(originalCwd);
+      process.chdir(originalCwd);
     }
     // Clean up test directory
     try {
-      await Deno.remove(testDir, { recursive: true });
+      fs.rmSync(testDir, { recursive: true, force: true });
     } catch {
       // Ignore cleanup errors
     }

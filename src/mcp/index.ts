@@ -5,61 +5,72 @@ import { getErrorMessage } from '../utils/error-handler.js';
  */
 
 // Core MCP Server
-export { MCPServer, type IMCPServer } from './server.js';
+export { MCPServer } from './server.js';
+export type { IMCPServer } from './server.js';
 
 // Lifecycle Management
 export { 
   MCPLifecycleManager, 
-  LifecycleState,
-  type LifecycleEvent,
-  type HealthCheckResult,
-  type LifecycleManagerConfig 
+  LifecycleState
+} from './lifecycle-manager.js';
+export type {
+  LifecycleEvent,
+  HealthCheckResult,
+  LifecycleManagerConfig 
 } from './lifecycle-manager.js';
 
 // Tool Registry and Management
 export { 
-  ToolRegistry,
-  type ToolCapability,
-  type ToolMetrics,
-  type ToolDiscoveryQuery 
+  ToolRegistry
+} from './tools.js';
+export type {
+  ToolCapability,
+  ToolMetrics,
+  ToolDiscoveryQuery 
 } from './tools.js';
 
 // Protocol Management
 export { 
-  MCPProtocolManager,
-  type ProtocolVersionInfo,
-  type CompatibilityResult,
-  type NegotiationResult 
+  MCPProtocolManager
+} from './protocol-manager.js';
+export type {
+  ProtocolVersionInfo,
+  CompatibilityResult,
+  NegotiationResult 
 } from './protocol-manager.js';
 
 // Authentication and Authorization
 export { 
   AuthManager,
-  type IAuthManager,
-  type AuthContext,
-  type AuthResult,
-  type TokenInfo,
-  type TokenGenerationOptions,
-  type AuthSession,
   Permissions 
+} from './auth.js';
+export type {
+  IAuthManager,
+  AuthResult,
+  TokenValidation,
+  Permission
 } from './auth.js';
 
 // Performance Monitoring
 export { 
-  MCPPerformanceMonitor,
-  type PerformanceMetrics,
-  type RequestMetrics,
-  type AlertRule,
-  type Alert,
-  type OptimizationSuggestion 
+  MCPPerformanceMonitor
+} from './performance-monitor.js';
+export type {
+  PerformanceMetrics,
+  RequestMetrics,
+  AlertRule,
+  Alert,
+  OptimizationSuggestion 
 } from './performance-monitor.js';
 
 // Orchestration Integration
 export { 
-  MCPOrchestrationIntegration,
-  type OrchestrationComponents,
-  type MCPOrchestrationConfig,
-  type IntegrationStatus 
+  MCPOrchestrationIntegration
+} from './orchestration-integration.js';
+export type {
+  OrchestrationComponents,
+  MCPOrchestrationConfig,
+  IntegrationStatus 
 } from './orchestration-integration.js';
 
 // Transport Implementations
@@ -71,14 +82,18 @@ export { HttpTransport } from './transports/http.js';
 export { RequestRouter } from './router.js';
 
 // Session Management
-export { SessionManager, type ISessionManager } from './session-manager.js';
+export { SessionManager } from './session-manager.js';
+export type { ISessionManager } from './session-manager.js';
 
 // Load Balancing
-export { LoadBalancer, type ILoadBalancer, RequestQueue } from './load-balancer.js';
+export { LoadBalancer, RequestQueue } from './load-balancer.js';
+export type { ILoadBalancer } from './load-balancer.js';
 
 // Tool Implementations
-export { createClaudeFlowTools, type ClaudeFlowToolContext } from './claude-flow-tools.js';
-export { createSwarmTools, type SwarmToolContext } from './swarm-tools.js';
+export { createClaudeFlowTools } from './claude-flow-tools.js';
+export type { ClaudeFlowToolContext } from './claude-flow-tools.js';
+export { createSwarmTools } from './swarm-tools.js';
+export type { SwarmToolContext } from './swarm-tools.js';
 
 /**
  * MCP Integration Factory

@@ -13,7 +13,13 @@ import os from 'os';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+/**
+ * @typedef {import('better-sqlite3').Database} Database
+ */
+
 class SqliteMemoryStore {
+  /** @type {Database} */
+  db;
   constructor(options = {}) {
     this.options = {
       dbName: options.dbName || 'memory.db',

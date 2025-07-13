@@ -10,7 +10,7 @@ import { MemoryManager } from '../memory/manager.js';
 import { AgentManager } from '../agents/agent-manager.js';
 import { TaskEngine } from '../task/engine.js';
 import { RealTimeMonitor } from '../monitoring/real-time-monitor.js';
-import { McpServer } from '../mcp/server.js';
+import { MCPServer } from '../mcp/server.js';
 import { getErrorMessage } from '../utils/error-handler.js';
 import type { IntegrationConfig, SystemHealth, ComponentStatus } from './types.js';
 
@@ -273,8 +273,17 @@ export class SystemIntegration {
       
       // Initialize MCP server
       try {
-        const { McpServer } = await import('../mcp/server.js');
-        this.mcpServer = new McpServer(this.eventBus, this.logger);
+        const { MCPServer } = await import('../mcp/server.js');
+        this.mcpServer = new MCPServer({
+          transport: 'stdio',
+          version: '1.0.0',
+          capabilities: {
+            tools: true,
+            prompts: false,
+            resources: false,
+            sampling: false,
+          },
+        });
         if (typeof this.mcpServer.initialize === 'function') {
           await this.mcpServer.initialize();
         }

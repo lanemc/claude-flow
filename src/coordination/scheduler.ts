@@ -14,7 +14,7 @@ interface ScheduledTask {
   agentId: string;
   attempts: number;
   lastAttempt?: Date;
-  timeout?: number;
+  timeout?: NodeJS.Timeout;
 }
 
 /**
@@ -354,7 +354,7 @@ export class TaskScheduler {
     const timeoutMs = this.config.resourceTimeout;
     scheduled.timeout = setTimeout(() => {
       this.failTask(taskId, new TaskTimeoutError(taskId, timeoutMs));
-    }, timeoutMs);
+    }, timeoutMs) as NodeJS.Timeout;
   }
 
   private canStartTask(task: Task): boolean {

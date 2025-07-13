@@ -1011,7 +1011,6 @@ export class AnalyticsManager extends EventEmitter {
               groupBy: []
             },
             visualization: {
-              chartType: 'gauge' as const,
               options: { max: 100, unit: '%' },
               thresholds: { warning: 70, critical: 90 }
             },
@@ -1030,7 +1029,6 @@ export class AnalyticsManager extends EventEmitter {
               groupBy: []
             },
             visualization: {
-              chartType: 'gauge' as const,
               options: { max: 100, unit: '%' },
               thresholds: { warning: 80, critical: 95 }
             },

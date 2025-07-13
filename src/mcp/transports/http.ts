@@ -165,9 +165,7 @@ export class HttpTransport implements ITransport {
 
   private setupRoutes(): void {
     // Get current file directory for static files
-    const __filename = typeof import.meta?.url !== 'undefined' 
-      ? fileURLToPath(import.meta.url)
-      : __filename || __dirname + '/http.ts';
+    const __filename = fileURLToPath(import.meta.url);
     const __dirname = dirname(__filename);
     const consoleDir = join(__dirname, '../../ui/console');
 

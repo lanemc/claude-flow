@@ -263,6 +263,13 @@ Once configured, Claude Flow MCP tools enhance Claude Code's coordination:
 - `mcp__claude-flow__neural_train` - Improve coordination patterns
 - `mcp__claude-flow__neural_patterns` - Analyze thinking approaches
 
+### GitHub Integration Tools (NEW!):
+- `mcp__claude-flow__github_swarm` - Create specialized GitHub management swarms
+- `mcp__claude-flow__repo_analyze` - Deep repository analysis with AI
+- `mcp__claude-flow__pr_enhance` - AI-powered pull request improvements
+- `mcp__claude-flow__issue_triage` - Intelligent issue classification
+- `mcp__claude-flow__code_review` - Automated code review with swarms
+
 ### System Tools:
 - `mcp__claude-flow__benchmark_run` - Measure coordination efficiency
 - `mcp__claude-flow__features_detect` - Available capabilities
@@ -328,6 +335,24 @@ Once configured, Claude Flow MCP tools enhance Claude Code's coordination:
 4. Agents share progress through Claude Flow memory
 5. All code is written by Claude Code with full coordination
 
+### GitHub Repository Management Example (NEW!)
+**Context:** Claude Code needs to manage a complex GitHub repository
+
+**Step 1:** Initialize GitHub swarm
+- Tool: `mcp__claude-flow__github_swarm`
+- Parameters: `{"repository": "owner/repo", "agents": 5, "focus": "maintenance"}`
+- Result: Specialized swarm for repository management
+
+**Step 2:** Analyze repository health
+- Tool: `mcp__claude-flow__repo_analyze`
+- Parameters: `{"deep": true, "include": ["issues", "prs", "code"]}`
+- Result: Comprehensive repository analysis
+
+**Step 3:** Enhance pull requests
+- Tool: `mcp__claude-flow__pr_enhance`
+- Parameters: `{"pr_number": 123, "add_tests": true, "improve_docs": true}`
+- Result: AI-powered PR improvements
+
 ## Best Practices for Coordination
 
 ### ✅ DO:
@@ -336,6 +361,7 @@ Once configured, Claude Flow MCP tools enhance Claude Code's coordination:
 - Use memory tools to maintain context across sessions
 - Monitor coordination effectiveness with status tools
 - Train neural patterns for better coordination over time
+- Leverage GitHub tools for repository management
 
 ### ❌ DON'T:
 - Expect agents to write code (Claude Code does all implementation)
@@ -350,18 +376,20 @@ The swarm provides persistent memory that helps Claude Code:
 - Track decisions and rationale
 - Maintain consistency in large projects
 - Learn from previous coordination patterns
+- Store GitHub workflow preferences
 
 ## Performance Benefits
 
-When using ruv-swarm coordination with Claude Code:
+When using Claude Flow coordination with Claude Code:
 - **84.8% SWE-Bench solve rate** - Better problem-solving through coordination
 - **32.3% token reduction** - Efficient task breakdown reduces redundancy
 - **2.8-4.4x speed improvement** - Parallel coordination strategies
 - **27+ neural models** - Diverse cognitive approaches
+- **GitHub automation** - Streamlined repository management
 
 ## Claude Code Hooks Integration
 
-ruv-swarm includes powerful hooks that automate coordination:
+Claude Flow includes powerful hooks that automate coordination:
 
 ### Pre-Operation Hooks
 - **Auto-assign agents** before file edits based on file type
@@ -369,6 +397,7 @@ ruv-swarm includes powerful hooks that automate coordination:
 - **Prepare resources** automatically for complex operations
 - **Optimize topology** based on task complexity analysis
 - **Cache searches** for improved performance
+- **GitHub context** loading for repository operations
 
 ### Post-Operation Hooks  
 - **Auto-format code** using language-specific formatters
@@ -376,14 +405,16 @@ ruv-swarm includes powerful hooks that automate coordination:
 - **Update memory** with operation context
 - **Analyze performance** and identify bottlenecks
 - **Track token usage** for efficiency metrics
+- **Sync GitHub** state for consistency
 
 ### Session Management
 - **Generate summaries** at session end
 - **Persist state** across Claude Code sessions
 - **Track metrics** for continuous improvement
 - **Restore previous** session context automatically
+- **Export workflows** for reuse
 
-### Advanced Features (New!)
+### Advanced Features (v2.0.0!)
 - **🚀 Automatic Topology Selection** - Optimal swarm structure for each task
 - **⚡ Parallel Execution** - 2.8-4.4x speed improvements  
 - **🧠 Neural Training** - Continuous learning from operations
@@ -391,6 +422,7 @@ ruv-swarm includes powerful hooks that automate coordination:
 - **🤖 Smart Auto-Spawning** - Zero manual agent management
 - **🛡️ Self-Healing Workflows** - Automatic error recovery
 - **💾 Cross-Session Memory** - Persistent learning & context
+- **🔗 GitHub Integration** - Repository-aware swarms
 
 ### Configuration
 Hooks are pre-configured in `.claude/settings.json`. Key features:
@@ -400,6 +432,7 @@ Hooks are pre-configured in `.claude/settings.json`. Key features:
 - Session state persistence
 - Performance tracking and optimization
 - Intelligent caching and token reduction
+- GitHub workflow automation
 
 See `.claude/commands/` for detailed documentation on all features.
 
@@ -411,6 +444,7 @@ See `.claude/commands/` for detailed documentation on all features.
 4. **Monitor Progress**: Regular status checks ensure effective coordination
 5. **Train Patterns**: Let neural agents learn from successful coordinations
 6. **Enable Hooks**: Use the pre-configured hooks for automation
+7. **GitHub First**: Use GitHub tools for repository management
 
 ## 🧠 SWARM ORCHESTRATION PATTERN
 
@@ -782,6 +816,16 @@ Message 2: TodoWrite { todos: [{ id: "2", content: "Task 2", ... }] }
 Message 3: TodoWrite { todos: [{ id: "3", content: "Task 3", ... }] }
 // This breaks parallel coordination!
 ```
+
+## Claude Flow v2.0.0 Features
+
+Claude Flow extends the base coordination with:
+- **🔗 GitHub Integration** - Deep repository management
+- **🎯 Project Templates** - Quick-start for common projects
+- **📊 Advanced Analytics** - Detailed performance insights
+- **🤖 Custom Agent Types** - Domain-specific coordinators
+- **🔄 Workflow Automation** - Reusable task sequences
+- **🛡️ Enhanced Security** - Safer command execution
 
 ## Support
 

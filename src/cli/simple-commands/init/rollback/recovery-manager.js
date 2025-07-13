@@ -1,4 +1,6 @@
 // recovery-manager.js - Automated recovery procedures for common failures
+import { spawn } from 'child_process';
+import { promisify } from 'util';
 
 export class RecoveryManager {
   constructor(workingDir) {
@@ -85,7 +87,7 @@ export class RecoveryManager {
 
     try {
       // Try to fix permissions on the working directory
-      if (Deno.build.os !== 'windows') {
+      if (process.platform !== 'win32') {
         try {
           const command = new Deno.Command('chmod', {
             args: ['-R', '755', this.workingDir],
@@ -353,7 +355,7 @@ export class RecoveryManager {
         result.actions.push('Recreated claude-flow executable');
         
         // Set permissions
-        if (Deno.build.os !== 'windows') {
+        if (process.platform !== 'win32') {
           try {
             const command = new Deno.Command('chmod', {
               args: ['+x', executablePath]

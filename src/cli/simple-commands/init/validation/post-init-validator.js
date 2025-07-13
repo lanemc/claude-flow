@@ -49,7 +49,7 @@ export class PostInitValidator {
         }
 
         // Check if executable (if required)
-        if (file.executable && Deno.build.os !== 'windows') {
+        if (file.executable && process.platform !== 'win32') {
           const isExecutable = (stat.mode & 0o111) !== 0;
           if (!isExecutable) {
             result.warnings.push(`File not executable: ${file.path}`);
@@ -218,7 +218,7 @@ export class PostInitValidator {
     ];
 
     // Skip permission checks on Windows
-    if (Deno.build.os === 'windows') {
+    if (process.platform === 'win32') {
       result.warnings.push('Permission checks skipped on Windows');
       return result;
     }

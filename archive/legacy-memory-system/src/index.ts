@@ -3,9 +3,12 @@
  * Complete memory management system for Claude-Flow
  */
 
-export { MemoryManager, MemoryManagerConfig } from './core/memory-manager';
-export { SqliteBackend, SqliteBackendConfig } from './backends/sqlite-backend';
-export { MarkdownBackend, MarkdownBackendConfig } from './backends/markdown-backend';
+export { MemoryManager } from './core/memory-manager';
+export type { MemoryManagerConfig } from './core/memory-manager';
+export { SqliteBackend } from './backends/sqlite-backend';
+export type { SqliteBackendConfig } from './backends/sqlite-backend';
+export { MarkdownBackend } from './backends/markdown-backend';
+export type { MarkdownBackendConfig } from './backends/markdown-backend';
 export { MemoryCache } from './cache/memory-cache';
 export { MemoryIndexer } from './indexer/memory-indexer';
 export { ReplicationManager } from './replication/replication-manager';

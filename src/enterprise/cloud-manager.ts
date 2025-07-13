@@ -426,12 +426,11 @@ export class CloudManager extends EventEmitter {
       type: providerData.type || 'custom',
       credentials: providerData.credentials || {},
       configuration: {
-        defaultRegion: 'us-east-1',
-        availableRegions: ['us-east-1', 'us-west-2', 'eu-west-1'],
-        services: [],
-        endpoints: {},
-        features: [],
-        ...providerData.configuration
+        defaultRegion: providerData.configuration?.defaultRegion || 'us-east-1',
+        availableRegions: providerData.configuration?.availableRegions || ['us-east-1', 'us-west-2', 'eu-west-1'],
+        services: providerData.configuration?.services || [],
+        endpoints: providerData.configuration?.endpoints || {},
+        features: providerData.configuration?.features || []
       },
       status: 'inactive',
       quotas: {
@@ -1099,7 +1098,13 @@ export class CloudManager extends EventEmitter {
           name: providerData.name,
           type: providerData.type,
           credentials: {},
-          configuration: providerData.configuration,
+          configuration: {
+            ...providerData.configuration,
+            endpoints: Object.fromEntries(
+              Object.entries(providerData.configuration.endpoints)
+                .filter(([_, value]) => value !== undefined)
+            ) as Record<string, string>
+          },
           status: 'inactive',
           quotas: {
             computeInstances: 20,

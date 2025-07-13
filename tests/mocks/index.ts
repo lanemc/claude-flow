@@ -2,9 +2,10 @@
  * Comprehensive mock implementations for testing
  */
 
-import { stub, spy } from "https://deno.land/std@0.220.0/testing/mock.ts";
-import type { Spy } from "https://deno.land/std@0.220.0/testing/mock.ts";
-import type { AgentProfile, Task } from "../../src/utils/types.ts";
+import { jest } from '@jest/globals';
+import type { AgentProfile, Task } from '../../src/utils/types';
+
+type Spy<T = any, TArgs extends any[] = any[]> = jest.SpyInstance<T, TArgs>;
 
 // Since we can't import the actual interfaces yet, we'll define minimal interfaces
 interface IEventBus {
@@ -55,12 +56,12 @@ interface IMCPServer {
 }
 
 // Helper function to create spy
-function createSpy<T extends (...args: any[]) => any>(implementation?: T): Spy<any, any> & T {
-  const mockObj: Record<string, any> = {};
-  const methodName = 'spyMethod';
-  mockObj[methodName] = implementation || (() => {});
-  return stub(mockObj, methodName as keyof typeof mockObj) as any;
+function createSpy<T extends (...args: any[]) => any>(implementation?: T): jest.Mock<any, any> & T {
+  return jest.fn(implementation) as any;
 }
+
+const spy = jest.fn;
+const stub = jest.fn;
 
 /**
  * Mock EventBus implementation
@@ -344,40 +345,40 @@ export class MockCoordinationManager implements ICoordinationManager {
   private agentTasks = new Map<string, Task[]>();
   private initialized = false;
 
-  initialize = spy(async (): Promise<void> => {
+  initialize = jest.fn(async (): Promise<void> => {
     this.initialized = true;
   });
 
-  shutdown = spy(async (): Promise<void> => {
+  shutdown = jest.fn(async (): Promise<void> => {
     this.tasks.clear();
     this.agentTasks.clear();
     this.initialized = false;
   });
 
-  assignTask = spy(async (task: Task, agentId: string): Promise<void> => {
+  assignTask = jest.fn(async (task: Task, agentId: string): Promise<void> => {
     this.tasks.set(task.id, { task, agentId });
     const agentTaskList = this.agentTasks.get(agentId) || [];
     agentTaskList.push(task);
     this.agentTasks.set(agentId, agentTaskList);
   });
 
-  getAgentTaskCount = spy(async (agentId: string): Promise<number> => {
+  getAgentTaskCount = jest.fn(async (agentId: string): Promise<number> => {
     const tasks = this.agentTasks.get(agentId) || [];
     return tasks.filter(t => t.status !== 'completed' && t.status !== 'failed').length;
   });
 
-  getAgentTasks = spy(async (agentId: string): Promise<Task[]> => {
+  getAgentTasks = jest.fn(async (agentId: string): Promise<Task[]> => {
     return this.agentTasks.get(agentId) || [];
   });
 
-  cancelTask = spy(async (taskId: string): Promise<void> => {
+  cancelTask = jest.fn(async (taskId: string): Promise<void> => {
     const taskInfo = this.tasks.get(taskId);
     if (taskInfo) {
       taskInfo.task.status = 'cancelled';
     }
   });
 
-  getHealthStatus = spy(async (): Promise<{ healthy: boolean; error?: string; metrics?: Record<string, number> }> => {
+  getHealthStatus = jest.fn(async (): Promise<{ healthy: boolean; error?: string; metrics?: Record<string, number> }> => {
     return {
       healthy: true,
       metrics: {
@@ -386,7 +387,7 @@ export class MockCoordinationManager implements ICoordinationManager {
     };
   });
 
-  performMaintenance = spy(async (): Promise<void> => {
+  performMaintenance = jest.fn(async (): Promise<void> => {
     // No-op for mock
   });
 
@@ -406,20 +407,20 @@ export class MockMCPServer implements IMCPServer {
   private started = false;
   private tools = new Map<string, any>();
 
-  start = spy(async (): Promise<void> => {
+  start = jest.fn(async (): Promise<void> => {
     this.started = true;
   });
 
-  stop = spy(async (): Promise<void> => {
+  stop = jest.fn(async (): Promise<void> => {
     this.started = false;
     this.tools.clear();
   });
 
-  registerTool = spy((name: string, tool: any): void => {
+  registerTool = jest.fn((name: string, tool: any): void => {
     this.tools.set(name, tool);
   });
 
-  getHealthStatus = spy(async (): Promise<{ healthy: boolean; error?: string; metrics?: Record<string, number> }> => {
+  getHealthStatus = jest.fn(async (): Promise<{ healthy: boolean; error?: string; metrics?: Record<string, number> }> => {
     return {
       healthy: this.started,
       metrics: {

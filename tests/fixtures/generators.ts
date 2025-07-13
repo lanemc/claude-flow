@@ -2,7 +2,21 @@
  * Test data generators and fixtures for Claude-Flow tests
  */
 
-import { TestDataGenerator } from '../utils/test-utils.ts';
+// Test data generators and utilities
+class TestDataGenerator {
+  static randomString(length: number): string {
+    const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let result = '';
+    for (let i = 0; i < length; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+  }
+
+  static randomArray<T>(generator: () => T, length: number): T[] {
+    return Array.from({ length }, generator);
+  }
+}
 
 /**
  * Generate memory entries for testing

@@ -3,7 +3,8 @@ import { getErrorMessage } from '../utils/error-handler.js';
 
 import { Command } from 'commander';
 import * as path from 'path';
-import { copyPrompts, copyPromptsEnhanced } from './prompt-copier-enhanced.js';
+import { copyPrompts } from './prompt-copier.js';
+import { copyPromptsEnhanced } from './prompt-copier-enhanced.js';
 import { 
   PromptConfigManager, 
   PromptPathResolver, 

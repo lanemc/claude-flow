@@ -5,7 +5,7 @@
 import { CommandContext, success, error, warning, info } from '../cli-core.js';
 import { generateId } from '../../utils/helpers.js';
 import { SwarmCoordinator } from '../../coordination/swarm-coordinator.js';
-import { SwarmMemoryManager } from '../../memory/swarm-memory.js';
+import { SwarmMemory } from '../../memory/swarm-memory.js';
 
 interface HiveOptions {
   objective: string;

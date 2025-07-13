@@ -108,7 +108,7 @@ services:
       - ./scripts:/app/scripts
     networks:
       - claude-test-network
-    command: ["node", "/app/scripts/aggregate-test-results.js"]
+    command: ["npx", "tsx", "/app/scripts/aggregate-test-results.ts"]
     depends_on:
       - claude-flow-test
       - integration-test

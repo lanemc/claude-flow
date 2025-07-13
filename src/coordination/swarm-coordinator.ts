@@ -1,11 +1,12 @@
 import { getErrorMessage } from '../utils/error-handler.js';
 import { EventEmitter } from 'node:events';
-import { Logger } from '../core/logger.js';
+import { createLogger, ILogger } from '../core/logger.js';
 import { EventBus } from '../core/event-bus.js';
 import { generateId } from '../utils/helpers.js';
 import { SwarmMonitor } from './swarm-monitor.js';
 import type { AdvancedTaskScheduler } from './advanced-scheduler.js';
 import { MemoryManager } from '../memory/manager.js';
+import type { Message } from '../communication/message-bus.js';
 
 export interface SwarmAgent {
   id: string;
@@ -68,7 +69,7 @@ export interface SwarmConfig {
 }
 
 export class SwarmCoordinator extends EventEmitter {
-  private logger: Logger;
+  private logger: ILogger;
   private config: SwarmConfig;
   private agents: Map<string, SwarmAgent>;
   private objectives: Map<string, SwarmObjective>;
@@ -83,7 +84,7 @@ export class SwarmCoordinator extends EventEmitter {
 
   constructor(config: Partial<SwarmConfig> = {}) {
     super();
-    this.logger = new Logger('SwarmCoordinator');
+    this.logger = createLogger('SwarmCoordinator');
     this.config = {
       maxAgents: 10,
       maxConcurrentTasks: 5,
@@ -179,7 +180,9 @@ export class SwarmCoordinator extends EventEmitter {
     this.stopBackgroundWorkers();
 
     // Stop subsystems
-    await this.scheduler.shutdown();
+    if (this.scheduler) {
+      await this.scheduler.shutdown();
+    }
     
     if (this.monitor) {
       this.monitor.stop();
@@ -693,7 +696,7 @@ export class SwarmCoordinator extends EventEmitter {
   }
 
   private handleAgentMessage(message: Message): void {
-    this.logger.debug(`Agent message: ${message.type} from ${message.from}`);
+    this.logger.debug(`Agent message: ${message.type} from ${message.sender.id}`);
     this.emit('agent:message', message);
   }
 

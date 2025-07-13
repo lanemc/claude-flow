@@ -31,8 +31,8 @@ export class Agent extends EventEmitter {
   public currentTask: string | null = null;
   public messageCount: number = 0;
   
-  private db: DatabaseManager;
-  private mcpWrapper: MCPToolWrapper;
+  private db!: DatabaseManager;
+  private mcpWrapper!: MCPToolWrapper;
   private memory: Map<string, any>;
   private communicationBuffer: Message[];
   private lastHeartbeat: number;

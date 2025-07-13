@@ -43,6 +43,7 @@ export interface ResourceUsage {
   disk: number;
   network: number;
   lastUpdated: Date;
+  [key: string]: number | Date;
 }
 
 export interface TaskExecutionResult {
@@ -50,7 +51,7 @@ export interface TaskExecutionResult {
   result?: TaskResult;
   error?: TaskError;
   executionTime: number;
-  resourcesUsed: ResourceUsage;
+  resourcesUsed: Record<string, number>;
   retryCount: number;
 }
 
@@ -237,7 +238,7 @@ export class AdvancedTaskExecutor extends EventEmitter {
             success: false,
             error: taskError,
             executionTime: Date.now() - startTime,
-            resourcesUsed: this.getDefaultResourceUsage(),
+            resourcesUsed: this.convertResourceUsageToRecord(this.getDefaultResourceUsage()),
             retryCount
           };
         }
@@ -267,7 +268,7 @@ export class AdvancedTaskExecutor extends EventEmitter {
     agent: AgentState,
     timeout: number,
     retryCount: number
-  ): Promise<{ result: TaskResult; resourcesUsed: ResourceUsage }> {
+  ): Promise<{ result: TaskResult; resourcesUsed: Record<string, number> }> {
     const executionContext: ExecutionContext = {
       taskId: task.id.id,
       agentId: agent.id.id,
@@ -320,7 +321,7 @@ export class AdvancedTaskExecutor extends EventEmitter {
     task: TaskDefinition,
     agent: AgentState,
     context: ExecutionContext
-  ): Promise<{ result: TaskResult; resourcesUsed: ResourceUsage }> {
+  ): Promise<{ result: TaskResult; resourcesUsed: Record<string, number> }> {
     const startTime = Date.now();
 
     // Create task execution command
@@ -395,7 +396,12 @@ export class AdvancedTaskExecutor extends EventEmitter {
           completeness: output.completeness || 1.0,
           accuracy: output.accuracy || 0.9,
           executionTime,
-          resourcesUsed: context.resources,
+          resourcesUsed: {
+            memory: context.resources.memory,
+            cpu: context.resources.cpu,
+            disk: context.resources.disk,
+            network: context.resources.network
+          },
           validated: false
         };
       } catch (error) {
@@ -407,7 +413,12 @@ export class AdvancedTaskExecutor extends EventEmitter {
           completeness: 1.0,
           accuracy: 0.7,
           executionTime,
-          resourcesUsed: context.resources,
+          resourcesUsed: {
+            memory: context.resources.memory,
+            cpu: context.resources.cpu,
+            disk: context.resources.disk,
+            network: context.resources.network
+          },
           validated: false
         };
       }
@@ -417,7 +428,12 @@ export class AdvancedTaskExecutor extends EventEmitter {
 
     return {
       result: taskResult,
-      resourcesUsed: context.resources
+      resourcesUsed: {
+        memory: context.resources.memory,
+        cpu: context.resources.cpu,
+        disk: context.resources.disk,
+        network: context.resources.network
+      }
     };
   }
 
@@ -557,6 +573,15 @@ export class AdvancedTaskExecutor extends EventEmitter {
     };
   }
 
+  private convertResourceUsageToRecord(usage: ResourceUsage): Record<string, number> {
+    return {
+      memory: usage.memory,
+      cpu: usage.cpu,
+      disk: usage.disk,
+      network: usage.network
+    };
+  }
+
   private async waitForCapacity(): Promise<void> {
     return new Promise((resolve) => {
       const check = () => {
@@ -611,7 +636,11 @@ export class AdvancedTaskExecutor extends EventEmitter {
     queuedTasks: number;
     maxConcurrentTasks: number;
     totalCapacity: number;
-    resourceLimits: typeof this.config.resourceLimits;
+    resourceLimits: {
+      memory: number;
+      cpu: number;
+      disk: number;
+    };
     circuitBreakers: Record<string, any>;
   } {
     return {

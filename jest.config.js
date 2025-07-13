@@ -1,4 +1,5 @@
-export default {
+// Jest configuration with TypeScript support
+const config = {
   preset: 'ts-jest/presets/default-esm',
   extensionsToTreatAsEsm: ['.ts'],
   testEnvironment: 'node',
@@ -65,9 +66,7 @@ export default {
   clearMocks: true,
   restoreMocks: true,
   // Enhanced globals
-  globals: {
-    'ts-jest': {
-      useESM: true
-    }
-  }
+  globals: {}
 };
+
+export default config;

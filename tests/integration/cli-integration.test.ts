@@ -3,7 +3,7 @@
  */
 
 import { jest } from '@jest/globals';
-import { spawn } from 'child_process';
+import { spawn, ChildProcess } from 'child_process';
 import fs from 'fs-extra';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -14,7 +14,7 @@ const rootDir = path.resolve(__dirname, '../../../');
 const cliPath = path.join(rootDir, 'src/cli/simple-cli.js');
 
 describe('CLI Integration Tests', () => {
-  let testDir;
+  let testDir: string;
 
   beforeEach(async () => {
     // Create temporary test directory
@@ -32,13 +32,13 @@ describe('CLI Integration Tests', () => {
 
   describe('CLI Commands', () => {
     test('should show help when no arguments', (done) => {
-      const child = spawn('node', [cliPath], {
+      const child: ChildProcess = spawn('node', [cliPath], {
         stdio: ['pipe', 'pipe', 'pipe'],
         env: { ...process.env, NODE_ENV: 'test' }
       });
 
       let stdout = '';
-      child.stdout.on('data', (data) => {
+      child.stdout?.on('data', (data) => {
         stdout += data.toString();
       });
 
@@ -51,13 +51,13 @@ describe('CLI Integration Tests', () => {
     }, 10000);
 
     test('should show version', (done) => {
-      const child = spawn('node', [cliPath, '--version'], {
+      const child: ChildProcess = spawn('node', [cliPath, '--version'], {
         stdio: ['pipe', 'pipe', 'pipe'],
         env: { ...process.env, NODE_ENV: 'test' }
       });
 
       let stdout = '';
-      child.stdout.on('data', (data) => {
+      child.stdout?.on('data', (data) => {
         stdout += data.toString();
       });
 
@@ -69,13 +69,13 @@ describe('CLI Integration Tests', () => {
     }, 10000);
 
     test('should handle unknown command', (done) => {
-      const child = spawn('node', [cliPath, 'unknown-command'], {
+      const child: ChildProcess = spawn('node', [cliPath, 'unknown-command'], {
         stdio: ['pipe', 'pipe', 'pipe'],
         env: { ...process.env, NODE_ENV: 'test' }
       });
 
       let stderr = '';
-      child.stderr.on('data', (data) => {
+      child.stderr?.on('data', (data) => {
         stderr += data.toString();
       });
 
@@ -89,14 +89,14 @@ describe('CLI Integration Tests', () => {
 
   describe('Init Command', () => {
     test('should initialize basic setup', (done) => {
-      const child = spawn('node', [cliPath, 'init', '--minimal'], {
+      const child: ChildProcess = spawn('node', [cliPath, 'init', '--minimal'], {
         stdio: ['pipe', 'pipe', 'pipe'],
         env: { ...process.env, NODE_ENV: 'test' },
         cwd: testDir
       });
 
       let stdout = '';
-      child.stdout.on('data', (data) => {
+      child.stdout?.on('data', (data) => {
         stdout += data.toString();
       });
 
@@ -117,14 +117,14 @@ describe('CLI Integration Tests', () => {
     }, 15000);
 
     test('should initialize with SPARC setup', (done) => {
-      const child = spawn('node', [cliPath, 'init', '--sparc'], {
+      const child: ChildProcess = spawn('node', [cliPath, 'init', '--sparc'], {
         stdio: ['pipe', 'pipe', 'pipe'],
         env: { ...process.env, NODE_ENV: 'test' },
         cwd: testDir
       });
 
       let stdout = '';
-      child.stdout.on('data', (data) => {
+      child.stdout?.on('data', (data) => {
         stdout += data.toString();
       });
 
@@ -156,7 +156,7 @@ describe('CLI Integration Tests', () => {
     beforeEach(async () => {
       // Initialize basic setup first
       await new Promise((resolve) => {
-        const child = spawn('node', [cliPath, 'init', '--minimal'], {
+        const child: ChildProcess = spawn('node', [cliPath, 'init', '--minimal'], {
           stdio: 'ignore',
           env: { ...process.env, NODE_ENV: 'test' },
           cwd: testDir
@@ -167,7 +167,7 @@ describe('CLI Integration Tests', () => {
 
     test('should store and retrieve memory', (done) => {
       // First store a memory
-      const storeChild = spawn('node', [cliPath, 'memory', 'store', 'test-key', 'test-value'], {
+      const storeChild: ChildProcess = spawn('node', [cliPath, 'memory', 'store', 'test-key', 'test-value'], {
         stdio: ['pipe', 'pipe', 'pipe'],
         env: { ...process.env, NODE_ENV: 'test' },
         cwd: testDir
@@ -177,14 +177,14 @@ describe('CLI Integration Tests', () => {
         expect(code).toBe(0);
         
         // Then retrieve it
-        const retrieveChild = spawn('node', [cliPath, 'memory', 'retrieve', 'test-key'], {
+        const retrieveChild: ChildProcess = spawn('node', [cliPath, 'memory', 'retrieve', 'test-key'], {
           stdio: ['pipe', 'pipe', 'pipe'],
           env: { ...process.env, NODE_ENV: 'test' },
           cwd: testDir
         });
 
         let stdout = '';
-        retrieveChild.stdout.on('data', (data) => {
+        retrieveChild.stdout?.on('data', (data) => {
           stdout += data.toString();
         });
 
@@ -198,14 +198,14 @@ describe('CLI Integration Tests', () => {
 
     test('should list memory entries', (done) => {
       // Store some memories first
-      const store1 = spawn('node', [cliPath, 'memory', 'store', 'key1', 'value1'], {
+      const store1: ChildProcess = spawn('node', [cliPath, 'memory', 'store', 'key1', 'value1'], {
         stdio: 'ignore',
         env: { ...process.env, NODE_ENV: 'test' },
         cwd: testDir
       });
 
       store1.on('close', () => {
-        const store2 = spawn('node', [cliPath, 'memory', 'store', 'key2', 'value2'], {
+        const store2: ChildProcess = spawn('node', [cliPath, 'memory', 'store', 'key2', 'value2'], {
           stdio: 'ignore',
           env: { ...process.env, NODE_ENV: 'test' },
           cwd: testDir
@@ -213,14 +213,14 @@ describe('CLI Integration Tests', () => {
 
         store2.on('close', () => {
           // List memories
-          const listChild = spawn('node', [cliPath, 'memory', 'list'], {
+          const listChild: ChildProcess = spawn('node', [cliPath, 'memory', 'list'], {
             stdio: ['pipe', 'pipe', 'pipe'],
             env: { ...process.env, NODE_ENV: 'test' },
             cwd: testDir
           });
 
           let stdout = '';
-          listChild.stdout.on('data', (data) => {
+          listChild.stdout?.on('data', (data) => {
             stdout += data.toString();
           });
 
@@ -240,7 +240,7 @@ describe('CLI Integration Tests', () => {
     beforeEach(async () => {
       // Initialize and start a swarm first
       await new Promise((resolve) => {
-        const child = spawn('node', [cliPath, 'init', '--minimal'], {
+        const child: ChildProcess = spawn('node', [cliPath, 'init', '--minimal'], {
           stdio: 'ignore',
           env: { ...process.env, NODE_ENV: 'test' },
           cwd: testDir
@@ -250,14 +250,14 @@ describe('CLI Integration Tests', () => {
     });
 
     test('should list available agent types', (done) => {
-      const child = spawn('node', [cliPath, 'agent', 'list'], {
+      const child: ChildProcess = spawn('node', [cliPath, 'agent', 'list'], {
         stdio: ['pipe', 'pipe', 'pipe'],
         env: { ...process.env, NODE_ENV: 'test' },
         cwd: testDir
       });
 
       let stdout = '';
-      child.stdout.on('data', (data) => {
+      child.stdout?.on('data', (data) => {
         stdout += data.toString();
       });
 
@@ -274,14 +274,14 @@ describe('CLI Integration Tests', () => {
 
   describe('Error Handling', () => {
     test('should handle commands without initialization', (done) => {
-      const child = spawn('node', [cliPath, 'agent', 'status'], {
+      const child: ChildProcess = spawn('node', [cliPath, 'agent', 'status'], {
         stdio: ['pipe', 'pipe', 'pipe'],
         env: { ...process.env, NODE_ENV: 'test' },
         cwd: testDir
       });
 
       let stderr = '';
-      child.stderr.on('data', (data) => {
+      child.stderr?.on('data', (data) => {
         stderr += data.toString();
       });
 
@@ -293,14 +293,14 @@ describe('CLI Integration Tests', () => {
     }, 10000);
 
     test('should handle insufficient arguments', (done) => {
-      const child = spawn('node', [cliPath, 'memory', 'store'], {
+      const child: ChildProcess = spawn('node', [cliPath, 'memory', 'store'], {
         stdio: ['pipe', 'pipe', 'pipe'],
         env: { ...process.env, NODE_ENV: 'test' },
         cwd: testDir
       });
 
       let stderr = '';
-      child.stderr.on('data', (data) => {
+      child.stderr?.on('data', (data) => {
         stderr += data.toString();
       });
 
@@ -327,14 +327,14 @@ describe('CLI Integration Tests', () => {
       
       await fs.writeJson(configPath, config);
       
-      const child = spawn('node', [cliPath, 'config', 'show'], {
+      const child: ChildProcess = spawn('node', [cliPath, 'config', 'show'], {
         stdio: ['pipe', 'pipe', 'pipe'],
         env: { ...process.env, NODE_ENV: 'test' },
         cwd: testDir
       });
 
       let stdout = '';
-      child.stdout.on('data', (data) => {
+      child.stdout?.on('data', (data) => {
         stdout += data.toString();
       });
 

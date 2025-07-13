@@ -1,6 +1,8 @@
 import { getErrorMessage } from '../utils/error-handler.js';
 import { EventEmitter } from 'events';
 import { promises as fs } from 'node:fs';
+import { spawn } from 'node:child_process';
+import { promisify } from 'node:util';
 import { Logger } from '../core/logger.js';
 import { generateId } from '../utils/helpers.js';
 import {
@@ -2176,7 +2178,7 @@ Ensure your implementation is complete, well-structured, and follows best practi
     
     try {
       // Use Claude Flow executor for full SPARC system in non-interactive mode
-      const { ClaudeFlowExecutor } = await import('./claude-flow-executor.ts');
+      const { ClaudeFlowExecutor } = await import('./claude-flow-executor.js');
       const executor = new ClaudeFlowExecutor({ 
         logger: this.logger,
         claudeFlowPath: getClaudeFlowBin(),
@@ -2312,7 +2314,7 @@ Ensure your implementation is complete, well-structured, and follows best practi
     // Set working directory if specified
     if (targetDir) {
       // Ensure directory exists
-      await Deno.mkdir(targetDir, { recursive: true });
+      await fs.mkdir(targetDir, { recursive: true });
       
       // Add directory context to prompt
       const enhancedPrompt = `${prompt}\n\n## Important: Working Directory\nPlease ensure all files are created in: ${targetDir}`;
@@ -2321,36 +2323,14 @@ Ensure your implementation is complete, well-structured, and follows best practi
     
     try {
       // Check if claude command exists
-      const checkCommand = new Deno.Command('which', {
-        args: ['claude'],
-        stdout: 'piped',
-        stderr: 'piped',
-      });
-      const checkResult = await checkCommand.output();
-      if (!checkResult.success) {
+      const execAsync = promisify(require('child_process').exec);
+      try {
+        await execAsync('which claude');
+      } catch {
         throw new Error('Claude CLI not found. Please ensure claude is installed and in PATH.');
       }
       
-      // Execute Claude with the prompt
-      const command = new Deno.Command("claude", {
-        args: claudeArgs,
-        cwd: targetDir || process.cwd(),
-        env: {
-          ...Deno.env.toObject(),
-          CLAUDE_INSTANCE_ID: instanceId,
-          CLAUDE_SWARM_MODE: "true",
-          CLAUDE_SWARM_ID: this.swarmId.id,
-          CLAUDE_TASK_ID: task.id.id,
-          CLAUDE_AGENT_ID: agent.id.id,
-          CLAUDE_WORKING_DIRECTORY: targetDir || process.cwd(),
-          CLAUDE_FLOW_MEMORY_ENABLED: "true",
-          CLAUDE_FLOW_MEMORY_NAMESPACE: `swarm-${this.swarmId.id}`,
-        },
-        stdin: "null",
-        stdout: "piped",
-        stderr: "piped",
-      });
-      
+      // Execute Claude with the prompt using Node.js child_process
       this.logger.info('Spawning Claude agent for task', { 
         taskId: task.id.id,
         agentId: agent.id.id,
@@ -2358,30 +2338,64 @@ Ensure your implementation is complete, well-structured, and follows best practi
         targetDir 
       });
       
-      const child = command.spawn();
-      const { code, stdout, stderr } = await child.output();
-      
-      if (code === 0) {
-        const output = new TextDecoder().decode(stdout);
-        this.logger.info('Claude agent completed task successfully', {
-          taskId: task.id.id,
-          outputLength: output.length
+      return new Promise((resolve, reject) => {
+        const child = spawn("claude", claudeArgs, {
+          cwd: targetDir || process.cwd(),
+          env: {
+            ...process.env,
+            CLAUDE_INSTANCE_ID: instanceId,
+            CLAUDE_SWARM_MODE: "true",
+            CLAUDE_SWARM_ID: this.swarmId.id,
+            CLAUDE_TASK_ID: task.id.id,
+            CLAUDE_AGENT_ID: agent.id.id,
+            CLAUDE_WORKING_DIRECTORY: targetDir || process.cwd(),
+            CLAUDE_FLOW_MEMORY_ENABLED: "true",
+            CLAUDE_FLOW_MEMORY_NAMESPACE: `swarm-${this.swarmId.id}`,
+          },
+          stdio: ['ignore', 'pipe', 'pipe']
         });
         
-        return {
-          success: true,
-          output,
-          instanceId,
-          targetDir
-        };
-      } else {
-        const errorOutput = new TextDecoder().decode(stderr);
-        this.logger.error(`Claude agent failed with code ${code}`, { 
-          taskId: task.id.id,
-          error: errorOutput 
+        let stdout = '';
+        let stderr = '';
+        
+        child.stdout.on('data', (data) => {
+          stdout += data.toString();
         });
-        throw new Error(`Claude execution failed: ${errorOutput}`);
-      }
+        
+        child.stderr.on('data', (data) => {
+          stderr += data.toString();
+        });
+        
+        child.on('close', (code) => {
+          if (code === 0) {
+            this.logger.info('Claude agent completed task successfully', {
+              taskId: task.id.id,
+              outputLength: stdout.length
+            });
+            
+            resolve({
+              success: true,
+              output: stdout,
+              instanceId,
+              targetDir
+            });
+          } else {
+            this.logger.error(`Claude agent failed with code ${code}`, { 
+              taskId: task.id.id,
+              error: stderr 
+            });
+            reject(new Error(`Claude execution failed: ${stderr}`));
+          }
+        });
+        
+        child.on('error', (error) => {
+          this.logger.error('Failed to spawn Claude process', { 
+            taskId: task.id.id,
+            error: error.message 
+          });
+          reject(error);
+        });
+      });
       
     } catch (error) {
       this.logger.error('Failed to execute Claude agent', { 

@@ -4,11 +4,11 @@
  */
 
 import { ProcessManager } from '../../src/cli/commands/start/process-manager.ts';
-import { colors } from '@cliffy/ansi/colors';
+import chalk from 'chalk';
 
 async function testProcessManager() {
-  console.log(colors.cyan.bold('Testing ProcessManager...'));
-  console.log(colors.gray('─'.repeat(60)));
+  console.log(chalk.cyan.bold('Testing ProcessManager...'));
+  console.log(chalk.gray('─'.repeat(60)));
 
   const manager = new ProcessManager();
   

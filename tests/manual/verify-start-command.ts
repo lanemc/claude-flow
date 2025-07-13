@@ -3,18 +3,18 @@
  * Verification script for start command consolidation
  */
 
-import { colors } from '@cliffy/ansi/colors';
+import chalk from 'chalk';
 
 async function runTest(name: string, fn: () => Promise<boolean>): Promise<void> {
   try {
     const result = await fn();
     if (result) {
-      console.log(colors.green('✓'), name);
+      console.log(chalk.green('✓'), name);
     } else {
-      console.log(colors.red('✗'), name);
+      console.log(chalk.red('✗'), name);
     }
   } catch (error) {
-    console.log(colors.red('✗'), name, '-', (error as Error).message);
+    console.log(chalk.red('✗'), name, '-', (error as Error).message);
   }
 }
 

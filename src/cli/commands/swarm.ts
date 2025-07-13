@@ -9,7 +9,7 @@ import { success, error, warning, info } from '../cli-core.js';
 import type { CommandContext } from "../cli-core.js";
 import { BackgroundExecutor } from '../../coordination/background-executor.js';
 import { SwarmCoordinator } from '../../coordination/swarm-coordinator.js';
-import { SwarmMemoryManager } from '../../memory/swarm-memory.js';
+import { SwarmMemory } from '../../memory/swarm-memory.js';
 export async function swarmAction(ctx: CommandContext) {
   // First check if help is requested
   if (ctx.flags.help || ctx.flags.h) {
@@ -161,7 +161,7 @@ export async function swarmAction(ctx: CommandContext) {
     await Deno.mkdir(swarmDir, { recursive: true });
 
     // Create objective in coordinator
-    const objectiveId = await coordinator.createObjective(objective, options.strategy);
+    const objectiveId = await coordinator.createObjective(objective, options.strategy as any);
     
     console.log(`\n📝 Objective created with ID: ${objectiveId}`);
 

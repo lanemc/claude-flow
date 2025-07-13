@@ -135,12 +135,12 @@ export class EventBus implements IEventBus {
         resolve(data);
       };
 
-      let timer: number | undefined;
+      let timer: NodeJS.Timeout | undefined;
       if (timeoutMs) {
         timer = setTimeout(() => {
           this.off(event, handler);
           reject(new Error(`Timeout waiting for event: ${event}`));
-        }, timeoutMs);
+        }, timeoutMs) as NodeJS.Timeout;
       }
 
       this.once(event, handler);

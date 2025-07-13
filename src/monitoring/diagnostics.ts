@@ -222,8 +222,8 @@ export class DiagnosticManager {
 
       // Get component metrics
       let componentMetrics: Record<string, any> = {};
-      if (typeof component.getMetrics === 'function') {
-        componentMetrics = await component.getMetrics();
+      if (typeof (component as any).getMetrics === 'function') {
+        componentMetrics = await (component as any).getMetrics();
       }
 
       // Get last error

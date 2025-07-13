@@ -52,12 +52,12 @@ export interface SystemStats {
 export interface StartOptions {
   force?: boolean;
   healthCheck?: boolean;
-  timeout?: number;
+  timeout?: string | number;
   verbose?: boolean;
   config?: string;
   dry?: boolean;
   daemon?: boolean;
-  port?: number;
+  port?: string | number;
   mcpTransport?: string;
   ui?: boolean;
   autoStart?: boolean;

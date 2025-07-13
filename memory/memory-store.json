@@ -1,0 +1,16 @@
+{
+  "default": [
+    {
+      "key": "key19",
+      "value": "value19",
+      "namespace": "default",
+      "timestamp": 1752415323698
+    },
+    {
+      "key": "key18",
+      "value": "value18",
+      "namespace": "default",
+      "timestamp": 1752415863818
+    }
+  ]
+}

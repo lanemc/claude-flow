@@ -20,7 +20,7 @@ Examples:
     .description('List all available features')
     .option('-v, --verbose', 'Show detailed feature information')
     .action(async (options) => {
-      const configManager = new ConfigManager();
+      const configManager = ConfigManager.getInstance();
       const adapter = createCliFeatureAdapter(configManager);
       await adapter.listFeatures([], options);
     });
@@ -30,7 +30,7 @@ Examples:
     .command('enable <feature>')
     .description('Enable a specific feature')
     .action(async (feature) => {
-      const configManager = new ConfigManager();
+      const configManager = ConfigManager.getInstance();
       const adapter = createCliFeatureAdapter(configManager);
       await adapter.enableFeature([feature], {});
     });
@@ -40,7 +40,7 @@ Examples:
     .command('disable <feature>')
     .description('Disable a specific feature')
     .action(async (feature) => {
-      const configManager = new ConfigManager();
+      const configManager = ConfigManager.getInstance();
       const adapter = createCliFeatureAdapter(configManager);
       await adapter.disableFeature([feature], {});
     });
@@ -50,7 +50,7 @@ Examples:
     .command('toggle <feature>')
     .description('Toggle a feature on/off')
     .action(async (feature) => {
-      const configManager = new ConfigManager();
+      const configManager = ConfigManager.getInstance();
       const adapter = createCliFeatureAdapter(configManager);
       await adapter.toggleFeature([feature], {});
     });
@@ -64,7 +64,7 @@ Examples:
     .option('-g, --get <key>', 'Get a configuration value')
     .option('-r, --reset', 'Reset to default configuration')
     .action(async (feature, options) => {
-      const configManager = new ConfigManager();
+      const configManager = ConfigManager.getInstance();
       const adapter = createCliFeatureAdapter(configManager);
       await adapter.configureFeature([feature], options);
     });
@@ -75,7 +75,7 @@ Examples:
     .description('Show feature status')
     .option('-d, --detailed', 'Show detailed status information')
     .action(async (feature, options) => {
-      const configManager = new ConfigManager();
+      const configManager = ConfigManager.getInstance();
       const adapter = createCliFeatureAdapter(configManager);
       await adapter.showFeatureStatus(feature ? [feature] : [], options);
     });

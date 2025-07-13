@@ -1,7 +1,7 @@
 import { getErrorMessage } from '../utils/error-handler.js';
 import { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-const __dirname = dirname(fileURLToPath(import.meta.url));
+// Note: __dirname setup is handled in build process
 /**
  * Migration Runner - Executes migration strategies
  */
@@ -23,7 +23,7 @@ import { logger } from './logger.js';
 import { ProgressReporter } from './progress-reporter.js';
 import { MigrationValidator } from './migration-validator.js';
 import { glob } from 'glob';
-import * as inquirer from 'inquirer';
+import inquirer from 'inquirer';
 import * as chalk from 'chalk';
 
 export class MigrationRunner {

@@ -288,9 +288,9 @@ export class Orchestrator implements IOrchestrator {
   private initialized = false;
   private shutdownInProgress = false;
   private sessionManager: ISessionManager;
-  private healthCheckInterval?: number;
-  private maintenanceInterval?: number;
-  private metricsInterval?: number;
+  private healthCheckInterval?: NodeJS.Timeout;
+  private maintenanceInterval?: NodeJS.Timeout;
+  private metricsInterval?: NodeJS.Timeout;
   private agents = new Map<string, AgentProfile>();
   private taskQueue: Task[] = [];
   private taskHistory = new Map<string, Task>();
@@ -674,8 +674,8 @@ export class Orchestrator implements IOrchestrator {
       // Persist current state
       await this.sessionManager.persistSessions();
 
-      // Force garbage collection if available
-      if (global.gc) {
+      // Force garbage collection if available (Node.js specific)
+      if (typeof global !== 'undefined' && global.gc) {
         global.gc();
       }
 

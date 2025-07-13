@@ -10,6 +10,17 @@ import process from 'node:process';
 import type { LoggingConfig } from '../utils/types.js';
 import { formatBytes } from '../utils/helpers.js';
 
+/**
+ * Creates a logger with a simple component name
+ */
+export function createLogger(componentName: string, level: 'debug' | 'info' | 'warn' | 'error' = 'info'): Logger {
+  return new Logger({
+    level,
+    format: 'text',
+    destination: 'console'
+  }, { component: componentName });
+}
+
 export interface ILogger {
   debug(message: string, meta?: unknown): void;
   info(message: string, meta?: unknown): void;

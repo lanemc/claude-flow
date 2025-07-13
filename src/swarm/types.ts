@@ -52,6 +52,21 @@ export type AgentStatus =
   | 'terminating'    // Shutting down
   | 'terminated';    // Shut down
 
+export type LoadBalancingStrategy = 
+  | 'round-robin'
+  | 'load-based'
+  | 'performance-based'
+  | 'capability-based'
+  | 'affinity-based'
+  | 'cost-based'
+  | 'hybrid'
+  | 'work-stealing'     // Agents steal work from busy agents
+  | 'work-sharing'      // Work is proactively shared
+  | 'centralized'       // Central dispatcher
+  | 'distributed'       // Distributed load balancing
+  | 'predictive'        // Predict and prevent overload
+  | 'reactive';         // React to overload conditions
+
 export interface AgentCapabilities {
   // Core capabilities
   codeGeneration: boolean;
@@ -332,6 +347,7 @@ export interface TaskDefinition {
   context: Record<string, any>;
   parameters?: Record<string, any>;
   examples?: any[];
+  metadata?: Record<string, any>;
   
   // Tracking
   status: TaskStatus;
@@ -637,13 +653,6 @@ export type TaskSchedulingStrategy =
   | 'resource-aware'   // Consider resource availability
   | 'adaptive';        // Adaptive scheduling
 
-export type LoadBalancingStrategy = 
-  | 'work-stealing'    // Agents steal work from busy agents
-  | 'work-sharing'     // Work is proactively shared
-  | 'centralized'      // Central dispatcher
-  | 'distributed'      // Distributed load balancing
-  | 'predictive'       // Predict and prevent overload
-  | 'reactive';        // React to overload conditions
 
 export type FaultToleranceStrategy = 
   | 'retry'            // Retry failed tasks

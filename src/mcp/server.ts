@@ -639,3 +639,19 @@ export class MCPServer implements IMCPServer {
     };
   }
 }
+
+// Export a function to run the MCP server
+export async function runMCPServer(): Promise<void> {
+  const server = new MCPServer({
+    transport: 'stdio',
+    version: '1.0.0' as MCPProtocolVersion,
+    capabilities: {
+      tools: true,
+      prompts: false,
+      resources: false,
+      sampling: false,
+    },
+  });
+  
+  await server.start();
+}

@@ -17,9 +17,9 @@ const __dirname = path.dirname(__filename);
 
 export class DatabaseManager extends EventEmitter {
   private static instance: DatabaseManager;
-  private db: Database.Database;
+  private db!: Database.Database;
   private statements: Map<string, Database.Statement>;
-  private dbPath: string;
+  private dbPath!: string;
 
   private constructor() {
     super();

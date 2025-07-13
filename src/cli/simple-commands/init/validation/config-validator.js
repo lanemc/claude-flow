@@ -222,7 +222,7 @@ export class ConfigValidator {
       }
 
       // Check if executable (on Unix systems)
-      if (Deno.build.os !== 'windows') {
+      if (process.platform !== 'win32') {
         const isExecutable = (stat.mode & 0o111) !== 0;
         if (!isExecutable) {
           result.warnings.push('claude-flow file is not executable');

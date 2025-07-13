@@ -5,6 +5,8 @@
 import { jest } from '@jest/globals';
 import { parseFlags } from '../utils.js';
 
+type MockFunction = jest.MockedFunction<any>;
+
 // Mock the command registry
 jest.mock('../command-registry.js', () => ({
   executeCommand: jest.fn(),
@@ -24,15 +26,15 @@ jest.mock('../node-compat.js', () => ({
 }));
 
 describe('Claude-Flow CLI', () => {
-  let originalArgv;
-  let originalExit;
-  let consoleLogSpy;
-  let consoleErrorSpy;
+  let originalArgv: string[];
+  let originalExit: typeof process.exit;
+  let consoleLogSpy: jest.SpyInstance;
+  let consoleErrorSpy: jest.SpyInstance;
 
   beforeEach(() => {
     originalArgv = process.argv;
     originalExit = process.exit;
-    process.exit = jest.fn();
+    process.exit = jest.fn() as any;
     consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
     consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
     jest.clearAllMocks();

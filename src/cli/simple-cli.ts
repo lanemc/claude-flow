@@ -179,7 +179,11 @@ async function main() {
   }
 
   const command = args[0];
-  const { flags, args: parsedArgs } = parseFlags(args.slice(1));
+  const flags: Record<string, any> = {};
+  const parsedArgs: string[] = [];
+  const parseResult = parseFlags(args.slice(1));
+  Object.assign(flags, parseResult.flags);
+  parsedArgs.push(...parseResult.args);
 
   // Handle special commands first
   switch (command) {
@@ -1193,7 +1197,29 @@ async function main() {
           }
           
           // Parse flags
-          const flags = {};
+          const flags: {
+            tools?: string;
+            noPermissions?: boolean;
+            config?: string;
+            mode?: string;
+            parallel?: boolean;
+            research?: boolean;
+            coverage?: number;
+            commit?: string;
+            verbose?: boolean;
+            dryRun?: boolean;
+          } = {
+            tools: undefined,
+            noPermissions: undefined,
+            config: undefined,
+            mode: undefined,
+            parallel: undefined,
+            research: undefined,
+            coverage: undefined,
+            commit: undefined,
+            verbose: undefined,
+            dryRun: undefined
+          };
           for (let i = taskEndIndex; i < subArgs.length; i++) {
             const arg = subArgs[i];
             if (arg === '--tools' || arg === '-t') {
@@ -2035,7 +2061,7 @@ async function startRepl() {
   console.log('Type "help" for available commands, "exit" to quit\n');
   
   const replState = {
-    history: [],
+    history: [] as string[],
     historyIndex: -1,
     currentSession: null,
     context: {
@@ -2047,7 +2073,7 @@ async function startRepl() {
   };
   
   // REPL command handlers
-  const replCommands = {
+  const replCommands: { [key: string]: (...args: string[]) => void | Promise<void> } = {
     help: () => {
       console.log(`
 📚 Available REPL Commands:
@@ -2112,7 +2138,7 @@ Shortcuts:
     
     config: async (key: string) => {
       try {
-        const config = JSON.parse(await fs.readFile('claude-flow.config.json'));
+        const config = JSON.parse(await fs.readFile('claude-flow.config.json', 'utf8'));
         if (key) {
           const keys = key.split('.');
           let value = config;
@@ -2185,8 +2211,11 @@ Shortcuts:
     const args = parts.slice(1);
     
     // Handle built-in REPL commands
-    if (replCommands[command]) {
-      await replCommands[command](...args);
+    if (command in replCommands) {
+      const handler = replCommands[command as keyof typeof replCommands];
+      if (typeof handler === 'function') {
+        await handler(...args);
+      }
       return true;
     }
     
@@ -3229,6 +3258,12 @@ For more information about SPARC methodology, see: https://github.com/ruvnet/cla
 `;
 }
 
-if (import.meta.main) {
+// Node.js doesn't support import.meta.main, use process check instead
+import { fileURLToPath } from 'url';
+
+const isMainModule = process.argv[1] === fileURLToPath(import.meta.url) || 
+                    process.argv[1].endsWith('/simple-cli.js');
+
+if (isMainModule) {
   await main();
 }

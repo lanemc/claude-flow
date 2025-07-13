@@ -5,7 +5,7 @@
 import { describe, it, beforeEach, afterEach, expect } from "../test.utils.ts";
 import { describe, it, beforeEach, afterEach, expect } from "../test.utils.ts";
 import { startCommand } from '../../src/cli/commands/start/start-command.ts';
-import { Command } from '@cliffy/command';
+import { Command } from 'commander';
 
 describe('Start Command Integration', () => {
   let testDir: string;

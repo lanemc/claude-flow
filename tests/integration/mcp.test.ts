@@ -2,16 +2,13 @@
  * Integration tests for MCP (Model Context Protocol) implementation
  */
 
-import { describe, it, beforeEach, afterEach, expect } from "../test.utils.ts";
-import { describe, it, beforeEach, afterEach, expect } from "../test.utils.ts";
+import { describe, it, beforeEach, afterEach, expect } from '../test.utils';
 
-import { MCPServer } from '../../src/mcp/server.ts';
-import { StdioTransport } from '../../src/mcp/transports/stdio.ts';
-import { HttpTransport } from '../../src/mcp/transports/http.ts';
-import { SessionManager } from '../../src/mcp/session-manager.ts';
-import { AuthManager } from '../../src/mcp/auth.ts';
-import { LoadBalancer } from '../../src/mcp/load-balancer.ts';
-import { ToolRegistry } from '../../src/mcp/tools.ts';
+import { MCPServer } from '../../src/mcp/server';
+import { SessionManager } from '../../src/mcp/session-manager';
+import { AuthManager } from '../../src/mcp/auth';
+import { LoadBalancer } from '../../src/mcp/load-balancer';
+import { ToolRegistry } from '../../src/mcp/tools';
 import {
   MCPConfig,
   MCPRequest,
@@ -19,9 +16,9 @@ import {
   MCPInitializeParams,
   MCPTool,
   MCPSession,
-} from '../../src/utils/types.ts';
-import { Logger } from '../../src/core/logger.ts';
-import { EventBus } from '../../src/core/event-bus.ts';
+} from '../../src/utils/types';
+import { Logger } from '../../src/core/logger';
+import { EventBus } from '../../src/core/event-bus';
 
 // Mock orchestrator for testing
 class MockOrchestrator {

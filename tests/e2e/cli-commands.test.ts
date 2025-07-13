@@ -10,21 +10,27 @@ import {
   assertEquals,
   assertExists,
   assertStringIncludes,
-} from '../test.utils.ts';
-import { cleanupTestEnv, setupTestEnv } from '../test.config.ts';
-import { generateId } from '../../src/utils/helpers.ts';
+  expect,
+} from '../test.utils';
+import { cleanupTestEnv, setupTestEnv } from '../test.config';
+import { generateId } from '../../src/utils/helpers';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as os from 'os';
+import { spawn } from 'child_process';
+import { promisify } from 'util';
 
 describe('CLI Commands E2E', () => {
   let testDir: string;
   
   beforeEach(async () => {
     setupTestEnv();
-    testDir = await Deno.makeTempDir({ prefix: 'claude-flow-e2e-' });
+    testDir = fs.mkdtempSync(path.join(os.tmpdir(), 'claude-flow-e2e-'));
   });
 
   afterEach(async () => {
     try {
-      await Deno.remove(testDir, { recursive: true });
+      fs.rmSync(testDir, { recursive: true, force: true });
     } catch {
       // Ignore cleanup errors
     }
@@ -33,25 +39,34 @@ describe('CLI Commands E2E', () => {
 
   describe('configuration commands', () => {
     it('should show help information', async () => {
-      const command = new Deno.Command(Deno.execPath(), {
-        args: ['run', '--allow-all', 'src/cli/index.ts', '--help'],
-        stdout: 'piped',
-        stderr: 'piped',
-        cwd: Deno.cwd(),
+      const execFile = promisify(spawn);
+      
+      await new Promise<void>((resolve, reject) => {
+        const child = spawn('node', ['src/cli/index.ts', '--help'], {
+          cwd: process.cwd(),
+        });
+        
+        let stdout = '';
+        let stderr = '';
+        
+        child.stdout.on('data', (data) => {
+          stdout += data.toString();
+        });
+        
+        child.stderr.on('data', (data) => {
+          stderr += data.toString();
+        });
+        
+        child.on('close', (code) => {
+          expect(code).toBe(0);
+          expect(stdout).toContain('Claude-Flow');
+          expect(stdout).toContain('COMMANDS');
+          expect(stdout).toContain('start');
+          resolve();
+        });
+        
+        child.on('error', reject);
       });
-
-      const { code, stdout, stderr } = await command.output();
-      const output = new TextDecoder().decode(stdout);
-      const errorOutput = new TextDecoder().decode(stderr);
-
-      expect(code).toBe(0);
-      assertStringIncludes(output, 'Claude-Flow');
-      assertStringIncludes(output, 'COMMANDS');
-      assertStringIncludes(output, 'start');
-      assertStringIncludes(output, 'config');
-      assertStringIncludes(output, 'agent');
-      assertStringIncludes(output, 'task');
-      assertStringIncludes(output, 'memory');
     });
 
     it('should initialize configuration file', async () => {

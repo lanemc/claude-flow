@@ -9,7 +9,7 @@ import * as crypto from 'crypto';
 import type { MigrationBackup, BackupFile } from './types.js';
 import { logger } from './logger.js';
 import * as chalk from 'chalk';
-import * as inquirer from 'inquirer';
+import inquirer from 'inquirer';
 
 export class RollbackManager {
   private projectPath: string;

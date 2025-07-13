@@ -5,20 +5,34 @@
 import { jest } from '@jest/globals';
 import { perfHelpers } from '../utils/test-helpers.js';
 import fs from 'fs-extra';
-import { parseFlags } from '../../cli/utils.js';
-import { deepMerge } from '../../utils/helpers.js';
-import { agentCommand } from '../../cli/simple-commands/agent.js';
-import { memoryCommand } from '../../cli/simple-commands/memory.js';
+import { parseFlags } from '../../src/cli/utils.js';
+import { deepMerge } from '../../src/utils/helpers.js';
+import { agentCommand } from '../../src/cli/simple-commands/agent.js';
+import { memoryCommand } from '../../src/cli/simple-commands/memory.js';
+
+interface MemoryData {
+  entries: Array<{
+    key: string;
+    value: string;
+    timestamp: string;
+    tags?: string[];
+  }>;
+}
+
+interface PerformanceResult<T> {
+  result: T;
+  duration: number;
+}
 
 describe('Performance Tests', () => {
   describe('Utility Functions Performance', () => {
     test('parseFlags should handle large argument lists efficiently', async () => {
-      const largeArgList = [];
+      const largeArgList: string[] = [];
       for (let i = 0; i < 1000; i++) {
         largeArgList.push(`--flag${i}`, `value${i}`);
       }
 
-      const { result, duration } = await perfHelpers.measureTime(() => {
+      const { result, duration }: PerformanceResult<{flags: Record<string, any>}> = await perfHelpers.measureTime(() => {
         return parseFlags(largeArgList);
       });
 
@@ -44,8 +58,8 @@ describe('Performance Tests', () => {
     });
 
     test('deepMerge should handle deeply nested objects efficiently', async () => {
-      const createDeepObject = (depth) => {
-        let obj = { value: 'leaf' };
+      const createDeepObject = (depth: number): any => {
+        let obj: any = { value: 'leaf' };
         for (let i = 0; i < depth; i++) {
           obj = { [`level${i}`]: obj };
         }
@@ -81,7 +95,7 @@ describe('Performance Tests', () => {
     });
 
     test('memory list with large dataset should be performant', async () => {
-      const largeMemoryData = {
+      const largeMemoryData: MemoryData = {
         entries: Array.from({ length: 10000 }, (_, i) => ({
           key: `key${i}`,
           value: `value${i}`,

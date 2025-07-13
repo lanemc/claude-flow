@@ -130,9 +130,8 @@ async function main() {
   }
 }
 
-if (import.meta.main) {
-  main().catch((error) => {
-    printError(`Error: ${(error instanceof Error ? error.message : String(error))}`);
-    process.exit(1);
-  });
-}
+// Run main if this is the entry point
+main().catch((error) => {
+  printError(`Error: ${(error instanceof Error ? error.message : String(error))}`);
+  process.exit(1);
+});

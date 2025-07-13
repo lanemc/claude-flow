@@ -97,13 +97,14 @@ export type TaskStatus =
 export interface MemoryEntry {
   id: string;
   agentId: string;
-  sessionId: string;
-  type: 'observation' | 'insight' | 'decision' | 'artifact' | 'error';
+  sessionId?: string;
+  namespace?: string;
+  type: 'observation' | 'insight' | 'decision' | 'artifact' | 'error' | 'objective' | 'task-result' | 'swarm-state';
   content: string;
-  context: Record<string, unknown>;
+  context?: Record<string, unknown>;
   timestamp: Date;
-  tags: string[];
-  version: number;
+  tags?: string[];
+  version?: number;
   parentId?: string;
   metadata?: Record<string, unknown>;
 }
@@ -228,12 +229,17 @@ export interface TerminalConfig {
 
 export interface MemoryConfig {
   backend: 'sqlite' | 'markdown' | 'hybrid';
+  namespace?: string;
   cacheSizeMB: number;
-  syncInterval: number;
-  conflictResolution: 'last-write' | 'crdt' | 'manual';
-  retentionDays: number;
+  syncInterval?: number;
+  syncOnExit?: boolean;
+  maxEntries?: number;
+  ttlMinutes?: number;
+  conflictResolution?: 'last-write' | 'crdt' | 'manual';
+  retentionDays?: number;
   sqlitePath?: string;
   markdownDir?: string;
+  [key: string]: unknown;
 }
 
 export interface CoordinationConfig {
@@ -242,6 +248,13 @@ export interface CoordinationConfig {
   deadlockDetection: boolean;
   resourceTimeout: number;
   messageTimeout: number;
+}
+
+export interface ResourceUsage extends Record<string, number> {
+  cpu: number;
+  memory: number;
+  disk: number;
+  network: number;
 }
 
 export interface MCPConfig {

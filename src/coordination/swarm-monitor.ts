@@ -3,7 +3,7 @@ import { EventEmitter } from 'node:events';
 import * as os from 'node:os';
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
-import { Logger } from '../core/logger.js';
+import { createLogger, ILogger } from '../core/logger.js';
 import { performance } from 'node:perf_hooks';
 
 interface AgentMetrics {
@@ -64,7 +64,7 @@ interface MonitoringConfig {
 }
 
 export class SwarmMonitor extends EventEmitter {
-  private logger: Logger;
+  private logger: ILogger;
   private config: MonitoringConfig;
   private agentMetrics: Map<string, AgentMetrics> = new Map();
   private systemMetrics: SystemMetrics[] = [];
@@ -78,7 +78,7 @@ export class SwarmMonitor extends EventEmitter {
 
   constructor(config?: Partial<MonitoringConfig>) {
     super();
-    this.logger = new Logger('SwarmMonitor');
+    this.logger = createLogger('SwarmMonitor');
     this.config = {
       updateInterval: 1000, // 1 second
       metricsRetention: 24, // 24 hours
@@ -362,7 +362,10 @@ export class SwarmMonitor extends EventEmitter {
     
     this.alerts.push(alert);
     this.emit('alert', alert);
-    this.logger[level](message);
+    
+    // Map alert levels to logger levels
+    const logLevel = level === 'critical' ? 'error' : level === 'warning' ? 'warn' : level;
+    this.logger[logLevel](message);
   }
 
   private cleanOldMetrics(): void {
