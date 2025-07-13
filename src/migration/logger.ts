@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../utils/error-handler.js';
+import { getErrorMessage } from '../utils/error-handler';
 import * as process from 'node:process';
 /**
  * Migration Logger - Structured logging for migration operations

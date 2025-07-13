@@ -45,7 +45,7 @@ import {
   GitHubNotFoundError,
   GitHubValidationError,
   Awaitable
-} from './types.js';
+} from './types';
 
 // Utility functions for console output
 interface PrintFunctions {

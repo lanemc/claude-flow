@@ -1,9 +1,9 @@
-export { ProjectManager } from './project-manager.js';
-export { DeploymentManager } from './deployment-manager.js';
-export { CloudManager } from './cloud-manager.js';
-export { SecurityManager } from './security-manager.js';
-export { AnalyticsManager } from './analytics-manager.js';
-export { AuditManager } from './audit-manager.js';
+export { ProjectManager } from './project-manager';
+export { DeploymentManager } from './deployment-manager';
+export { CloudManager } from './cloud-manager';
+export { SecurityManager } from './security-manager';
+export { AnalyticsManager } from './analytics-manager';
+export { AuditManager } from './audit-manager';
 
 export type {
   Project,
@@ -13,7 +13,7 @@ export type {
   ProjectResource,
   ProjectMetrics,
   ProjectReport
-} from './project-manager.js';
+} from './project-manager';
 
 export type {
   Deployment,
@@ -22,7 +22,7 @@ export type {
   DeploymentStage,
   DeploymentMetrics,
   DeploymentPipeline
-} from './deployment-manager.js';
+} from './deployment-manager';
 
 export type {
   CloudProvider,
@@ -30,7 +30,7 @@ export type {
   CloudInfrastructure,
   CloudMetrics,
   CostOptimization
-} from './cloud-manager.js';
+} from './cloud-manager';
 
 export type {
   SecurityScan,
@@ -39,7 +39,7 @@ export type {
   SecurityPolicy,
   SecurityMetrics,
   ComplianceCheck
-} from './security-manager.js';
+} from './security-manager';
 
 export type {
   AnalyticsMetric,
@@ -49,7 +49,7 @@ export type {
   UsageMetrics,
   BusinessMetrics,
   PredictiveModel
-} from './analytics-manager.js';
+} from './analytics-manager';
 
 export type {
   AuditEntry,
@@ -57,4 +57,4 @@ export type {
   AuditReport,
   AuditMetrics,
   AuditConfiguration
-} from './audit-manager.js';
+} from './audit-manager';

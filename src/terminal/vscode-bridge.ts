@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../utils/error-handler.js';
+import { getErrorMessage } from '../utils/error-handler';
 /**
  * VSCode Extension Bridge for Terminal Integration
  * 

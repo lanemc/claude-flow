@@ -1,14 +1,14 @@
-import { getErrorMessage } from '../utils/error-handler.js';
+import { getErrorMessage } from '../utils/error-handler';
 /**
  * MCP Server Lifecycle Manager
  * Handles server lifecycle operations including start, stop, restart, and health checks
  */
 
 import { EventEmitter } from 'node:events';
-import type { ILogger } from '../core/logger.js';
-import type { MCPConfig, MCPSession, MCPMetrics, HealthStatus } from '../utils/types.js';
-import { MCPError } from '../utils/errors.js';
-import type { IMCPServer } from './server.js';
+import type { ILogger } from '../core/logger';
+import type { MCPConfig, MCPSession, MCPMetrics, HealthStatus } from '../utils/types';
+import { MCPError } from '../utils/errors';
+import type { IMCPServer } from './server';
 
 export enum LifecycleState {
   STOPPED = 'stopped',

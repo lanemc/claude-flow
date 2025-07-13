@@ -3,7 +3,7 @@
  */
 
 import { jest } from '@jest/globals';
-import { agentCommand } from '../agent.js';
+import { agentCommand } from '../agent';
 import fs from 'fs-extra';
 import path from 'path';
 import chalk from 'chalk';

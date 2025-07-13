@@ -1,5 +1,5 @@
 import { spawn } from 'child_process';
-import { Logger } from '../../core/logger.js';
+import { Logger } from '../../core/logger';
 import type {
   PreTaskOptions,
   PostTaskOptions,
@@ -16,7 +16,7 @@ import type {
   PerformanceOptions,
   MemorySyncOptions,
   TelemetryOptions
-} from './hook-types.js';
+} from './hook-types';
 
 const logger = new Logger({
   level: 'info',

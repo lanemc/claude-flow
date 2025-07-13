@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../utils/error-handler.js';
+import { getErrorMessage } from '../utils/error-handler';
 /**
  * ruv-swarm MCP tools wrapper for Claude Code integration
  * 
@@ -6,9 +6,9 @@ import { getErrorMessage } from '../utils/error-handler.js';
  * package to enable advanced swarm coordination and neural capabilities.
  */
 
-import type { MCPTool, MCPContext } from '../utils/types.js';
-import type { ILogger } from '../core/logger.js';
-import { execAsync } from '../utils/helpers.js';
+import type { MCPTool, MCPContext } from '../utils/types';
+import type { ILogger } from '../core/logger';
+import { execAsync } from '../utils/helpers';
 import { existsSync } from 'fs';
 import { join } from 'path';
 

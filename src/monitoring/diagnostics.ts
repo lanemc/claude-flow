@@ -2,16 +2,16 @@
  * Diagnostic Tools for Claude Flow v2.0.0
  */
 
-import { EventBus } from "../core/event-bus.js";
-import { Logger } from "../core/logger.js";
-import { SystemIntegration } from "../integration/system-integration.js";
-import { HealthCheckManager } from "./health-check.js";
+import { EventBus } from "../core/event-bus";
+import { Logger } from "../core/logger";
+import { SystemIntegration } from "../integration/system-integration";
+import { HealthCheckManager } from "./health-check";
 import type {
   SystemHealth,
   SystemMetrics,
   ComponentStatus,
-} from "../integration/types.js";
-import { getErrorMessage } from "../utils/error-handler.js";
+} from "../integration/types";
+import { getErrorMessage } from "../utils/error-handler";
 import { promises as fs } from "fs";
 import path from "path";
 

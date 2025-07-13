@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../utils/error-handler.js';
+import { getErrorMessage } from '../utils/error-handler';
 /**
  * Main orchestrator for Claude-Flow
  */
@@ -13,15 +13,15 @@ import {
   ComponentHealth,
   TaskStatus,
   OrchestratorMetrics,
-} from '../utils/types.js';
-import { IEventBus } from './event-bus.js';
-import type { ILogger } from './logger.js';
-import type { ITerminalManager } from '../terminal/manager.js';
-import type { IMemoryManager } from '../memory/manager.js';
-import type { ICoordinationManager } from '../coordination/manager.js';
-import type { IMCPServer } from '../mcp/server.js';
-import { SystemError, InitializationError, ShutdownError } from '../utils/errors.js';
-import { delay, retry, circuitBreaker, CircuitBreaker } from '../utils/helpers.js';
+} from '../utils/types';
+import { IEventBus } from './event-bus';
+import type { ILogger } from './logger';
+import type { ITerminalManager } from '../terminal/manager';
+import type { IMemoryManager } from '../memory/manager';
+import type { ICoordinationManager } from '../coordination/manager';
+import type { IMCPServer } from '../mcp/server';
+import { SystemError, InitializationError, ShutdownError } from '../utils/errors';
+import { delay, retry, circuitBreaker, CircuitBreaker } from '../utils/helpers';
 import { mkdir, writeFile, readFile } from 'fs/promises';
 import { join, dirname } from 'path';
 

@@ -2,8 +2,8 @@
  * Agent Capabilities System - Defines and manages agent skills and selection algorithms
  */
 
-import type { AgentType, AgentCapabilities, TaskDefinition } from '../../swarm/types.js';
-import type { AgentState } from './base-agent.js';
+import type { AgentType, AgentCapabilities, TaskDefinition } from '../../swarm/types';
+import type { AgentState } from './base-agent';
 
 export interface CapabilityMatch {
   agent: AgentState;

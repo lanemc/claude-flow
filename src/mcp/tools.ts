@@ -1,11 +1,11 @@
-import { getErrorMessage } from '../utils/error-handler.js';
+import { getErrorMessage } from '../utils/error-handler';
 /**
  * Enhanced Tool registry for MCP with capability negotiation and discovery
  */
 
-import type { MCPTool, MCPCapabilities, MCPProtocolVersion } from '../utils/types.js';
-import type { ILogger } from '../core/logger.js';
-import { MCPError } from '../utils/errors.js';
+import type { MCPTool, MCPCapabilities, MCPProtocolVersion } from '../utils/types';
+import type { ILogger } from '../core/logger';
+import { MCPError } from '../utils/errors';
 import { EventEmitter } from 'node:events';
 
 export interface ToolCapability {

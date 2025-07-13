@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../utils/error-handler.js';
+import { getErrorMessage } from '../utils/error-handler';
 /**
  * MCP (Model Context Protocol) server implementation
  */
@@ -16,21 +16,21 @@ import {
   MCPProtocolVersion,
   MCPCapabilities,
   MCPContext,
-} from '../utils/types.js';
-import type { IEventBus } from '../core/event-bus.js';
-import type { ILogger } from '../core/logger.js';
-import { MCPError as MCPErrorClass, MCPMethodNotFoundError } from '../utils/errors.js';
-import type { ITransport } from './transports/base.js';
-import { StdioTransport } from './transports/stdio.js';
-import { HttpTransport } from './transports/http.js';
-import { ToolRegistry } from './tools.js';
-import { RequestRouter } from './router.js';
-import { SessionManager, ISessionManager } from './session-manager.js';
-import { AuthManager, IAuthManager } from './auth.js';
-import { LoadBalancer, ILoadBalancer, RequestQueue } from './load-balancer.js';
-import { createClaudeFlowTools, ClaudeFlowToolContext } from './claude-flow-tools.js';
-import { createSwarmTools, SwarmToolContext } from './swarm-tools.js';
-import { createRuvSwarmTools, RuvSwarmToolContext, isRuvSwarmAvailable, initializeRuvSwarmIntegration } from './ruv-swarm-tools.js';
+} from '../utils/types';
+import type { IEventBus } from '../core/event-bus';
+import type { ILogger } from '../core/logger';
+import { MCPError as MCPErrorClass, MCPMethodNotFoundError } from '../utils/errors';
+import type { ITransport } from './transports/base';
+import { StdioTransport } from './transports/stdio';
+import { HttpTransport } from './transports/http';
+import { ToolRegistry } from './tools';
+import { RequestRouter } from './router';
+import { SessionManager, ISessionManager } from './session-manager';
+import { AuthManager, IAuthManager } from './auth';
+import { LoadBalancer, ILoadBalancer, RequestQueue } from './load-balancer';
+import { createClaudeFlowTools, ClaudeFlowToolContext } from './claude-flow-tools';
+import { createSwarmTools, SwarmToolContext } from './swarm-tools';
+import { createRuvSwarmTools, RuvSwarmToolContext, isRuvSwarmAvailable, initializeRuvSwarmIntegration } from './ruv-swarm-tools';
 import { platform, arch } from 'node:os';
 import { performance } from 'node:perf_hooks';
 

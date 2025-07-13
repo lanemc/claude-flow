@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../utils/error-handler.js';
+import { getErrorMessage } from '../utils/error-handler';
 /**
  * ruv-swarm configuration management for Claude Code integration
  * 
@@ -8,8 +8,8 @@ import { getErrorMessage } from '../utils/error-handler.js';
 
 import { readFileSync, writeFileSync, existsSync } from 'fs';
 import { join } from 'path';
-import type { ILogger } from '../core/logger.js';
-import { deepMerge } from '../utils/helpers.js';
+import type { ILogger } from '../core/logger';
+import { deepMerge } from '../utils/helpers';
 
 /**
  * ruv-swarm integration configuration

@@ -1,14 +1,14 @@
-import { getErrorMessage } from '../../utils/error-handler.js';
+import { getErrorMessage } from '../../utils/error-handler';
 /**
  * Markdown backend implementation for human-readable memory storage
  */
 
 import { promises as fs } from 'fs';
 import path from 'path';
-import type { IMemoryBackend } from './base.js';
-import type { MemoryEntry, MemoryQuery } from '../../utils/types.js';
-import type { ILogger } from '../../core/logger.js';
-import { MemoryBackendError } from '../../utils/errors.js';
+import type { IMemoryBackend } from './base';
+import type { MemoryEntry, MemoryQuery } from '../../utils/types';
+import type { ILogger } from '../../core/logger';
+import { MemoryBackendError } from '../../utils/errors';
 
 /**
  * Markdown-based memory backend

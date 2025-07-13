@@ -3,7 +3,7 @@
  * Version 2: Works with both SQLite and in-memory fallback stores
  */
 
-import { FallbackMemoryStore } from './fallback-store.js';
+import { FallbackMemoryStore } from './fallback-store';
 import type {
   SessionState,
   WorkflowData,
@@ -14,7 +14,7 @@ import type {
   ExportData,
   FallbackMemoryStoreOptions,
   MemoryStoreOptions
-} from './types.js';
+} from './types';
 
 class EnhancedMemory extends FallbackMemoryStore {
   constructor(options: FallbackMemoryStoreOptions = {}) {
@@ -29,9 +29,9 @@ class EnhancedMemory extends FallbackMemoryStore {
       try {
         const { readFileSync } = await import('fs');
         const path = await import('path');
-        const { fileURLToPath } = await import('url');
-        const __filename = fileURLToPath(import.meta.url);
-        const __dirname = path.dirname(__filename);
+        const { getFilename, getDirname } = await import('../utils/import-meta-shim');
+        const __filename = getFilename();
+        const __dirname = getDirname();
         const schemaPath = path.join(__dirname, 'enhanced-schema.sql');
         const schema = readFileSync(schemaPath, 'utf-8');
         // Note: Cannot access private db property directly, this would need to be handled differently

@@ -1,5 +1,5 @@
-#!/usr/bin/env -S deno run --allow-all
-import { getErrorMessage } from '../utils/error-handler.js';
+#!/usr/bin/env node
+import { getErrorMessage } from '../utils/error-handler';
 /**
  * Claude-Flow CLI entry point - Remote execution friendly version
  * This version can be run directly from GitHub
@@ -70,7 +70,7 @@ function printWarning(message: string) {
 }
 
 async function main() {
-  const args = Deno.args;
+  const args = process.argv.slice(2);
   const command = args[0] || 'help';
   const subArgs = args.slice(1);
 

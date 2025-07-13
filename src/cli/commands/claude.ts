@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../../utils/error-handler.js';
+import { getErrorMessage } from '../../utils/error-handler';
 /**
  * Claude instance management commands
  */
@@ -7,7 +7,7 @@ import { promises as fs } from 'node:fs';
 import { Command } from 'commander';
 import chalk from 'chalk';
 import { spawn } from 'node:child_process';
-import { generateId } from '../../utils/helpers.js';
+import { generateId } from '../../utils/helpers';
 
 export const claudeCommand = new Command()
   .name('claude')

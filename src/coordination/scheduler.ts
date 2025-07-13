@@ -1,13 +1,13 @@
-import { getErrorMessage } from '../utils/error-handler.js';
+import { getErrorMessage } from '../utils/error-handler';
 /**
  * Task scheduler implementation
  */
 
-import { Task, TaskStatus, CoordinationConfig, SystemEvents } from '../utils/types.js';
-import type { IEventBus } from '../core/event-bus.js';
-import type { ILogger } from '../core/logger.js';
-import { TaskError, TaskTimeoutError, TaskDependencyError } from '../utils/errors.js';
-import { delay } from '../utils/helpers.js';
+import { Task, TaskStatus, CoordinationConfig, SystemEvents } from '../utils/types';
+import type { IEventBus } from '../core/event-bus';
+import type { ILogger } from '../core/logger';
+import { TaskError, TaskTimeoutError, TaskDependencyError } from '../utils/errors';
+import { delay } from '../utils/helpers';
 
 interface ScheduledTask {
   task: Task;

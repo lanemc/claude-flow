@@ -1,18 +1,18 @@
-import { getErrorMessage } from '../utils/error-handler.js';
+import { getErrorMessage } from '../utils/error-handler';
 import * as process from 'node:process';
 /**
  * Terminal manager interface and implementation
  */
 
-import type { AgentProfile, AgentSession, TerminalConfig } from '../utils/types.js';
-import type { IEventBus } from '../core/event-bus.js';
-import type { ILogger } from '../core/logger.js';
-import { TerminalError, TerminalSpawnError } from '../utils/errors.js';
-import type { ITerminalAdapter } from './adapters/base.js';
-import { VSCodeAdapter } from './adapters/vscode.js';
-import { NativeAdapter } from './adapters/native.js';
-import { TerminalPool } from './pool.js';
-import { TerminalSession } from './session.js';
+import type { AgentProfile, AgentSession, TerminalConfig } from '../utils/types';
+import type { IEventBus } from '../core/event-bus';
+import type { ILogger } from '../core/logger';
+import { TerminalError, TerminalSpawnError } from '../utils/errors';
+import type { ITerminalAdapter } from './adapters/base';
+import { VSCodeAdapter } from './adapters/vscode';
+import { NativeAdapter } from './adapters/native';
+import { TerminalPool } from './pool';
+import { TerminalSession } from './session';
 
 export interface ITerminalManager {
   initialize(): Promise<void>;

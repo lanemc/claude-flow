@@ -1,11 +1,11 @@
-import { getErrorMessage } from "../utils/error-handler.js";
+import { getErrorMessage } from "../utils/error-handler";
 /**
  * Real-time monitoring system for swarm operations
  */
 
 import { EventEmitter } from "node:events";
-import type { ILogger } from "../core/logger.js";
-import type { IEventBus } from "../core/event-bus.js";
+import type { ILogger } from "../core/logger";
+import type { IEventBus } from "../core/event-bus";
 import type {
   SystemMetrics,
   Alert,
@@ -15,8 +15,8 @@ import type {
   AgentMetrics,
   SwarmMetrics,
   AgentId,
-} from "../swarm/types.js";
-import type { DistributedMemorySystem } from "../memory/distributed-memory.js";
+} from "../swarm/types";
+import type { DistributedMemorySystem } from "../memory/distributed-memory";
 
 export interface MonitorConfig {
   updateInterval: number;

@@ -1,11 +1,11 @@
-import { getErrorMessage } from '../utils/error-handler.js';
+import { getErrorMessage } from '../utils/error-handler';
 /**
  * MCP Protocol Version Management and Compatibility Checking
  */
 
-import type { MCPProtocolVersion, MCPCapabilities, MCPInitializeParams } from '../utils/types.js';
-import type { ILogger } from '../core/logger.js';
-import { MCPError } from '../utils/errors.js';
+import type { MCPProtocolVersion, MCPCapabilities, MCPInitializeParams } from '../utils/types';
+import type { ILogger } from '../core/logger';
+import { MCPError } from '../utils/errors';
 
 export interface ProtocolVersionInfo {
   version: MCPProtocolVersion;

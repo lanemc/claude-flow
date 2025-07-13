@@ -1,12 +1,12 @@
-import { getErrorMessage } from '../../utils/error-handler.js';
+import { getErrorMessage } from '../../utils/error-handler';
 /**
  * Reconnection Manager for MCP
  * Handles automatic reconnection with exponential backoff
  */
 
 import { EventEmitter } from 'node:events';
-import type { ILogger } from '../../core/logger.js';
-import type { MCPClient } from '../client.js';
+import type { ILogger } from '../../core/logger';
+import type { MCPClient } from '../client';
 
 export interface ReconnectionConfig {
   maxRetries: number;

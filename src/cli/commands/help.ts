@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../../utils/error-handler.js';
+import { getErrorMessage } from '../../utils/error-handler';
 /**
  * Comprehensive help system for Claude-Flow CLI
  */
@@ -820,9 +820,8 @@ async function startInteractiveHelp(): Promise<void> {
     console.log();
     console.log(chalk.gray('Press Enter to continue...'));
     await new Promise(resolve => {
-      const stdin = Deno.stdin;
-      const buffer = new Uint8Array(1);
-      stdin.read(buffer).then(() => resolve(undefined));
+      process.stdin.once('data', () => resolve(undefined));
+      process.stdin.resume();
     });
     
     console.clear();

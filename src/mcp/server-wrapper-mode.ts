@@ -1,12 +1,12 @@
 #!/usr/bin/env node
-import { getErrorMessage } from '../utils/error-handler.js';
+import { getErrorMessage } from '../utils/error-handler';
 /**
  * Claude-Flow MCP Server - Wrapper Mode
  * 
  * This version uses the Claude Code MCP wrapper approach instead of templates.
  */
 
-import { ClaudeCodeMCPWrapper } from './claude-code-wrapper.js';
+import { ClaudeCodeMCPWrapper } from './claude-code-wrapper';
 
 // Check if running as wrapper mode
 const isWrapperMode = process.env.CLAUDE_FLOW_WRAPPER_MODE === 'true' || 
@@ -20,7 +20,7 @@ async function main() {
   } else {
     // Fall back to original server
     console.error('Starting Claude-Flow MCP in direct mode...');
-    const { runMCPServer } = await import('./server.js');
+    const { runMCPServer } = await import('./server');
     await runMCPServer();
   }
 }

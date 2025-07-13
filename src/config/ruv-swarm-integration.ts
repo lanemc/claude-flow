@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../utils/error-handler.js';
+import { getErrorMessage } from '../utils/error-handler';
 /**
  * ruv-swarm integration helper for Claude Code configuration
  * 
@@ -7,9 +7,9 @@ import { getErrorMessage } from '../utils/error-handler.js';
  * for seamless integration.
  */
 
-import { configManager, ConfigManager } from './config-manager.js';
-import { getRuvSwarmConfigManager, RuvSwarmConfigManager } from './ruv-swarm-config.js';
-import { Logger } from '../core/logger.js';
+import { configManager, ConfigManager } from './config-manager';
+import { getRuvSwarmConfigManager, RuvSwarmConfigManager } from './ruv-swarm-config';
+import { Logger } from '../core/logger';
 
 // Create logger for integration
 const logger = new Logger({ level: 'info', format: 'text', destination: 'console' });

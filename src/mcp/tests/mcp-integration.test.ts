@@ -1,19 +1,19 @@
-import { getErrorMessage } from '../utils/error-handler.js';
+import { getErrorMessage } from '../utils/error-handler';
 /**
  * Comprehensive MCP Integration Tests
  */
 
 import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
 type Mock = jest.MockedFunction<any>;
-import { MCPServer } from '../server.js';
-import { MCPLifecycleManager, LifecycleState } from '../lifecycle-manager.js';
-import { MCPPerformanceMonitor } from '../performance-monitor.js';
-import { MCPProtocolManager } from '../protocol-manager.js';
-import { MCPOrchestrationIntegration } from '../orchestration-integration.js';
-import { ToolRegistry } from '../tools.js';
-import type { AuthManager } from '../auth.js';
-import type { ILogger } from '../../core/logger.js';
-import type { MCPConfig, MCPInitializeParams, MCPRequest, MCPSession } from '../../utils/types.js';
+import { MCPServer } from '../server';
+import { MCPLifecycleManager, LifecycleState } from '../lifecycle-manager';
+import { MCPPerformanceMonitor } from '../performance-monitor';
+import { MCPProtocolManager } from '../protocol-manager';
+import { MCPOrchestrationIntegration } from '../orchestration-integration';
+import { ToolRegistry } from '../tools';
+import type { AuthManager } from '../auth';
+import type { ILogger } from '../../core/logger';
+import type { MCPConfig, MCPInitializeParams, MCPRequest, MCPSession } from '../../utils/types';
 import { EventEmitter } from 'node:events';
 
 // Mock logger

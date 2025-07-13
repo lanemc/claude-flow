@@ -1,6 +1,6 @@
 import { Command } from 'commander';
-import { ConfigManager } from '../../config/config-manager.js';
-import { createCliFeatureAdapter } from '../../features/adapters/CliFeatureAdapter.js';
+import { ConfigManager } from '../../config/config-manager';
+import { createCliFeatureAdapter } from '../../features/adapters/CliFeatureAdapter';
 
 export function createFeaturesCommand(): Command {
   const features = new Command('features')

@@ -3,7 +3,7 @@
  */
 
 import { jest } from '@jest/globals';
-import { memoryCommand } from '../memory.js';
+import { memoryCommand } from '../memory';
 import fs from 'fs-extra';
 import path from 'path';
 import chalk from 'chalk';

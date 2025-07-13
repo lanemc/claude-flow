@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../../utils/error-handler.js';
+import { getErrorMessage } from '../../utils/error-handler';
 /**
  * Compatible Terminal UI - Works without raw mode
  * Designed for environments that don't support stdin raw mode

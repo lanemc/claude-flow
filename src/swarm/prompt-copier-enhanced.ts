@@ -1,12 +1,12 @@
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { getErrorMessage } from '../utils/error-handler.js';
+import { getErrorMessage } from '../utils/error-handler';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { Worker } from 'worker_threads';
-import { PromptCopier } from './prompt-copier.js';
-import type { CopyOptions, CopyResult, FileInfo } from './prompt-copier.js';
-import { logger } from '../core/logger.js';
+import { PromptCopier } from './prompt-copier';
+import type { CopyOptions, CopyResult, FileInfo } from './prompt-copier';
+import { logger } from '../core/logger';
 
 interface WorkerPool {
   workers: Worker[];

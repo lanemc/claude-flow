@@ -1,26 +1,27 @@
 import chalk from 'chalk';
-import { getErrorMessage } from '../../utils/error-handler.js';
-import { CLI, success, error, warning, info, VERSION } from "../cli-core.js";
-import type { Command, CommandContext } from "../cli-core.js";
+import { spawn } from 'child_process';
+import { getErrorMessage } from '../../utils/error-handler';
+import { CLI, success, error, warning, info, VERSION } from "../cli-core";
+import type { Command, CommandContext } from "../cli-core";
 import colors from "chalk";
 const { bold, blue, yellow } = colors;
-import { Orchestrator } from "../../core/orchestrator-fixed.js";
-import { ConfigManager } from "../../core/config.js";
-import type { MemoryManager } from "../../memory/manager.js";
-import { EventBus } from "../../core/event-bus.js";
-import { Logger } from "../../core/logger.js";
-import { JsonPersistenceManager } from "../../core/json-persistence.js";
-import { swarmAction } from "./swarm.js";
-import { SimpleMemoryManager } from "./memory.js";
-import { sparcAction } from "./sparc.js";
-import { createMigrateCommand } from "./migrate.js";
-import { enterpriseCommands } from "./enterprise.js";
+import { Orchestrator } from "../../core/orchestrator-fixed";
+import { ConfigManager } from "../../core/config";
+import type { MemoryManager } from "../../memory/manager";
+import { EventBus } from "../../core/event-bus";
+import { Logger } from "../../core/logger";
+import { JsonPersistenceManager } from "../../core/json-persistence";
+import { swarmAction } from "./swarm";
+import { SimpleMemoryManager } from "./memory";
+import { sparcAction } from "./sparc";
+import { createMigrateCommand } from "./migrate";
+import { enterpriseCommands } from "./enterprise";
 
 // Import enhanced orchestration commands
-import { startCommand } from "./start.js";
-import { statusCommand } from "./status.js";
-import { monitorCommand } from "./monitor.js";
-import { sessionCommand } from "./session.js";
+import { startCommand } from "./start";
+import { statusCommand } from "./status";
+import { monitorCommand } from "./monitor";
+import { sessionCommand } from "./session";
 
 let orchestrator: Orchestrator | null = null;
 let configManager: ConfigManager | null = null;
@@ -385,7 +386,7 @@ export function setupCommands(cli: CLI): void {
       const subcommand = ctx.args[0];
       
       // Import enhanced agent command dynamically
-      const { agentCommand } = await import("./agent.js");
+      const { agentCommand } = await import("./agent");
       
       // Create a mock context for the enhanced command
       const enhancedCtx = {
@@ -409,11 +410,11 @@ export function setupCommands(cli: CLI): void {
             console.log(chalk.cyan('🚀 Using enhanced agent management system...'));
             
             // Create a simplified wrapper around the enhanced command
-            const agentManager = await import("../../agents/agent-manager.js");
-            const { MemoryManager } = await import("../../memory/manager.js");
-            const { EventBus } = await import("../../core/event-bus.js");
-            const { Logger } = await import("../../core/logger.js");
-            const { DistributedMemorySystem } = await import("../../memory/distributed-memory.js");
+            const agentManager = await import("../../agents/agent-manager");
+            const { MemoryManager } = await import("../../memory/manager");
+            const { EventBus } = await import("../../core/event-bus");
+            const { Logger } = await import("../../core/logger");
+            const { DistributedMemorySystem } = await import("../../memory/distributed-memory");
             
             warning("Enhanced agent management is available!");
             console.log("For full functionality, use the comprehensive agent commands:");
@@ -1156,7 +1157,7 @@ Now, please proceed with the task: ${task}`;
             console.log('');
             
             // Execute Claude command
-            const { spawn } = await import("child_process");
+            // spawn already imported at top
             const child = spawn("claude", claudeCmd.slice(1).map(arg => arg.replace(/^"|"$/g, '')), {
               env: {
                 ...process.env,
@@ -1241,7 +1242,7 @@ Now, please proceed with the task: ${task}`;
               
               console.log(`\n🚀 Spawning Claude for task: ${task.name || taskId}`);
               
-              const { spawn } = await import("child_process");
+              // spawn already imported at top
               const child = spawn("claude", claudeCmd.slice(1).map(arg => arg.replace(/^"|"$/g, '')), {
                 env: {
                   ...process.env,
@@ -2216,29 +2217,29 @@ Now, please proceed with the task: ${task}`;
         const subcommand = ctx.args[0] || "wizard";
         
         // Import hive-mind commands dynamically
-        const { hiveMindCommand } = await import('./hive-mind/index.js');
+        const { hiveMindCommand } = await import('./hive-mind/index');
         
         // Execute the appropriate subcommand
         switch (subcommand) {
           case "init":
-            const { initCommand } = await import('./hive-mind/init.js');
+            const { initCommand } = await import('./hive-mind/init');
             await initCommand.parseAsync(process.argv.slice(3));
             break;
           case "spawn":
-            const { spawnCommand } = await import('./hive-mind/spawn.js');
+            const { spawnCommand } = await import('./hive-mind/spawn');
             await spawnCommand.parseAsync(process.argv.slice(3));
             break;
           case "status":
-            const { statusCommand } = await import('./hive-mind/status.js');
+            const { statusCommand } = await import('./hive-mind/status');
             await statusCommand.parseAsync(process.argv.slice(3));
             break;
           case "task":
-            const { taskCommand } = await import('./hive-mind/task.js');
+            const { taskCommand } = await import('./hive-mind/task');
             await taskCommand.parseAsync(process.argv.slice(3));
             break;
           case "wizard":
           default:
-            const { wizardCommand } = await import('./hive-mind/wizard.js');
+            const { wizardCommand } = await import('./hive-mind/wizard');
             await wizardCommand.parseAsync(process.argv.slice(3));
             break;
         }
@@ -2254,7 +2255,7 @@ Now, please proceed with the task: ${task}`;
     description: "Execute ruv-swarm hooks for agent coordination",
     action: async (ctx: CommandContext) => {
       try {
-        const { spawn } = await import('child_process');
+        // spawn already imported at top
         
         // Pass all arguments to ruv-swarm hook command
         const args = ctx.args.length > 0 ? ctx.args : ['--help'];

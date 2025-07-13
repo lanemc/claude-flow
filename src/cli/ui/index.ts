@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../../utils/error-handler.js';
+import { getErrorMessage } from '../../utils/error-handler';
 /**
  * Claude-Flow UI Module
  * Provides compatible UI solutions for different terminal environments
@@ -11,7 +11,7 @@ export {
   launchUI,
   type UIProcess,
   type UISystemStats 
-} from './compatible-ui.js';
+} from './compatible-ui';
 
 export { 
   handleRawModeError, 
@@ -19,18 +19,18 @@ export {
   checkUISupport, 
   showUISupport,
   type FallbackOptions 
-} from './fallback-handler.js';
+} from './fallback-handler';
 
 /**
  * Main UI launcher that automatically selects the best available UI
  */
 export async function launchBestUI(): Promise<void> {
-  const { checkUISupport, handleRawModeError } = await import('./fallback-handler.js');
+  const { checkUISupport, handleRawModeError } = await import('./fallback-handler');
   const support = checkUISupport();
   
   if (support.supported) {
     try {
-      const { launchUI } = await import('./compatible-ui.js');
+      const { launchUI } = await import('./compatible-ui');
       await launchUI();
     } catch (error) {
       if (error instanceof Error) {
@@ -42,7 +42,7 @@ export async function launchBestUI(): Promise<void> {
       }
     }
   } else {
-    const { launchUI: launchCompatibleUI } = await import('./compatible-ui.js');
+    const { launchUI: launchCompatibleUI } = await import('./compatible-ui');
     console.log('🔄 Using compatible UI mode for this environment');
     await launchCompatibleUI();
   }

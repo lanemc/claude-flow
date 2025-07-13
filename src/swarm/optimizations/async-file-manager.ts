@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../../utils/error-handler.js';
+import { getErrorMessage } from '../../utils/error-handler';
 /**
  * Async File Manager
  * Handles non-blocking file operations with queuing
@@ -10,7 +10,7 @@ import { createWriteStream, createReadStream } from 'node:fs';
 import { Readable } from 'node:stream';
 import { join, dirname } from 'node:path';
 import PQueue from 'p-queue';
-import { Logger } from '../../core/logger.js';
+import { Logger } from '../../core/logger';
 
 export interface FileOperationResult {
   path: string;

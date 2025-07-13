@@ -1,4 +1,4 @@
-import { getErrorMessage } from "../utils/error-handler.js";
+import { getErrorMessage } from "../utils/error-handler";
 import { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 // Note: __dirname setup is handled in build process
@@ -17,11 +17,11 @@ import type {
   ValidationResult,
   MigrationProgress,
   MigrationManifest,
-} from "./types.js";
-import { MigrationAnalyzer } from "./migration-analyzer.js";
-import { logger } from "./logger.js";
-import { ProgressReporter } from "./progress-reporter.js";
-import { MigrationValidator } from "./migration-validator.js";
+} from "./types";
+import { MigrationAnalyzer } from "./migration-analyzer";
+import { logger } from "./logger";
+import { ProgressReporter } from "./progress-reporter";
+import { MigrationValidator } from "./migration-validator";
 import { glob } from "glob";
 import inquirer from "inquirer";
 import * as chalk from "chalk";

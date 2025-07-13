@@ -1,17 +1,17 @@
-import { getErrorMessage } from '../utils/error-handler.js';
+import { getErrorMessage } from '../utils/error-handler';
 /**
  * MCP Integration with Claude-Flow Orchestration System
  * Provides seamless integration between MCP servers and the broader orchestration components
  */
 
 import { EventEmitter } from 'node:events';
-import type { ILogger } from '../core/logger.js';
-import { MCPConfig, MCPSession, MCPTool, SystemEvents } from '../utils/types.js';
-import { MCPError } from '../utils/errors.js';
-import { MCPServer, IMCPServer } from './server.js';
-import { MCPLifecycleManager, LifecycleState } from './lifecycle-manager.js';
-import { MCPPerformanceMonitor } from './performance-monitor.js';
-import { MCPProtocolManager } from './protocol-manager.js';
+import type { ILogger } from '../core/logger';
+import { MCPConfig, MCPSession, MCPTool, SystemEvents } from '../utils/types';
+import { MCPError } from '../utils/errors';
+import { MCPServer, IMCPServer } from './server';
+import { MCPLifecycleManager, LifecycleState } from './lifecycle-manager';
+import { MCPPerformanceMonitor } from './performance-monitor';
+import { MCPProtocolManager } from './protocol-manager';
 
 export interface OrchestrationComponents {
   orchestrator?: any;

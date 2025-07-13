@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../utils/error-handler.js';
+import { getErrorMessage } from '../utils/error-handler';
 /**
  * Advanced Memory Management System with comprehensive capabilities
  * Includes indexing, compression, cross-agent sharing, and intelligent cleanup
@@ -8,9 +8,9 @@ import { EventEmitter } from 'node:events';
 import { promises as fs } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { join, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import type { ILogger } from '../core/logger.js';
-import { generateId } from '../utils/helpers.js';
+import { getFilename, getDirname } from '../utils/import-meta-shim';
+import type { ILogger } from '../core/logger';
+import { generateId } from '../utils/helpers';
 
 // === INTERFACES ===
 
@@ -229,7 +229,7 @@ export class AdvancedMemoryManager extends EventEmitter {
     };
 
     // Setup file paths
-    const __dirname = dirname(fileURLToPath(import.meta.url));
+    const __dirname = getDirname();
     this.dataPath = join(process.cwd(), 'memory', 'data');
     this.indexPath = join(process.cwd(), 'memory', 'index');
     this.backupPath = join(process.cwd(), 'memory', 'backups');

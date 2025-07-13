@@ -1,9 +1,9 @@
-import { getErrorMessage } from '../utils/error-handler.js';
+import { getErrorMessage } from '../utils/error-handler';
 import { EventEmitter } from 'events';
 import { writeFile, readFile, mkdir, readdir, stat } from 'fs/promises';
 import { join } from 'path';
-import { Logger } from '../core/logger.js';
-import { ConfigManager } from '../core/config.js';
+import { Logger } from '../core/logger';
+import { ConfigManager } from '../core/config';
 
 export interface ProjectPhase {
   id: string;

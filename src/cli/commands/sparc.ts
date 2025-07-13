@@ -1,6 +1,6 @@
-import { getErrorMessage } from '../../utils/error-handler.js';
-import { success, error, warning, info } from "../cli-core.js";
-import type { CommandContext } from "../cli-core.js";
+import { getErrorMessage } from '../../utils/error-handler';
+import { success, error, warning, info } from "../cli-core";
+import type { CommandContext } from "../cli-core";
 import chalk from "chalk";
 const { blue, yellow, green, magenta, cyan } = chalk;
 

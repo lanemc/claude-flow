@@ -1,17 +1,17 @@
 import { dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
-const __dirname = dirname(fileURLToPath(import.meta.url));
-import { getErrorMessage } from '../utils/error-handler.js';
+import { getDirname } from '../utils/import-meta-shim';
+const __dirname = getDirname();
+import { getErrorMessage } from '../utils/error-handler';
 /**
  * Direct Task Executor for Swarm
  * Executes tasks directly without relying on Claude CLI
  * Works in both local development and npm installed environments
  */
 
-import type { TaskDefinition, AgentState, TaskResult } from './types.js';
+import type { TaskDefinition, AgentState, TaskResult } from './types';
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
-import { Logger } from '../core/logger.js';
+import { Logger } from '../core/logger';
 
 export interface DirectExecutorConfig {
   logger?: Logger;

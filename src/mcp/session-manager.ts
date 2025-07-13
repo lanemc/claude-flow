@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../utils/error-handler.js';
+import { getErrorMessage } from '../utils/error-handler';
 /**
  * Session manager for MCP connections
  */
@@ -10,9 +10,9 @@ import {
   MCPCapabilities,
   MCPAuthConfig,
   MCPConfig,
-} from '../utils/types.js';
-import type { ILogger } from '../core/logger.js';
-import { MCPError } from '../utils/errors.js';
+} from '../utils/types';
+import type { ILogger } from '../core/logger';
+import { MCPError } from '../utils/errors';
 import { createHash, timingSafeEqual } from 'node:crypto';
 
 export interface ISessionManager {

@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../../utils/error-handler.js';
+import { getErrorMessage } from '../../utils/error-handler';
 /**
  * HTTP transport for MCP
  */
@@ -9,11 +9,11 @@ import { WebSocketServer, WebSocket } from 'ws';
 import cors from 'cors';
 import helmet from 'helmet';
 import { join, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import type { ITransport, RequestHandler, NotificationHandler } from './base.js';
-import type { MCPRequest, MCPResponse, MCPNotification, MCPConfig } from '../../utils/types.js';
-import type { ILogger } from '../../core/logger.js';
-import { MCPTransportError } from '../../utils/errors.js';
+import { getFilename, getDirname } from '../../utils/import-meta-shim';
+import type { ITransport, RequestHandler, NotificationHandler } from './base';
+import type { MCPRequest, MCPResponse, MCPNotification, MCPConfig } from '../../utils/types';
+import type { ILogger } from '../../core/logger';
+import { MCPTransportError } from '../../utils/errors';
 
 /**
  * HTTP transport implementation
@@ -165,8 +165,8 @@ export class HttpTransport implements ITransport {
 
   private setupRoutes(): void {
     // Get current file directory for static files
-    const __filename = fileURLToPath(import.meta.url);
-    const __dirname = dirname(__filename);
+    const __filename = getFilename();
+    const __dirname = getDirname();
     const consoleDir = join(__dirname, '../../ui/console');
 
     // Serve static files for the web console

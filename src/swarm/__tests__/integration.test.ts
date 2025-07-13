@@ -1,9 +1,9 @@
-import { getErrorMessage } from '../utils/error-handler.js';
+import { getErrorMessage } from '../utils/error-handler';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import * as os from 'os';
-import { PromptManager } from '../prompt-manager.js';
-import { PromptConfigManager } from '../prompt-utils.js';
+import { PromptManager } from '../prompt-manager';
+import { PromptConfigManager } from '../prompt-utils';
 
 describe('Prompt Copying Integration Tests', () => {
   let tempDir: string;

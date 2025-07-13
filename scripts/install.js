@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 
-import os from 'node:os';
-import path from 'node:path';
-import fs from 'node:fs';
-import https from 'node:https';
-import { spawn } from 'node:child_process';
+const os = require('node:os');
+const path = require('node:path');
+const fs = require('node:fs');
+const https = require('node:https');
+const { spawn } = require('node:child_process');
 
 console.log('Installing Claude-Flow...');
 

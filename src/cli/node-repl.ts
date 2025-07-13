@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../utils/error-handler.js';
+import { getErrorMessage } from '../utils/error-handler';
 /**
  * Node.js Interactive REPL for Claude-Flow
  * Compatible implementation using Node.js readline and inquirer

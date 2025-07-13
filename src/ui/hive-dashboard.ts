@@ -3,8 +3,8 @@
  * Real-time visualization of swarm activity and consensus
  */
 
-import { HiveOrchestrator } from '../coordination/hive-orchestrator.js';
-import { HiveCommunicationProtocol } from '../coordination/hive-protocol.js';
+import { HiveOrchestrator } from '../coordination/hive-orchestrator';
+import { HiveCommunicationProtocol } from '../coordination/hive-protocol';
 
 export interface HiveDashboardData {
   swarmId: string;

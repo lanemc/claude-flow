@@ -3,8 +3,8 @@
  * Specialized agents for the Hive Mind swarm system
  */
 
-import { BaseAgent } from './base-agent.js';
-import type { AgentCapabilities, AgentConfig, TaskDefinition } from '../../swarm/types.js';
+import { BaseAgent } from './base-agent';
+import type { AgentCapabilities, AgentConfig, TaskDefinition } from '../../swarm/types';
 
 export interface HiveAgentConfig {
   type: 'queen' | 'worker' | 'scout' | 'guardian' | 'architect';

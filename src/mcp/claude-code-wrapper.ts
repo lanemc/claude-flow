@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-import { getErrorMessage } from '../utils/error-handler.js';
-import { Server } from '@modelcontextprotocol/sdk/server/index.js';
-import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import { getErrorMessage } from '../utils/error-handler';
+import { Server } from '@modelcontextprotocol/sdk/server/index';
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio';
 import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
@@ -10,19 +10,19 @@ import {
   TextContent,
   ImageContent,
   EmbeddedResource,
-} from '@modelcontextprotocol/sdk/types.js';
+} from '@modelcontextprotocol/sdk/types';
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { fileURLToPath } from 'url';
-import { SparcMode, loadSparcModes } from './sparc-modes.js';
-import { executeSparcMode } from '../swarm/sparc-executor.js';
+import { getFilename, getDirname } from '../utils/import-meta-shim';
+import { SparcMode, loadSparcModes } from './sparc-modes';
+import { executeSparcMode } from '../swarm/sparc-executor';
 // Simple ID generation
 function generateId(): string {
   return `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 }
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __filename = getFilename();
+const __dirname = getDirname();
 
 interface SparcContext {
   memoryKey?: string;
@@ -722,7 +722,7 @@ Use the appropriate tools for each phase and maintain progress in TodoWrite.`;
 }
 
 // Run the server if this is the main module
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (getFilename() === process.argv[1]) {
   const wrapper = new ClaudeCodeMCPWrapper();
   wrapper.run().catch(console.error);
 }

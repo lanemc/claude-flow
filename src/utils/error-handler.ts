@@ -2,7 +2,7 @@
  * Utility for proper error handling in TypeScript
  */
 
-import { getErrorMessage as getErrorMsg, getErrorStack as getErrorStk, isError as isErr } from './type-guards.js';
+import { getErrorMessage as getErrorMsg, getErrorStack as getErrorStk, isError as isErr } from './type-guards';
 
 export class AppError extends Error {
   constructor(

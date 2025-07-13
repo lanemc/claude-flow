@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../../utils/error-handler.js';
+import { getErrorMessage } from '../../utils/error-handler';
 /**
  * Session management commands for Claude-Flow
  */
@@ -8,8 +8,8 @@ import { promises as fs, existsSync } from 'node:fs';
 import * as path from 'node:path';
 import Table from 'cli-table3';
 import inquirer from 'inquirer';
-import { formatDuration, formatStatusIndicator } from '../formatter.js';
-import { generateId } from '../../utils/helpers.js';
+import { formatDuration, formatStatusIndicator } from '../formatter';
+import { generateId } from '../../utils/helpers';
 import chalk from 'chalk';
 
 export const sessionCommand = new Command()

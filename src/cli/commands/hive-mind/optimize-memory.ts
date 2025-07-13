@@ -5,10 +5,10 @@
  */
 
 import { Command } from 'commander';
-import { CollectiveMemory, MemoryOptimizer } from '../../simple-commands/hive-mind/memory.js';
-import { MemoryMonitor } from '../../../hive-mind/core/MemoryMonitor.js';
-import { Memory } from '../../../hive-mind/core/Memory.js';
-import { DatabaseManager } from '../../../hive-mind/core/DatabaseManager.js';
+import { CollectiveMemory, MemoryOptimizer } from '../../simple-commands/hive-mind/memory';
+import { MemoryMonitor } from '../../../hive-mind/core/MemoryMonitor';
+import { Memory } from '../../../hive-mind/core/Memory';
+import { DatabaseManager } from '../../../hive-mind/core/DatabaseManager';
 import chalk from 'chalk';
 
 export function createOptimizeMemoryCommand(): Command {
@@ -175,7 +175,7 @@ async function runMemoryOptimization(options: any): Promise<void> {
     // Step 2: Database optimization
     console.log(chalk.blue('2. Optimizing database performance...'));
     const db = await DatabaseManager.getInstance();
-    const dbAnalytics = db.getDatabaseAnalytics();
+    const dbAnalytics = await db.getDatabaseAnalytics();
     
     if (dbAnalytics.fragmentation > 20) {
       console.log(chalk.yellow('   ⚠️ High database fragmentation detected'));

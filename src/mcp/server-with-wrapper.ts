@@ -1,10 +1,10 @@
 #!/usr/bin/env node
-import { getErrorMessage } from '../utils/error-handler.js';
+import { getErrorMessage } from '../utils/error-handler';
 /**
  * MCP Server entry point that uses the wrapper by default
  */
 
-import { ClaudeCodeMCPWrapper } from './claude-code-wrapper.js';
+import { ClaudeCodeMCPWrapper } from './claude-code-wrapper';
 
 // Check if we should use the legacy server
 const useLegacy = process.env.CLAUDE_FLOW_LEGACY_MCP === 'true' || 
@@ -14,7 +14,7 @@ async function main() {
   if (useLegacy) {
     console.error('Starting Claude-Flow MCP in legacy mode...');
     // Dynamically import the old server to avoid circular dependencies
-    const { runMCPServer } = await import('./server.js');
+    const { runMCPServer } = await import('./server');
     if (runMCPServer) {
       await runMCPServer();
     } else {

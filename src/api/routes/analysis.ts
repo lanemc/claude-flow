@@ -45,7 +45,7 @@ import {
   CapacityPlanning,
   WebSocketMessage,
   MetricsUpdateMessage
-} from '../types/index.js';
+} from '../types/index';
 
 const router: Router = express.Router();
 

@@ -1,11 +1,11 @@
-import { getErrorMessage } from '../utils/error-handler.js';
+import { getErrorMessage } from '../utils/error-handler';
 /**
  * Authentication and authorization for MCP
  */
 
-import type { MCPAuthConfig, MCPSession } from '../utils/types.js';
-import type { ILogger } from '../core/logger.js';
-import type { MCPError } from '../utils/errors.js';
+import type { MCPAuthConfig, MCPSession } from '../utils/types';
+import type { ILogger } from '../core/logger';
+import type { MCPError } from '../utils/errors';
 import { createHash, timingSafeEqual } from 'node:crypto';
 
 export interface IAuthManager {

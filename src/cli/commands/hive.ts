@@ -2,10 +2,10 @@
  * Hive Mind Command - Multi-agent swarm coordination with consensus mechanisms
  */
 
-import { CommandContext, success, error, warning, info } from '../cli-core.js';
-import { generateId } from '../../utils/helpers.js';
-import { SwarmCoordinator } from '../../coordination/swarm-coordinator.js';
-import { SwarmMemory } from '../../memory/swarm-memory.js';
+import { CommandContext, success, error, warning, info } from '../cli-core';
+import { generateId } from '../../utils/helpers';
+import { SwarmCoordinator } from '../../coordination/swarm-coordinator';
+import { SwarmMemory } from '../../memory/swarm-memory';
 
 interface HiveOptions {
   objective: string;

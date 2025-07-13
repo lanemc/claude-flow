@@ -3,23 +3,23 @@
  * Export all optimization components
  */
 
-import { ClaudeConnectionPool } from './connection-pool.js';
-import { AsyncFileManager } from './async-file-manager.js';
-import { OptimizedExecutor } from './optimized-executor.js';
+import { ClaudeConnectionPool } from './connection-pool';
+import { AsyncFileManager } from './async-file-manager';
+import { OptimizedExecutor } from './optimized-executor';
 
-export { ClaudeConnectionPool } from './connection-pool.js';
-export type { PoolConfig, PooledConnection } from './connection-pool.js';
+export { ClaudeConnectionPool } from './connection-pool';
+export type { PoolConfig, PooledConnection } from './connection-pool';
 
-export { AsyncFileManager } from './async-file-manager.js';
-export type { FileOperationResult } from './async-file-manager.js';
+export { AsyncFileManager } from './async-file-manager';
+export type { FileOperationResult } from './async-file-manager';
 
-export { CircularBuffer } from './circular-buffer.js';
+export { CircularBuffer } from './circular-buffer';
 
-export { TTLMap } from './ttl-map.js';
-export type { TTLMapOptions } from './ttl-map.js';
+export { TTLMap } from './ttl-map';
+export type { TTLMapOptions } from './ttl-map';
 
-export { OptimizedExecutor } from './optimized-executor.js';
-export type { ExecutorConfig, ExecutionMetrics } from './optimized-executor.js';
+export { OptimizedExecutor } from './optimized-executor';
+export type { ExecutorConfig, ExecutionMetrics } from './optimized-executor';
 
 // Re-export commonly used together
 export const createOptimizedSwarmStack = (config?: {

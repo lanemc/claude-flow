@@ -1,19 +1,19 @@
-import { getErrorMessage, hasAgentLoad, hasAgentTask, hasWorkStealingData, isObject } from '../utils/type-guards.js';
+import { getErrorMessage, hasAgentLoad, hasAgentTask, hasWorkStealingData, isObject } from '../utils/type-guards';
 /**
  * Advanced load balancing and work stealing implementation
  */
 
 import { EventEmitter } from 'node:events';
-import type { ILogger } from '../core/logger.js';
-import type { IEventBus } from '../core/event-bus.js';
+import type { ILogger } from '../core/logger';
+import type { IEventBus } from '../core/event-bus';
 import type { 
   AgentId, 
   AgentState, 
   TaskDefinition, 
   TaskId,
   LoadBalancingStrategy 
-} from '../swarm/types.js';
-import { WorkStealingCoordinator } from './work-stealing.js';
+} from '../swarm/types';
+import { WorkStealingCoordinator } from './work-stealing';
 
 export interface LoadBalancerConfig {
   strategy: LoadBalancingStrategy;

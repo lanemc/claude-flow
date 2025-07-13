@@ -11,7 +11,7 @@ import {
   showCommandHelp, 
   showAllCommands, 
   listCommands 
-} from '../command-registry.js';
+} from '../command-registry';
 
 // Mock all command modules
 jest.mock('../simple-commands/init.js', () => ({
@@ -138,7 +138,7 @@ describe('Command Registry', () => {
     });
 
     test('should execute command handler with arguments', async () => {
-      const { initCommand } = await import('../simple-commands/init.js');
+      const { initCommand } = await import('../simple-commands/init');
       
       await executeCommand('init', ['--sparc'], { force: true });
       
@@ -151,7 +151,7 @@ describe('Command Registry', () => {
     });
 
     test('should handle command execution errors', async () => {
-      const { swarmCommand } = await import('../simple-commands/swarm.js');
+      const { swarmCommand } = await import('../simple-commands/swarm');
       swarmCommand.mockRejectedValue(new Error('Command failed'));
       
       await expect(executeCommand('swarm', ['test'], {}))

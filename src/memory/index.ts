@@ -6,14 +6,14 @@
  * @module memory
  */
 
-import SharedMemory from './shared-memory.js';
-import { SwarmMemory, createSwarmMemory } from './swarm-memory.js';
-import { SWARM_NAMESPACES } from './types.js';
+import SharedMemory from './shared-memory';
+import { SwarmMemory, createSwarmMemory } from './swarm-memory';
+import { SWARM_NAMESPACES } from './types';
 import type { 
   SharedMemoryOptions, 
   SwarmMemoryOptions, 
   SwarmNamespace 
-} from './types.js';
+} from './types';
 
 export { SharedMemory, SwarmMemory, createSwarmMemory };
 
@@ -33,7 +33,7 @@ export type {
   TaskData,
   SessionState,
   WorkflowData
-} from './types.js';
+} from './types';
 
 /**
  * Create memory instance based on context

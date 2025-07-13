@@ -1,15 +1,15 @@
-import { getErrorMessage } from '../../utils/error-handler.js';
-import type { Command, CommandContext } from '../cli-core.js';
-import { success, error, warning, info } from '../cli-core.js';
+import { getErrorMessage } from '../../utils/error-handler';
+import type { Command, CommandContext } from '../cli-core';
+import { success, error, warning, info } from '../cli-core';
 import colors from 'chalk';
-import { ProjectManager, Project } from '../../enterprise/project-manager.js';
-import { DeploymentManager, Deployment, DeploymentEnvironment } from '../../enterprise/deployment-manager.js';
-import { CloudManager, CloudProvider, CloudResource } from '../../enterprise/cloud-manager.js';
-import { SecurityManager, SecurityScan } from '../../enterprise/security-manager.js';
-import { AnalyticsManager } from '../../enterprise/analytics-manager.js';
-import { AuditManager } from '../../enterprise/audit-manager.js';
-import { Logger } from '../../core/logger.js';
-import type { ConfigManager } from '../../core/config.js';
+import { ProjectManager, Project } from '../../enterprise/project-manager';
+import { DeploymentManager, Deployment, DeploymentEnvironment } from '../../enterprise/deployment-manager';
+import { CloudManager, CloudProvider, CloudResource } from '../../enterprise/cloud-manager';
+import { SecurityManager, SecurityScan } from '../../enterprise/security-manager';
+import { AnalyticsManager } from '../../enterprise/analytics-manager';
+import { AuditManager } from '../../enterprise/audit-manager';
+import { Logger } from '../../core/logger';
+import type { ConfigManager } from '../../core/config';
 
 const { bold, blue, green, yellow, red, cyan, magenta } = colors;
 

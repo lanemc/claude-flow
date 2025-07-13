@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../../utils/error-handler.js';
+import { getErrorMessage } from '../../utils/error-handler';
 // init/swarm-commands.ts - Swarm command documentation creation
 export async function createSwarmCommands(): Promise<void> {
   const fs = await import('fs/promises');

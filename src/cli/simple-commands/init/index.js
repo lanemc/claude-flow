@@ -1,55 +1,55 @@
 // init/index.js - Initialize Claude Code integration files
-import { printSuccess, printError, printWarning } from '../../utils.js';
-import { Deno, cwd, exit, existsSync } from '../../node-compat.js';
-import process from 'process';
-import { createLocalExecutable } from './executable-wrapper.js';
-import { createSparcStructureManually } from './sparc-structure.js';
-import { createClaudeSlashCommands } from './claude-commands/slash-commands.js';
-import { createOptimizedClaudeSlashCommands } from './claude-commands/optimized-slash-commands.js';
-import { execSync } from 'child_process';
-import { promises as fs } from 'fs';
-import { 
+const { printSuccess, printError, printWarning } = require('../../utils.js');
+const { Deno, cwd, exit, existsSync } = require('../../node-compat.js');
+const process = require('process');
+const { createLocalExecutable } = require('./executable-wrapper.js');
+const { createSparcStructureManually } = require('./sparc-structure.js');
+const { createClaudeSlashCommands } = require('./claude-commands/slash-commands.js');
+const { createOptimizedClaudeSlashCommands } = require('./claude-commands/optimized-slash-commands.js');
+const { execSync } = require('child_process');
+const { promises: fs } = require('fs');
+const { 
   createSparcClaudeMd, 
   createFullClaudeMd, 
   createMinimalClaudeMd,
   createOptimizedSparcClaudeMd 
-} from './templates/claude-md.js';
-import { 
+} = require('./templates/claude-md.js');
+const { 
   createFullMemoryBankMd, 
   createMinimalMemoryBankMd,
   createOptimizedMemoryBankMd 
-} from './templates/memory-bank-md.js';
-import { 
+} = require('./templates/memory-bank-md.js');
+const { 
   createFullCoordinationMd, 
   createMinimalCoordinationMd,
   createOptimizedCoordinationMd 
-} from './templates/coordination-md.js';
-import { 
+} = require('./templates/coordination-md.js');
+const { 
   createAgentsReadme, 
   createSessionsReadme 
-} from './templates/readme-files.js';
-import { 
+} = require('./templates/readme-files.js');
+const { 
   createSparcModeTemplates, 
   createSparcModesOverview,
   createSwarmStrategyTemplates 
-} from './templates/sparc-modes.js';
-import { showInitHelp } from './help.js';
-import { 
+} = require('./templates/sparc-modes.js');
+const { showInitHelp } = require('./help.js');
+const { 
   batchInitCommand, 
   batchInitFromConfig, 
   validateBatchOptions 
-} from './batch-init.js';
-import { ValidationSystem, runFullValidation } from './validation/index.js';
-import { RollbackSystem, createAtomicOperation } from './rollback/index.js';
-import {
+} = require('./batch-init.js');
+const { ValidationSystem, runFullValidation } = require('./validation/index.js');
+const { RollbackSystem, createAtomicOperation } = require('./rollback/index.js');
+const {
   createEnhancedClaudeMd,
   createEnhancedSettingsJson,
   createWrapperScript,
   createCommandDoc,
   createHelperScript,
   COMMAND_STRUCTURE
-} from './templates/enhanced-templates.js';
-import { getIsolatedNpxEnv } from '../../../utils/npx-isolated-cache.js';
+} = require('./templates/enhanced-templates.js');
+const { getIsolatedNpxEnv } = require('../../../utils/npx-isolated-cache.js');
 
 /**
  * Check if Claude Code CLI is installed
@@ -107,7 +107,7 @@ async function setupMcpServers(dryRun = false) {
   }
 }
 
-export async function initCommand(subArgs, flags) {
+async function initCommand(subArgs, flags) {
   // Show help if requested
   if (flags.help || flags.h || subArgs.includes('--help') || subArgs.includes('-h')) {
     showInitHelp();
@@ -1198,3 +1198,5 @@ ${commands.map(cmd => `- [${cmd}](./${cmd}.md)`).join('\n')}
     printError(`Failed to initialize Claude Flow v2.0.0: ${err.message}`);
   }
 }
+
+module.exports = { initCommand };

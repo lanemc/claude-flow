@@ -1,11 +1,11 @@
-import { getErrorMessage } from '../../utils/error-handler.js';
+import { getErrorMessage } from '../../utils/error-handler';
 // init/index.ts - Main init command orchestrator
-import { printSuccess, printError } from '../utils.js';
-import { createDirectoryStructure } from './directory-structure.js';
-import { createSwarmCommands } from './swarm-commands.js';
-import { createSparcEnvironment } from './sparc-environment.js';
-import { createClaudeConfig } from './claude-config.js';
-import { createBatchToolsGuide } from './batch-tools.js';
+import { printSuccess, printError } from '../utils';
+import { createDirectoryStructure } from './directory-structure';
+import { createSwarmCommands } from './swarm-commands';
+import { createSparcEnvironment } from './sparc-environment';
+import { createClaudeConfig } from './claude-config';
+import { createBatchToolsGuide } from './batch-tools';
 
 export interface InitOptions {
   sparc?: boolean;

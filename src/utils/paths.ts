@@ -1,10 +1,10 @@
-import { getErrorMessage } from '../utils/error-handler.js';
+import { getErrorMessage } from '../utils/error-handler';
 import { dirname, join, resolve } from 'path';
-import { fileURLToPath } from 'url';
+import { getFilename, getDirname } from './import-meta-shim';
 import { existsSync } from 'fs';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const __filename = getFilename();
+const __dirname = getDirname();
 
 export function getClaudeFlowRoot(): string {
   // Try multiple strategies to find the root

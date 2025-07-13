@@ -1,9 +1,9 @@
-import { getErrorMessage } from '../utils/error-handler.js';
+import { getErrorMessage } from '../utils/error-handler';
 import { EventEmitter } from 'node:events';
 import * as os from 'node:os';
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
-import { createLogger, ILogger } from '../core/logger.js';
+import { createLogger, ILogger } from '../core/logger';
 import { performance } from 'node:perf_hooks';
 
 interface AgentMetrics {

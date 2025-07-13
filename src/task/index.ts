@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../utils/error-handler.js';
+import { getErrorMessage } from '../utils/error-handler';
 /**
  * Task Management System - Main Export
  * Comprehensive task management with orchestration features
@@ -18,7 +18,7 @@ export {
   type TaskFilter,
   type TaskSort,
   type TaskCheckpoint
-} from './engine.js';
+} from './engine';
 
 export {
   createTaskCreateCommand,
@@ -26,7 +26,7 @@ export {
   createTaskStatusCommand,
   createTaskCancelCommand,
   createTaskWorkflowCommand
-} from './commands.js';
+} from './commands';
 
 export {
   type TaskCommandContext,
@@ -34,11 +34,11 @@ export {
   type MemoryEntry,
   type CoordinationContext,
   type TaskMetadata
-} from './types.js';
+} from './types';
 
 export {
   TaskCoordinator
-} from './coordination.js';
+} from './coordination';
 
 /**
  * Initialize the complete task management system
@@ -61,9 +61,9 @@ export async function initializeTaskManagement(
   };
 }> {
   // Import required classes dynamically to avoid circular dependencies
-  const { TaskEngine } = await import('./engine.js');
-  const { TaskCoordinator } = await import('./coordination.js');
-  const { createTaskCreateCommand, createTaskListCommand, createTaskStatusCommand, createTaskCancelCommand, createTaskWorkflowCommand } = await import('./commands.js');
+  const { TaskEngine } = await import('./engine');
+  const { TaskCoordinator } = await import('./coordination');
+  const { createTaskCreateCommand, createTaskListCommand, createTaskStatusCommand, createTaskCancelCommand, createTaskWorkflowCommand } = await import('./commands');
   
   const taskEngine = new TaskEngine(
     config.maxConcurrentTasks || 10,
@@ -190,7 +190,7 @@ export async function retrieveCoordinationData(
 export const USAGE_EXAMPLES = {
   todoWrite: `
 // Example: Using TodoWrite for task coordination
-import { createTaskTodos } from './task.js';
+import { createTaskTodos } from './task';
 
 const todos = await createTaskTodos(
   "Build e-commerce platform",
@@ -212,7 +212,7 @@ const todos = await createTaskTodos(
 
   taskTool: `
 // Example: Using Task tool pattern for parallel agents
-import { launchParallelAgents } from './task.js';
+import { launchParallelAgents } from './task';
 
 const agentIds = await launchParallelAgents([
   {
@@ -241,7 +241,7 @@ const agentIds = await launchParallelAgents([
 
   memoryCoordination: `
 // Example: Using Memory for cross-agent coordination
-import { storeCoordinationData, retrieveCoordinationData } from './task.js';
+import { storeCoordinationData, retrieveCoordinationData } from './task';
 
 // Store research findings for other agents
 await storeCoordinationData(
@@ -268,7 +268,7 @@ const findings = await retrieveCoordinationData(
 
   batchOperations: `
 // Example: Coordinated batch operations
-import { TaskCoordinator } from './task.js';
+import { TaskCoordinator } from './task';
 
 const results = await coordinator.coordinateBatchOperations([
   {

@@ -1,9 +1,9 @@
-import { getErrorMessage } from '../../../utils/error-handler.js';
+import { getErrorMessage } from '../../../utils/error-handler';
 /**
  * Process Manager - Handles lifecycle of system processes
  */
 
-import { EventEmitter } from './event-emitter.js';
+import { EventEmitter } from './event-emitter';
 import chalk from 'chalk';
 import { 
   ProcessInfo, 
@@ -11,15 +11,15 @@ import {
   ProcessStatus, 
   ProcessMetrics,
   SystemStats 
-} from './types.js';
-import { Orchestrator } from '../../../core/orchestrator.js';
-import { TerminalManager } from '../../../terminal/manager.js';
-import { MemoryManager } from '../../../memory/manager.js';
-import { CoordinationManager } from '../../../coordination/manager.js';
-import { MCPServer } from '../../../mcp/server.js';
-import { eventBus } from '../../../core/event-bus.js';
-import { logger } from '../../../core/logger.js';
-import { configManager } from '../../../core/config.js';
+} from './types';
+import { Orchestrator } from '../../../core/orchestrator';
+import { TerminalManager } from '../../../terminal/manager';
+import { MemoryManager } from '../../../memory/manager';
+import { CoordinationManager } from '../../../coordination/manager';
+import { MCPServer } from '../../../mcp/server';
+import { eventBus } from '../../../core/event-bus';
+import { logger } from '../../../core/logger';
+import { configManager } from '../../../core/config';
 
 export class ProcessManager extends EventEmitter {
   private processes: Map<string, ProcessInfo> = new Map();
@@ -107,7 +107,7 @@ export class ProcessManager extends EventEmitter {
       switch (process.type) {
         case ProcessType.EVENT_BUS:
           // Event bus is already initialized globally
-          process.pid = Deno.pid;
+          process.pid = process.pid;
           break;
 
         case ProcessType.MEMORY_MANAGER:

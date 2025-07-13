@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../utils/error-handler.js';
+import { getErrorMessage } from '../utils/error-handler';
 import { promises as fs } from 'node:fs';
 /**
  * Enhanced Interactive REPL for Claude-Flow
@@ -7,9 +7,9 @@ import { promises as fs } from 'node:fs';
 import inquirer from 'inquirer';
 import chalk from 'chalk';
 import Table from 'cli-table3';
-import type { AgentProfile, Task } from '../utils/types.js';
-import { generateId } from '../utils/helpers.js';
-import { formatStatusIndicator, formatDuration, formatProgressBar } from './formatter.js';
+import type { AgentProfile, Task } from '../utils/types';
+import { generateId } from '../utils/helpers';
+import { formatStatusIndicator, formatDuration, formatProgressBar } from './formatter';
 
 interface REPLCommand {
   name: string;

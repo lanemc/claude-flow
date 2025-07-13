@@ -13,7 +13,7 @@ import {
   WindowClaudeFlowUI,
   ModuleExports,
   UIInitializationError
-} from './types/index.js';
+} from './types/index';
 
 // Core Architecture Components (these would need to be implemented)
 // For now, we'll create placeholder interfaces
@@ -388,4 +388,4 @@ export type {
   ArchitectureInfo,
   WindowClaudeFlowUI,
   ModuleExports
-} from './types/index.js';
+} from './types/index';

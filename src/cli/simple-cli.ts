@@ -1,19 +1,21 @@
-#!/usr/bin/env -S deno run --allow-all
-import { getErrorMessage } from '../utils/error-handler.js';
+#!/usr/bin/env node
+import { getErrorMessage } from '../utils/error-handler';
 /**
  * Simple CLI wrapper for Claude-Flow (JavaScript version)
  * This version avoids TypeScript issues in node_modules
  */
 
 import { promises as fs } from 'node:fs';
+import { spawn } from 'node:child_process';
 import { 
   executeCommand, 
   hasCommand, 
   showCommandHelp, 
   showAllCommands,
   listCommands 
-} from './command-registry.js';
-import { parseFlags } from './utils.js';
+} from './command-registry';
+import { parseFlags } from './utils';
+import { getFilename } from '../utils/import-meta-shim';
 
 const VERSION = '2.0.0';
 
@@ -171,7 +173,7 @@ function showHelpWithCommands() {
 }
 
 async function main() {
-  const args = Deno.args;
+  const args = process.argv.slice(2);
   
   if (args.length === 0) {
     printHelp();
@@ -1424,10 +1426,9 @@ ${flags.mode === 'full' || !flags.mode ? `Full-stack development covering all as
                 console.log(`claude ${claudeArgs.map(arg => arg.includes(' ') || arg.includes('\n') ? `"${arg}"` : arg).join(' ')}`);
               }
               
-              const command = new Deno.Command('claude', {
-                args: claudeArgs,
+              const child = spawn('claude', claudeArgs, {
                 env: {
-                  ...Deno.env.toObject(),
+                  ...process.env,
                   CLAUDE_INSTANCE_ID: instanceId,
                   CLAUDE_FLOW_MODE: flags.mode || 'full',
                   CLAUDE_FLOW_COVERAGE: (flags.coverage || 80).toString(),
@@ -1438,13 +1439,14 @@ ${flags.mode === 'full' || !flags.mode ? `Full-stack development covering all as
                   CLAUDE_FLOW_COORDINATION_ENABLED: flags.parallel ? 'true' : 'false',
                   CLAUDE_FLOW_FEATURES: 'memory,coordination,swarm',
                 },
-                stdin: 'inherit',
-                stdout: 'inherit',
-                stderr: 'inherit',
+                stdio: 'inherit',
               });
               
-              const child = command.spawn();
-              const status = await child.status;
+              const status = await new Promise<{success: boolean, code: number | null}>((resolve) => {
+                child.on('exit', (code) => {
+                  resolve({ success: code === 0, code });
+                });
+              });
               
               if (status.success) {
                 printSuccess(`Claude instance ${instanceId} completed successfully`);
@@ -2174,17 +2176,31 @@ Shortcuts:
     if (trimmed.startsWith('!')) {
       const shellCmd = trimmed.substring(1);
       try {
-        const command = new Deno.Command('sh', {
-          args: ['-c', shellCmd],
-          stdout: 'piped',
-          stderr: 'piped'
+        const child = spawn('sh', ['-c', shellCmd], {
+          stdio: 'pipe'
         });
-        const { stdout, stderr } = await command.output();
+        
+        let stdout = '';
+        let stderr = '';
+        
+        child.stdout?.on('data', (data) => {
+          stdout += data.toString();
+        });
+        
+        child.stderr?.on('data', (data) => {
+          stderr += data.toString();
+        });
+        
+        await new Promise<void>((resolve, reject) => {
+          child.on('exit', () => resolve());
+          child.on('error', reject);
+        });
+        
         if (stdout.length > 0) {
-          console.log(new TextDecoder().decode(stdout));
+          console.log(stdout.trim());
         }
         if (stderr.length > 0) {
-          console.error(new TextDecoder().decode(stderr));
+          console.error(stderr.trim());
         }
       } catch (err: unknown) {
         console.error(`Shell error: ${(err as Error).message}`);
@@ -2471,22 +2487,27 @@ Shortcuts:
   }
   
   // Main REPL loop
-  const decoder = new TextDecoder();
-  const encoder = new TextEncoder();
+  process.stdin.setRawMode(true);
+  process.stdin.resume();
+  process.stdin.setEncoding('utf8');
   
   while (true) {
     // Show prompt
     const prompt = replState.currentSession ? 
       `claude-flow:${replState.currentSession}> ` : 
       'claude-flow> ';
-    await Deno.stdout.write(encoder.encode(prompt));
+    process.stdout.write(prompt);
     
     // Read input
-    const buf = new Uint8Array(1024);
-    const n = await Deno.stdin.read(buf);
-    if (n === null) break;
+    const input = await new Promise<string>((resolve) => {
+      const onData = (data: string) => {
+        process.stdin.removeListener('data', onData);
+        resolve(data.trim());
+      };
+      process.stdin.once('data', onData);
+    });
     
-    const input = decoder.decode(buf.subarray(0, n)).trim();
+    if (input === null || input === undefined) break;
     
     // Process command
     const shouldContinue = await processReplCommand(input);
@@ -2821,10 +2842,10 @@ async function createSparcStructureManually() {
     
     for (const dir of rooDirectories) {
       try {
-        await Deno.mkdir(dir, { recursive: true });
+        await fs.mkdir(dir, { recursive: true });
         console.log(`  ✓ Created ${dir}/`);
-      } catch (err) {
-        if (!(err instanceof Deno.errors.AlreadyExists)) {
+      } catch (err: any) {
+        if (err.code !== 'EEXIST') {
           throw err;
         }
       }
@@ -3259,11 +3280,9 @@ For more information about SPARC methodology, see: https://github.com/ruvnet/cla
 }
 
 // Node.js doesn't support import.meta.main, use process check instead
-import { fileURLToPath } from 'url';
-
-const isMainModule = process.argv[1] === fileURLToPath(import.meta.url) || 
+const isMainModule = process.argv[1] === getFilename() || 
                     process.argv[1].endsWith('/simple-cli.js');
 
 if (isMainModule) {
-  await main();
+  main().catch(console.error);
 }

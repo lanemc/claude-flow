@@ -7,9 +7,9 @@
 
 import { EventEmitter } from 'events';
 import { v4 as uuidv4 } from 'uuid';
-import { Agent } from './Agent.js';
-import { DatabaseManager } from './DatabaseManager.js';
-import { MCPToolWrapper } from '../integration/MCPToolWrapper.js';
+import { Agent } from './Agent';
+import { DatabaseManager } from './DatabaseManager';
+import { MCPToolWrapper } from '../integration/MCPToolWrapper';
 import {
   SwarmTopology,
   Task,
@@ -19,7 +19,7 @@ import {
   ConsensusProposal,
   QueenDecision,
   CoordinationStrategy
-} from '../types.js';
+} from '../types';
 
 interface QueenConfig {
   swarmId: string;

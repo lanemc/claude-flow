@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../utils/error-handler.js';
+import { getErrorMessage } from '../utils/error-handler';
 /**
  * Migration Analyzer - Analyzes existing projects for migration readiness
  */
@@ -6,8 +6,8 @@ import { getErrorMessage } from '../utils/error-handler.js';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as crypto from 'crypto';
-import type { MigrationAnalysis, MigrationRisk } from './types.js';
-import { logger } from './logger.js';
+import type { MigrationAnalysis, MigrationRisk } from './types';
+import { logger } from './logger';
 import * as chalk from 'chalk';
 import { glob } from 'glob';
 

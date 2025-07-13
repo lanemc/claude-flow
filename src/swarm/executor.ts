@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../utils/error-handler.js';
+import { getErrorMessage } from '../utils/error-handler';
 /**
  * Advanced Task Executor with timeout handling and process management
  */
@@ -8,12 +8,12 @@ import { EventEmitter } from 'node:events';
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
 import * as os from 'node:os';
-import { Logger } from '../core/logger.js';
-import { generateId } from '../utils/helpers.js';
+import { Logger } from '../core/logger';
+import { generateId } from '../utils/helpers';
 import {
   TaskDefinition, AgentState, TaskResult, SwarmEvent, EventType,
   SWARM_CONSTANTS
-} from './types.js';
+} from './types';
 
 export interface ExecutionContext {
   task: TaskDefinition;

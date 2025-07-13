@@ -1,17 +1,17 @@
-import { getErrorMessage } from '../../utils/error-handler.js';
+import { getErrorMessage } from '../../utils/error-handler';
 /**
  * Recovery Manager for MCP
  * Orchestrates all recovery components for comprehensive connection stability
  */
 
 import { EventEmitter } from 'node:events';
-import type { ILogger } from '../../core/logger.js';
-import type { MCPClient } from '../client.js';
-import { ConnectionHealthMonitor, HealthStatus } from './connection-health-monitor.js';
-import { ReconnectionManager } from './reconnection-manager.js';
-import { FallbackCoordinator } from './fallback-coordinator.js';
-import { ConnectionStateManager } from './connection-state-manager.js';
-import type { MCPConfig, MCPRequest } from '../../utils/types.js';
+import type { ILogger } from '../../core/logger';
+import type { MCPClient } from '../client';
+import { ConnectionHealthMonitor, HealthStatus } from './connection-health-monitor';
+import { ReconnectionManager } from './reconnection-manager';
+import { FallbackCoordinator } from './fallback-coordinator';
+import { ConnectionStateManager } from './connection-state-manager';
+import type { MCPConfig, MCPRequest } from '../../utils/types';
 
 export interface RecoveryConfig {
   enableRecovery: boolean;

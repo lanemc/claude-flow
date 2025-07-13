@@ -1,4 +1,4 @@
-import { getErrorMessage } from "../utils/error-handler.js";
+import { getErrorMessage } from "../utils/error-handler";
 /**
  * Rollback Manager - Handles rollback operations and backup management
  */
@@ -6,8 +6,8 @@ import { getErrorMessage } from "../utils/error-handler.js";
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as crypto from "crypto";
-import type { MigrationBackup, BackupFile } from "./types.js";
-import { logger } from "./logger.js";
+import type { MigrationBackup, BackupFile } from "./types";
+import { logger } from "./logger";
 import * as chalk from "chalk";
 import inquirer from "inquirer";
 

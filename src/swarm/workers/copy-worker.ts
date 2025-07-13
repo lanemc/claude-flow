@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../../utils/error-handler.js';
+import { getErrorMessage } from '../../utils/error-handler';
 import { parentPort, workerData } from 'worker_threads';
 import * as fs from 'fs/promises';
 import * as path from 'path';

@@ -1,10 +1,10 @@
-import { getErrorMessage } from '../utils/error-handler.js';
+import { getErrorMessage } from '../utils/error-handler';
 /**
  * Memory indexer for fast querying
  */
 
-import type { MemoryEntry, MemoryQuery } from '../utils/types.js';
-import type { ILogger } from '../core/logger.js';
+import type { MemoryEntry, MemoryQuery } from '../utils/types';
+import type { ILogger } from '../core/logger';
 
 interface Index<T> {
   get(key: T): Set<string>;

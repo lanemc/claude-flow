@@ -2,7 +2,7 @@
  * Hook validation utilities
  */
 
-import type { HookType } from './hook-types.js';
+import type { HookType } from './hook-types';
 
 export interface ValidationResult {
   valid: boolean;

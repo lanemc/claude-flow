@@ -16,16 +16,16 @@ export type ExtendedTaskType =
   | 'performance-testing' | 'security-testing' | 'api-testing'
   | 'test-automation' | 'test-analysis';
 
-import { getErrorMessage } from '../../utils/error-handler.js';
+import { getErrorMessage } from '../../utils/error-handler';
 /**
  * Optimized AUTO Strategy Implementation
  * Uses machine learning-inspired heuristics and intelligent task decomposition
  */
 
-import { BaseStrategy } from './base.js';
-import type { DecompositionResult, TaskBatch, AgentAllocation, TaskPattern } from './base.js';
-import type { SwarmObjective, TaskDefinition, AgentState, TaskType, TaskPriority, TaskId, AgentType } from '../types.js';
-import { generateId } from '../../utils/helpers.js';
+import { BaseStrategy } from './base';
+import type { DecompositionResult, TaskBatch, AgentAllocation, TaskPattern } from './base';
+import type { SwarmObjective, TaskDefinition, AgentState, TaskType, TaskPriority, TaskId, AgentType } from '../types';
+import { generateId } from '../../utils/helpers';
 
 interface MLHeuristics {
   taskTypeWeights: Record<string, number>;

@@ -19,7 +19,7 @@ import {
   isValidJson,
   isValidUrl,
   formatTimestamp
-} from '../utils.js';
+} from '../utils';
 
 // Mock console for testing output functions
 let consoleLogSpy: any;

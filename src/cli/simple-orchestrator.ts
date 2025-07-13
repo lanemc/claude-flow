@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../utils/error-handler.js';
+import { getErrorMessage } from '../utils/error-handler';
 /**
  * Simple orchestrator implementation for Node.js compatibility
  */
@@ -9,11 +9,11 @@ import { WebSocketServer } from 'ws';
 import { createServer } from 'http';
 import { spawn } from 'child_process';
 import path from 'path';
-import { fileURLToPath } from 'url';
 import cors from 'cors';
+import { getFilename, getDirname } from '../utils/import-meta-shim';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __filename = getFilename();
+const __dirname = getDirname();
 
 // Simple in-memory stores
 const agents = new Map();

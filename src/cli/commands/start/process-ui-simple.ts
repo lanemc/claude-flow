@@ -1,12 +1,12 @@
-import { getErrorMessage } from '../../../utils/error-handler.js';
+import { getErrorMessage } from '../../../utils/error-handler';
 /**
  * Simplified Process UI without keypress dependency
  * Uses basic stdin reading for compatibility
  */
 
 import chalk from 'chalk';
-import type { ProcessManager } from './process-manager.js';
-import { ProcessInfo, ProcessStatus, SystemStats } from './types.js';
+import type { ProcessManager } from './process-manager';
+import { ProcessInfo, ProcessStatus, SystemStats } from './types';
 
 export class ProcessUI {
   private processManager: ProcessManager;
@@ -42,24 +42,33 @@ export class ProcessUI {
     this.render();
 
     // Simple input loop
-    const decoder = new TextDecoder();
-    const encoder = new TextEncoder();
+    const stdin = process.stdin;
+    stdin.setRawMode(true);
+    stdin.resume();
+    stdin.setEncoding('utf8');
     
     while (this.running) {
       // Show prompt
-      await Deno.stdout.write(encoder.encode('\nCommand: '));
+      process.stdout.write('\nCommand: ');
       
-      // Read single character
-      const buf = new Uint8Array(1024);
-      const n = await Deno.stdin.read(buf);
-      if (n === null) break;
-      
-      const input = decoder.decode(buf.subarray(0, n)).trim();
+      // Read input
+      const input = await this.readInput();
+      if (input === null) break;
       
       if (input.length > 0) {
         await this.handleCommand(input);
       }
     }
+  }
+
+  private async readInput(): Promise<string | null> {
+    return new Promise((resolve) => {
+      const onData = (data: string) => {
+        process.stdin.removeListener('data', onData);
+        resolve(data.trim());
+      };
+      process.stdin.once('data', onData);
+    });
   }
 
   async stop(): Promise<void> {
@@ -152,14 +161,14 @@ export class ProcessUI {
     console.log(chalk.gray('[r] Refresh [h] Help [q] Quit'));
   }
 
-  private async showProcessMenu(process: ProcessInfo): Promise<void> {
+  private async showProcessMenu(processInfo: ProcessInfo): Promise<void> {
     console.log();
-    console.log(chalk.cyan.bold(`Selected: ${process.name}`));
+    console.log(chalk.cyan.bold(`Selected: ${processInfo.name}`));
     console.log(chalk.gray('─'.repeat(40)));
     
-    if (process.status === ProcessStatus.STOPPED) {
+    if (processInfo.status === ProcessStatus.STOPPED) {
       console.log('[s] Start');
-    } else if (process.status === ProcessStatus.RUNNING) {
+    } else if (processInfo.status === ProcessStatus.RUNNING) {
       console.log('[x] Stop');
       console.log('[r] Restart');
     }
@@ -167,35 +176,31 @@ export class ProcessUI {
     console.log('[d] Details');
     console.log('[c] Cancel');
     
-    const decoder = new TextDecoder();
-    const encoder = new TextEncoder();
+    process.stdout.write('\nAction: ');
     
-    await Deno.stdout.write(encoder.encode('\nAction: '));
+    const action = await this.readInput();
+    if (action === null) return;
     
-    const buf = new Uint8Array(1024);
-    const n = await Deno.stdin.read(buf);
-    if (n === null) return;
+    const actionLower = action.toLowerCase();
     
-    const action = decoder.decode(buf.subarray(0, n)).trim().toLowerCase();
-    
-    switch (action) {
+    switch (actionLower) {
       case 's':
-        if (process.status === ProcessStatus.STOPPED) {
-          await this.startProcess(process.id);
+        if (processInfo.status === ProcessStatus.STOPPED) {
+          await this.startProcess(processInfo.id);
         }
         break;
       case 'x':
-        if (process.status === ProcessStatus.RUNNING) {
-          await this.stopProcess(process.id);
+        if (processInfo.status === ProcessStatus.RUNNING) {
+          await this.stopProcess(processInfo.id);
         }
         break;
       case 'r':
-        if (process.status === ProcessStatus.RUNNING) {
-          await this.restartProcess(process.id);
+        if (processInfo.status === ProcessStatus.RUNNING) {
+          await this.restartProcess(processInfo.id);
         }
         break;
       case 'd':
-        this.showProcessDetails(process);
+        this.showProcessDetails(processInfo);
         await this.waitForKey();
         break;
     }
@@ -203,38 +208,38 @@ export class ProcessUI {
     this.render();
   }
 
-  private showProcessDetails(process: ProcessInfo): void {
+  private showProcessDetails(processInfo: ProcessInfo): void {
     console.log();
-    console.log(chalk.cyan.bold(`📋 Process Details: ${process.name}`));
+    console.log(chalk.cyan.bold(`📋 Process Details: ${processInfo.name}`));
     console.log(chalk.gray('─'.repeat(60)));
     
-    console.log(chalk.white('ID:'), process.id);
-    console.log(chalk.white('Type:'), process.type);
-    console.log(chalk.white('Status:'), this.getStatusDisplay(process.status), process.status);
+    console.log(chalk.white('ID:'), processInfo.id);
+    console.log(chalk.white('Type:'), processInfo.type);
+    console.log(chalk.white('Status:'), this.getStatusDisplay(processInfo.status), processInfo.status);
     
-    if (process.pid) {
-      console.log(chalk.white('PID:'), process.pid);
+    if (processInfo.pid) {
+      console.log(chalk.white('PID:'), processInfo.pid);
     }
     
-    if (process.startTime) {
-      const uptime = Date.now() - process.startTime;
+    if (processInfo.startTime) {
+      const uptime = Date.now() - processInfo.startTime;
       console.log(chalk.white('Uptime:'), this.formatUptime(uptime));
     }
     
-    if (process.metrics) {
+    if (processInfo.metrics) {
       console.log();
       console.log(chalk.white.bold('Metrics:'));
-      if (process.metrics.cpu !== undefined) {
-        console.log(chalk.white('CPU:'), `${process.metrics.cpu.toFixed(1)}%`);
+      if (processInfo.metrics.cpu !== undefined) {
+        console.log(chalk.white('CPU:'), `${processInfo.metrics.cpu.toFixed(1)}%`);
       }
-      if (process.metrics.memory !== undefined) {
-        console.log(chalk.white('Memory:'), `${process.metrics.memory.toFixed(0)} MB`);
+      if (processInfo.metrics.memory !== undefined) {
+        console.log(chalk.white('Memory:'), `${processInfo.metrics.memory.toFixed(0)} MB`);
       }
-      if (process.metrics.restarts !== undefined) {
-        console.log(chalk.white('Restarts:'), process.metrics.restarts);
+      if (processInfo.metrics.restarts !== undefined) {
+        console.log(chalk.white('Restarts:'), processInfo.metrics.restarts);
       }
-      if (process.metrics.lastError) {
-        console.log(chalk.red('Last Error:'), process.metrics.lastError);
+      if (processInfo.metrics.lastError) {
+        console.log(chalk.red('Last Error:'), processInfo.metrics.lastError);
       }
     }
     
@@ -243,8 +248,7 @@ export class ProcessUI {
   }
 
   private async waitForKey(): Promise<void> {
-    const buf = new Uint8Array(1);
-    await Deno.stdin.read(buf);
+    await this.readInput();
   }
 
   private getStatusDisplay(status: ProcessStatus): string {
@@ -371,11 +375,9 @@ export class ProcessUI {
       console.log(chalk.yellow('⚠️  Some processes are still running.'));
       console.log('Stop all processes before exiting? [y/N]: ');
       
-      const decoder = new TextDecoder();
-      const buf = new Uint8Array(1024);
-      const n = await Deno.stdin.read(buf);
+      const response = await this.readInput();
       
-      if (n && decoder.decode(buf.subarray(0, n)).trim().toLowerCase() === 'y') {
+      if (response && response.toLowerCase() === 'y') {
         await this.stopAll();
       }
     }

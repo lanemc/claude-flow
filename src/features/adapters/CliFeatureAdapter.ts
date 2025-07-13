@@ -1,4 +1,4 @@
-import { ConfigManager } from '../../config/config-manager.js';
+import { ConfigManager } from '../../config/config-manager';
 import chalk from 'chalk';
 
 export interface CliFeatureAdapter {

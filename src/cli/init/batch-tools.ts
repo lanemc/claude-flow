@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../../utils/error-handler.js';
+import { getErrorMessage } from '../../utils/error-handler';
 // init/batch-tools.ts - Batch tools coordination guides
 export async function createBatchToolsGuide(): Promise<void> {
   const fs = await import('fs/promises');

@@ -6,15 +6,15 @@
  */
 
 import { EventEmitter } from 'events';
-import { DatabaseManager } from './DatabaseManager.js';
-import { Agent } from './Agent.js';
+import { DatabaseManager } from './DatabaseManager';
+import { Agent } from './Agent';
 import {
   Message,
   MessageType,
   MessagePriority,
   CommunicationStats,
   CommunicationChannel
-} from '../types.js';
+} from '../types';
 
 export class Communication extends EventEmitter {
   private swarmId: string;

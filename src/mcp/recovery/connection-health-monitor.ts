@@ -1,12 +1,12 @@
-import { getErrorMessage } from '../../utils/error-handler.js';
+import { getErrorMessage } from '../../utils/error-handler';
 /**
  * Connection Health Monitor for MCP
  * Monitors connection health and triggers recovery when needed
  */
 
 import { EventEmitter } from 'node:events';
-import type { ILogger } from '../../core/logger.js';
-import type { MCPClient } from '../client.js';
+import type { ILogger } from '../../core/logger';
+import type { MCPClient } from '../client';
 
 export interface HealthStatus {
   healthy: boolean;

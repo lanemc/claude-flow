@@ -1,8 +1,8 @@
-import { getErrorMessage } from '../utils/error-handler.js';
+import { getErrorMessage } from '../utils/error-handler';
 import { spawn, ChildProcess } from 'node:child_process';
 import { EventEmitter } from 'node:events';
-import { createLogger, ILogger } from '../core/logger.js';
-import { generateId } from '../utils/helpers.js';
+import { createLogger, ILogger } from '../core/logger';
+import { generateId } from '../utils/helpers';
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
 

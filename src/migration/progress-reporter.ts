@@ -1,10 +1,10 @@
-import { getErrorMessage } from '../utils/error-handler.js';
+import { getErrorMessage } from '../utils/error-handler';
 /**
  * Progress Reporter - Provides visual feedback during migration
  */
 
 import * as chalk from 'chalk';
-import type { MigrationProgress } from './types.js';
+import type { MigrationProgress } from './types';
 
 export class ProgressReporter {
   private progress: MigrationProgress;

@@ -215,11 +215,12 @@ export interface MemoryStats {
 }
 
 export interface MemorySearchOptions {
-  namespace?: string;
+  namespace: string;
+  query: string;
   pattern?: string;
   keyPrefix?: string;
   minAccessCount?: number;
-  limit?: number;
+  limit: number;
   sortBy?: 'access' | 'recent' | 'created';
 }
 

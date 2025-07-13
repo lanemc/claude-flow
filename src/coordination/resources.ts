@@ -1,13 +1,13 @@
-import { getErrorMessage } from '../utils/error-handler.js';
+import { getErrorMessage } from '../utils/error-handler';
 /**
  * Resource manager for preventing conflicts and deadlocks
  */
 
-import { Resource, CoordinationConfig, SystemEvents } from '../utils/types.js';
-import type { IEventBus } from '../core/event-bus.js';
-import type { ILogger } from '../core/logger.js';
-import { ResourceLockError } from '../utils/errors.js';
-import { delay, timeout } from '../utils/helpers.js';
+import { Resource, CoordinationConfig, SystemEvents } from '../utils/types';
+import type { IEventBus } from '../core/event-bus';
+import type { ILogger } from '../core/logger';
+import { ResourceLockError } from '../utils/errors';
+import { delay, timeout } from '../utils/helpers';
 
 interface LockRequest {
   agentId: string;

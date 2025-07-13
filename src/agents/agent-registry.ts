@@ -1,11 +1,11 @@
-import { getErrorMessage } from '../utils/error-handler.js';
+import { getErrorMessage } from '../utils/error-handler';
 /**
  * Agent Registry with Memory Integration
  * Provides persistent storage and coordination for agent management
  */
 
-import type { DistributedMemorySystem } from '../memory/distributed-memory.js';
-import type { AgentState, AgentId, AgentType, AgentStatus } from '../swarm/types.js';
+import type { DistributedMemorySystem } from '../memory/distributed-memory';
+import type { AgentState, AgentId, AgentType, AgentStatus } from '../swarm/types';
 import { EventEmitter } from 'node:events';
 
 export interface AgentRegistryEntry {

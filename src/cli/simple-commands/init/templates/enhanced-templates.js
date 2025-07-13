@@ -1,14 +1,13 @@
 // enhanced-templates.js - Generate Claude Flow v2.0.0 enhanced templates
-import { readFileSync } from 'fs';
-import { dirname, join } from 'path';
-import { fileURLToPath } from 'url';
+const { readFileSync } = require("fs");
+const { dirname, join } = require("path");
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
+const __dirname = __dirname || dirname(__filename);
 
 // Load template files
 const loadTemplate = (filename) => {
   try {
-    return readFileSync(join(__dirname, filename), 'utf8');
+    return readFileSync(join(__dirname, filename), "utf8");
   } catch (error) {
     // Silently fall back to hardcoded templates if files not found
     // This handles npm packaging scenarios where template files may not be included
@@ -16,8 +15,8 @@ const loadTemplate = (filename) => {
   }
 };
 
-export function createEnhancedClaudeMd() {
-  const template = loadTemplate('CLAUDE.md');
+function createEnhancedClaudeMd() {
+  const template = loadTemplate("CLAUDE.md");
   if (!template) {
     // Fallback to hardcoded if template file not found
     return createEnhancedClaudeMdFallback();
@@ -25,27 +24,30 @@ export function createEnhancedClaudeMd() {
   return template;
 }
 
-export function createEnhancedSettingsJson() {
-  const template = loadTemplate('settings.json');
+function createEnhancedSettingsJson() {
+  const template = loadTemplate("settings.json");
   if (!template) {
     return createEnhancedSettingsJsonFallback();
   }
   return template;
 }
 
-export function createWrapperScript(type = 'unix') {
+function createWrapperScript(type = "unix") {
   // For unix, use the universal wrapper that works in both CommonJS and ES modules
-  if (type === 'unix') {
-    const universalTemplate = loadTemplate('claude-flow-universal');
+  if (type === "unix") {
+    const universalTemplate = loadTemplate("claude-flow-universal");
     if (universalTemplate) {
       return universalTemplate;
     }
   }
-  
-  const filename = type === 'unix' ? 'claude-flow' : 
-                   type === 'windows' ? 'claude-flow.bat' : 
-                   'claude-flow.ps1';
-  
+
+  const filename =
+    type === "unix"
+      ? "claude-flow"
+      : type === "windows"
+        ? "claude-flow.bat"
+        : "claude-flow.ps1";
+
   const template = loadTemplate(filename);
   if (!template) {
     return createWrapperScriptFallback(type);
@@ -53,7 +55,7 @@ export function createWrapperScript(type = 'unix') {
   return template;
 }
 
-export function createCommandDoc(category, command) {
+function createCommandDoc(category, command) {
   const template = loadTemplate(`commands/${category}/${command}.md`);
   if (!template) {
     // Silently fall back to generated documentation
@@ -66,7 +68,7 @@ export function createCommandDoc(category, command) {
 function createCommandDocFallback(category, command) {
   const docs = {
     analysis: {
-      'bottleneck-detect': `# bottleneck-detect
+      "bottleneck-detect": `# bottleneck-detect
 
 Automatically detect performance bottlenecks in your swarm operations.
 
@@ -92,7 +94,7 @@ npx claude-flow analysis bottleneck-detect --threshold 500
 npx claude-flow analysis bottleneck-detect --export bottlenecks.json
 \`\`\`
 `,
-      'token-usage': `# token-usage
+      "token-usage": `# token-usage
 
 Analyze token usage patterns and optimize for efficiency.
 
@@ -118,7 +120,7 @@ npx claude-flow analysis token-usage --by-agent
 npx claude-flow analysis token-usage --period 7d --export tokens.csv
 \`\`\`
 `,
-      'performance-report': `# performance-report
+      "performance-report": `# performance-report
 
 Generate comprehensive performance reports for swarm operations.
 
@@ -143,10 +145,10 @@ npx claude-flow analysis performance-report --compare swarm-123
 # Full metrics report
 npx claude-flow analysis performance-report --include-metrics --format markdown
 \`\`\`
-`
+`,
     },
     automation: {
-      'auto-agent': `# auto-agent
+      "auto-agent": `# auto-agent
 
 Automatically assign agents based on task analysis.
 
@@ -172,7 +174,7 @@ npx claude-flow automation auto-agent --task "Fix bugs" --max-agents 3
 npx claude-flow automation auto-agent --strategy specialized
 \`\`\`
 `,
-      'smart-spawn': `# smart-spawn
+      "smart-spawn": `# smart-spawn
 
 Intelligently spawn agents based on workload analysis.
 
@@ -198,7 +200,7 @@ npx claude-flow automation smart-spawn --threshold 5
 npx claude-flow automation smart-spawn --topology hierarchical
 \`\`\`
 `,
-      'workflow-select': `# workflow-select
+      "workflow-select": `# workflow-select
 
 Automatically select optimal workflow based on task type.
 
@@ -223,10 +225,10 @@ npx claude-flow automation workflow-select --constraints "no-downtime,rollback"
 # Preview mode
 npx claude-flow automation workflow-select --task "Database migration" --preview
 \`\`\`
-`
+`,
     },
     coordination: {
-      'swarm-init': `# swarm-init
+      "swarm-init": `# swarm-init
 
 Initialize a new agent swarm with specified topology.
 
@@ -252,7 +254,7 @@ npx claude-flow swarm init --topology mesh --max-agents 8
 npx claude-flow swarm init --strategy parallel
 \`\`\`
 `,
-      'agent-spawn': `# agent-spawn
+      "agent-spawn": `# agent-spawn
 
 Spawn a new agent in the current swarm.
 
@@ -278,7 +280,7 @@ npx claude-flow agent spawn --type researcher --name "API Expert"
 npx claude-flow agent spawn --type coder --skills "python,fastapi,testing"
 \`\`\`
 `,
-      'task-orchestrate': `# task-orchestrate
+      "task-orchestrate": `# task-orchestrate
 
 Orchestrate complex tasks across the swarm.
 
@@ -303,10 +305,10 @@ npx claude-flow task orchestrate --task "Fix production bug" --priority critical
 # With specific strategy
 npx claude-flow task orchestrate --task "Refactor codebase" --strategy parallel
 \`\`\`
-`
+`,
     },
     github: {
-      'github-swarm': `# github-swarm
+      "github-swarm": `# github-swarm
 
 Create a specialized swarm for GitHub repository management.
 
@@ -332,7 +334,7 @@ npx claude-flow github swarm --repository myorg/myrepo --focus security
 npx claude-flow github swarm --repository myorg/myrepo --agents 6
 \`\`\`
 `,
-      'repo-analyze': `# repo-analyze
+      "repo-analyze": `# repo-analyze
 
 Deep analysis of GitHub repository with AI insights.
 
@@ -358,7 +360,7 @@ npx claude-flow github repo-analyze --repository myorg/myrepo --deep
 npx claude-flow github repo-analyze --repository myorg/myrepo --include issues,prs
 \`\`\`
 `,
-      'pr-enhance': `# pr-enhance
+      "pr-enhance": `# pr-enhance
 
 AI-powered pull request enhancements.
 
@@ -385,7 +387,7 @@ npx claude-flow github pr-enhance --pr-number 123 --add-tests
 npx claude-flow github pr-enhance --pr-number 123 --add-tests --improve-docs
 \`\`\`
 `,
-      'issue-triage': `# issue-triage
+      "issue-triage": `# issue-triage
 
 Intelligent issue classification and triage.
 
@@ -411,7 +413,7 @@ npx claude-flow github issue-triage --repository myorg/myrepo --auto-label
 npx claude-flow github issue-triage --repository myorg/myrepo --auto-label --assign
 \`\`\`
 `,
-      'code-review': `# code-review
+      "code-review": `# code-review
 
 Automated code review with swarm intelligence.
 
@@ -436,10 +438,10 @@ npx claude-flow github code-review --pr-number 456 --focus security
 # With fix suggestions
 npx claude-flow github code-review --pr-number 456 --suggest-fixes
 \`\`\`
-`
+`,
     },
     hooks: {
-      'pre-task': `# pre-task
+      "pre-task": `# pre-task
 
 Hook executed before task execution.
 
@@ -465,7 +467,7 @@ npx claude-flow hook pre-task --description "Complex refactoring" --auto-spawn-a
 npx claude-flow hook pre-task --description "Continue feature" --load-context
 \`\`\`
 `,
-      'post-task': `# post-task
+      "post-task": `# post-task
 
 Hook executed after task completion.
 
@@ -491,7 +493,7 @@ npx claude-flow hook post-task --task-id task-123 --analyze-performance
 npx claude-flow hook post-task --task-id task-123 --update-memory
 \`\`\`
 `,
-      'pre-edit': `# pre-edit
+      "pre-edit": `# pre-edit
 
 Hook executed before file edits.
 
@@ -517,7 +519,7 @@ npx claude-flow hook pre-edit --file src/api.js --validate-syntax
 npx claude-flow hook pre-edit --file src/api.js --backup
 \`\`\`
 `,
-      'post-edit': `# post-edit
+      "post-edit": `# post-edit
 
 Hook executed after file edits.
 
@@ -543,7 +545,7 @@ npx claude-flow hook post-edit --file src/api.js --memory-key "api-changes"
 npx claude-flow hook post-edit --file src/api.js --format
 \`\`\`
 `,
-      'session-end': `# session-end
+      "session-end": `# session-end
 
 Hook executed at session end.
 
@@ -568,10 +570,10 @@ npx claude-flow hook session-end --export-metrics
 # Full closure
 npx claude-flow hook session-end --export-metrics --generate-summary --persist-state
 \`\`\`
-`
+`,
     },
     memory: {
-      'memory-usage': `# memory-usage
+      "memory-usage": `# memory-usage
 
 Manage persistent memory storage.
 
@@ -597,7 +599,7 @@ npx claude-flow memory usage --action retrieve --key "project-config"
 npx claude-flow memory usage --action list
 \`\`\`
 `,
-      'memory-persist': `# memory-persist
+      "memory-persist": `# memory-persist
 
 Persist memory across sessions.
 
@@ -623,7 +625,7 @@ npx claude-flow memory persist --import memory-backup.json
 npx claude-flow memory persist --export memory.gz --compress
 \`\`\`
 `,
-      'memory-search': `# memory-search
+      "memory-search": `# memory-search
 
 Search through stored memory.
 
@@ -648,10 +650,10 @@ npx claude-flow memory search --pattern "api-.*"
 # Limited results
 npx claude-flow memory search --query "config" --limit 10
 \`\`\`
-`
+`,
     },
     monitoring: {
-      'swarm-monitor': `# swarm-monitor
+      "swarm-monitor": `# swarm-monitor
 
 Real-time swarm monitoring.
 
@@ -677,7 +679,7 @@ npx claude-flow swarm monitor --interval 5000
 npx claude-flow swarm monitor --metrics
 \`\`\`
 `,
-      'agent-metrics': `# agent-metrics
+      "agent-metrics": `# agent-metrics
 
 View agent performance metrics.
 
@@ -703,7 +705,7 @@ npx claude-flow agent metrics --agent-id agent-001
 npx claude-flow agent metrics --period 1h
 \`\`\`
 `,
-      'real-time-view': `# real-time-view
+      "real-time-view": `# real-time-view
 
 Real-time view of swarm activity.
 
@@ -728,10 +730,10 @@ npx claude-flow monitoring real-time-view --filter errors
 # Highlight pattern
 npx claude-flow monitoring real-time-view --highlight "API"
 \`\`\`
-`
+`,
     },
     optimization: {
-      'topology-optimize': `# topology-optimize
+      "topology-optimize": `# topology-optimize
 
 Optimize swarm topology for current workload.
 
@@ -757,7 +759,7 @@ npx claude-flow optimization topology-optimize --target speed
 npx claude-flow optimization topology-optimize --target efficiency --apply
 \`\`\`
 `,
-      'parallel-execute': `# parallel-execute
+      "parallel-execute": `# parallel-execute
 
 Execute tasks in parallel for maximum efficiency.
 
@@ -783,7 +785,7 @@ npx claude-flow optimization parallel-execute --tasks tasks.json --max-parallel 
 npx claude-flow optimization parallel-execute --strategy adaptive
 \`\`\`
 `,
-      'cache-manage': `# cache-manage
+      "cache-manage": `# cache-manage
 
 Manage operation cache for performance.
 
@@ -808,10 +810,10 @@ npx claude-flow optimization cache-manage --action clear
 # Set limits
 npx claude-flow optimization cache-manage --max-size 100 --ttl 3600
 \`\`\`
-`
+`,
     },
     training: {
-      'neural-train': `# neural-train
+      "neural-train": `# neural-train
 
 Train neural patterns from operations.
 
@@ -837,7 +839,7 @@ npx claude-flow training neural-train --model task-predictor
 npx claude-flow training neural-train --epochs 100
 \`\`\`
 `,
-      'pattern-learn': `# pattern-learn
+      "pattern-learn": `# pattern-learn
 
 Learn patterns from successful operations.
 
@@ -863,7 +865,7 @@ npx claude-flow training pattern-learn --threshold 0.9
 npx claude-flow training pattern-learn --save optimal-patterns
 \`\`\`
 `,
-      'model-update': `# model-update
+      "model-update": `# model-update
 
 Update neural models with new data.
 
@@ -888,10 +890,10 @@ npx claude-flow training model-update --model agent-selector
 # Incremental with validation
 npx claude-flow training model-update --incremental --validate
 \`\`\`
-`
+`,
     },
     workflows: {
-      'workflow-create': `# workflow-create
+      "workflow-create": `# workflow-create
 
 Create reusable workflow templates.
 
@@ -917,7 +919,7 @@ npx claude-flow workflow create --name "test-suite" --from-history
 npx claude-flow workflow create --interactive
 \`\`\`
 `,
-      'workflow-execute': `# workflow-execute
+      "workflow-execute": `# workflow-execute
 
 Execute saved workflows.
 
@@ -943,7 +945,7 @@ npx claude-flow workflow execute --name "test-suite" --params '{"env": "staging"
 npx claude-flow workflow execute --name "deploy-api" --dry-run
 \`\`\`
 `,
-      'workflow-export': `# workflow-export
+      "workflow-export": `# workflow-export
 
 Export workflows for sharing.
 
@@ -968,31 +970,40 @@ npx claude-flow workflow export --name "test-suite" --format yaml
 # With history
 npx claude-flow workflow export --name "deploy-api" --include-history
 \`\`\`
-`
-    }
+`,
+    },
   };
 
-  return docs[category]?.[command] || `# ${command}\n\nCommand documentation for ${command} in category ${category}.\n\nUsage:\n\`\`\`bash\nnpx claude-flow ${category} ${command} [options]\n\`\`\`\n`;
+  return (
+    docs[category]?.[command] ||
+    `# ${command}\n\nCommand documentation for ${command} in category ${category}.\n\nUsage:\n\`\`\`bash\nnpx claude-flow ${category} ${command} [options]\n\`\`\`\n`
+  );
 }
 
 // Command categories and their commands
-export const COMMAND_STRUCTURE = {
-  analysis: ['bottleneck-detect', 'token-usage', 'performance-report'],
-  automation: ['auto-agent', 'smart-spawn', 'workflow-select'],
-  coordination: ['swarm-init', 'agent-spawn', 'task-orchestrate'],
-  github: ['github-swarm', 'repo-analyze', 'pr-enhance', 'issue-triage', 'code-review'],
-  hooks: ['pre-task', 'post-task', 'pre-edit', 'post-edit', 'session-end'],
-  memory: ['memory-usage', 'memory-persist', 'memory-search'],
-  monitoring: ['swarm-monitor', 'agent-metrics', 'real-time-view'],
-  optimization: ['topology-optimize', 'parallel-execute', 'cache-manage'],
-  training: ['neural-train', 'pattern-learn', 'model-update'],
-  workflows: ['workflow-create', 'workflow-execute', 'workflow-export']
+const COMMAND_STRUCTURE = {
+  analysis: ["bottleneck-detect", "token-usage", "performance-report"],
+  automation: ["auto-agent", "smart-spawn", "workflow-select"],
+  coordination: ["swarm-init", "agent-spawn", "task-orchestrate"],
+  github: [
+    "github-swarm",
+    "repo-analyze",
+    "pr-enhance",
+    "issue-triage",
+    "code-review",
+  ],
+  hooks: ["pre-task", "post-task", "pre-edit", "post-edit", "session-end"],
+  memory: ["memory-usage", "memory-persist", "memory-search"],
+  monitoring: ["swarm-monitor", "agent-metrics", "real-time-view"],
+  optimization: ["topology-optimize", "parallel-execute", "cache-manage"],
+  training: ["neural-train", "pattern-learn", "model-update"],
+  workflows: ["workflow-create", "workflow-execute", "workflow-export"],
 };
 
 // Helper script content
-export function createHelperScript(name) {
+function createHelperScript(name) {
   const scripts = {
-    'setup-mcp.sh': `#!/bin/bash
+    "setup-mcp.sh": `#!/bin/bash
 # Setup MCP server for Claude Flow
 
 echo "🚀 Setting up Claude Flow MCP server..."
@@ -1011,7 +1022,7 @@ claude mcp add claude-flow npx claude-flow mcp start
 echo "✅ MCP server setup complete!"
 echo "🎯 You can now use mcp__claude-flow__ tools in Claude Code"
 `,
-    'quick-start.sh': `#!/bin/bash
+    "quick-start.sh": `#!/bin/bash
 # Quick start guide for Claude Flow
 
 echo "🚀 Claude Flow Quick Start"
@@ -1031,7 +1042,7 @@ echo "   npx claude-flow swarm monitor"
 echo ""
 echo "📚 For more examples, see .claude/commands/"
 `,
-    'github-setup.sh': `#!/bin/bash
+    "github-setup.sh": `#!/bin/bash
 # Setup GitHub integration for Claude Flow
 
 echo "🔗 Setting up GitHub integration..."
@@ -1059,15 +1070,15 @@ echo "  - npx claude-flow github swarm"
 echo "  - npx claude-flow repo analyze"
 echo "  - npx claude-flow pr enhance"
 echo "  - npx claude-flow issue triage"
-`
+`,
   };
-  
-  return scripts[name] || '';
+
+  return scripts[name] || "";
 }
 
 // Wrapper script fallbacks
 function createWrapperScriptFallback(type) {
-  if (type === 'unix') {
+  if (type === "unix") {
     // Return the universal ES module compatible wrapper
     return `#!/usr/bin/env node
 
@@ -1140,7 +1151,7 @@ function createWrapperScriptFallback(type) {
   console.error('Could not find claude-flow. Please install it with: npm install claude-flow');
   process.exit(1);
 })();`;
-  } else if (type === 'windows') {
+  } else if (type === "windows") {
     return `@echo off
 rem Claude Flow wrapper script for Windows
 
@@ -1159,7 +1170,7 @@ if exist "%~dp0package.json" (
     rem Production mode - use npx alpha
     npx claude-flow@alpha %*
 )`;
-  } else if (type === 'powershell') {
+  } else if (type === "powershell") {
     return `# Claude Flow wrapper script for PowerShell
 
 $scriptPath = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -1179,14 +1190,14 @@ if (Test-Path "$scriptPath\\package.json") {
     & npx claude-flow@alpha $args
 }`;
   }
-  return '';
+  return "";
 }
 
 // Fallback functions for when templates can't be loaded
 function createEnhancedClaudeMdFallback() {
   // Read from the actual template file we created
   try {
-    return readFileSync(join(__dirname, 'CLAUDE.md'), 'utf8');
+    return readFileSync(join(__dirname, "CLAUDE.md"), "utf8");
   } catch (error) {
     // If that fails, return a minimal version
     return `# Claude Code Configuration for Claude Flow
@@ -1224,103 +1235,170 @@ See full documentation in \`.claude/commands/\`
 }
 
 function createEnhancedSettingsJsonFallback() {
-  return JSON.stringify({
-    env: {
-      CLAUDE_FLOW_AUTO_COMMIT: "false",
-      CLAUDE_FLOW_AUTO_PUSH: "false",
-      CLAUDE_FLOW_HOOKS_ENABLED: "true",
-      CLAUDE_FLOW_TELEMETRY_ENABLED: "true",
-      CLAUDE_FLOW_REMOTE_EXECUTION: "true",
-      CLAUDE_FLOW_GITHUB_INTEGRATION: "true"
-    },
-    permissions: {
-      allow: [
-        "Bash(npx claude-flow *)",
-        "Bash(npm run lint)",
-        "Bash(npm run test:*)",
-        "Bash(npm test *)",
-        "Bash(git status)",
-        "Bash(git diff *)",
-        "Bash(git log *)",
-        "Bash(git add *)",
-        "Bash(git commit *)",
-        "Bash(git push)",
-        "Bash(git config *)",
-        "Bash(gh *)",
-        "Bash(node *)",
-        "Bash(which *)",
-        "Bash(pwd)",
-        "Bash(ls *)"
-      ],
-      deny: [
-        "Bash(rm -rf /)",
-        "Bash(curl * | bash)",
-        "Bash(wget * | sh)",
-        "Bash(eval *)"
-      ]
-    },
-    hooks: {
-      preEditHook: {
-        command: "npx",
-        args: ["claude-flow", "hook", "pre-edit", "--file", "${file}", "--auto-assign-agents", "true", "--load-context", "true"],
-        alwaysRun: false,
-        outputFormat: "json"
+  return JSON.stringify(
+    {
+      env: {
+        CLAUDE_FLOW_AUTO_COMMIT: "false",
+        CLAUDE_FLOW_AUTO_PUSH: "false",
+        CLAUDE_FLOW_HOOKS_ENABLED: "true",
+        CLAUDE_FLOW_TELEMETRY_ENABLED: "true",
+        CLAUDE_FLOW_REMOTE_EXECUTION: "true",
+        CLAUDE_FLOW_GITHUB_INTEGRATION: "true",
       },
-      postEditHook: {
-        command: "npx",
-        args: ["claude-flow", "hook", "post-edit", "--file", "${file}", "--format", "true", "--update-memory", "true", "--train-neural", "true"],
-        alwaysRun: true,
-        outputFormat: "json"
+      permissions: {
+        allow: [
+          "Bash(npx claude-flow *)",
+          "Bash(npm run lint)",
+          "Bash(npm run test:*)",
+          "Bash(npm test *)",
+          "Bash(git status)",
+          "Bash(git diff *)",
+          "Bash(git log *)",
+          "Bash(git add *)",
+          "Bash(git commit *)",
+          "Bash(git push)",
+          "Bash(git config *)",
+          "Bash(gh *)",
+          "Bash(node *)",
+          "Bash(which *)",
+          "Bash(pwd)",
+          "Bash(ls *)",
+        ],
+        deny: [
+          "Bash(rm -rf /)",
+          "Bash(curl * | bash)",
+          "Bash(wget * | sh)",
+          "Bash(eval *)",
+        ],
       },
-      preCommandHook: {
-        command: "npx",
-        args: ["claude-flow", "hook", "pre-command", "--command", "${command}", "--validate-safety", "true", "--prepare-resources", "true"],
-        alwaysRun: false,
-        outputFormat: "json"
+      hooks: {
+        preEditHook: {
+          command: "npx",
+          args: [
+            "claude-flow",
+            "hook",
+            "pre-edit",
+            "--file",
+            "${file}",
+            "--auto-assign-agents",
+            "true",
+            "--load-context",
+            "true",
+          ],
+          alwaysRun: false,
+          outputFormat: "json",
+        },
+        postEditHook: {
+          command: "npx",
+          args: [
+            "claude-flow",
+            "hook",
+            "post-edit",
+            "--file",
+            "${file}",
+            "--format",
+            "true",
+            "--update-memory",
+            "true",
+            "--train-neural",
+            "true",
+          ],
+          alwaysRun: true,
+          outputFormat: "json",
+        },
+        preCommandHook: {
+          command: "npx",
+          args: [
+            "claude-flow",
+            "hook",
+            "pre-command",
+            "--command",
+            "${command}",
+            "--validate-safety",
+            "true",
+            "--prepare-resources",
+            "true",
+          ],
+          alwaysRun: false,
+          outputFormat: "json",
+        },
+        postCommandHook: {
+          command: "npx",
+          args: [
+            "claude-flow",
+            "hook",
+            "post-command",
+            "--command",
+            "${command}",
+            "--track-metrics",
+            "true",
+            "--store-results",
+            "true",
+          ],
+          alwaysRun: false,
+          outputFormat: "json",
+        },
+        sessionEndHook: {
+          command: "npx",
+          args: [
+            "claude-flow",
+            "hook",
+            "session-end",
+            "--generate-summary",
+            "true",
+            "--persist-state",
+            "true",
+            "--export-metrics",
+            "true",
+          ],
+          alwaysRun: true,
+          outputFormat: "json",
+        },
       },
-      postCommandHook: {
-        command: "npx",
-        args: ["claude-flow", "hook", "post-command", "--command", "${command}", "--track-metrics", "true", "--store-results", "true"],
-        alwaysRun: false,
-        outputFormat: "json"
+      mcpServers: {
+        "claude-flow": {
+          command: "npx",
+          args: ["claude-flow", "mcp", "start"],
+          env: {
+            CLAUDE_FLOW_HOOKS_ENABLED: "true",
+            CLAUDE_FLOW_TELEMETRY_ENABLED: "true",
+            CLAUDE_FLOW_REMOTE_READY: "true",
+            CLAUDE_FLOW_GITHUB_INTEGRATION: "true",
+          },
+        },
       },
-      sessionEndHook: {
-        command: "npx",
-        args: ["claude-flow", "hook", "session-end", "--generate-summary", "true", "--persist-state", "true", "--export-metrics", "true"],
-        alwaysRun: true,
-        outputFormat: "json"
-      }
+      includeCoAuthoredBy: true,
+      features: {
+        autoTopologySelection: true,
+        parallelExecution: true,
+        neuralTraining: true,
+        bottleneckAnalysis: true,
+        smartAutoSpawning: true,
+        selfHealingWorkflows: true,
+        crossSessionMemory: true,
+        githubIntegration: true,
+      },
+      performance: {
+        maxAgents: 10,
+        defaultTopology: "hierarchical",
+        executionStrategy: "parallel",
+        tokenOptimization: true,
+        cacheEnabled: true,
+        telemetryLevel: "detailed",
+      },
     },
-    mcpServers: {
-      "claude-flow": {
-        command: "npx",
-        args: ["claude-flow", "mcp", "start"],
-        env: {
-          CLAUDE_FLOW_HOOKS_ENABLED: "true",
-          CLAUDE_FLOW_TELEMETRY_ENABLED: "true",
-          CLAUDE_FLOW_REMOTE_READY: "true",
-          CLAUDE_FLOW_GITHUB_INTEGRATION: "true"
-        }
-      }
-    },
-    includeCoAuthoredBy: true,
-    features: {
-      autoTopologySelection: true,
-      parallelExecution: true,
-      neuralTraining: true,
-      bottleneckAnalysis: true,
-      smartAutoSpawning: true,
-      selfHealingWorkflows: true,
-      crossSessionMemory: true,
-      githubIntegration: true
-    },
-    performance: {
-      maxAgents: 10,
-      defaultTopology: "hierarchical",
-      executionStrategy: "parallel",
-      tokenOptimization: true,
-      cacheEnabled: true,
-      telemetryLevel: "detailed"
-    }
-  }, null, 2);
+    null,
+    2
+  );
 }
+
+module.exports = {
+  createEnhancedClaudeMd,
+  createEnhancedSettingsJson,
+  createWrapperScript,
+  createEnhancedClaudeMdFallback,
+  createEnhancedSettingsJsonFallback,
+  createCommandDoc,
+  createHelperScript,
+  COMMAND_STRUCTURE
+};

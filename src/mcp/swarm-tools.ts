@@ -1,13 +1,13 @@
-import { getErrorMessage } from '../utils/error-handler.js';
+import { getErrorMessage } from '../utils/error-handler';
 /**
  * Comprehensive MCP tools for swarm system functionality
  */
 
-import type { MCPTool, MCPContext } from '../utils/types.js';
-import type { ILogger } from '../core/logger.js';
+import type { MCPTool, MCPContext } from '../utils/types';
+import type { ILogger } from '../core/logger';
 // Legacy import kept for compatibility
-// import type { Tool } from '@modelcontextprotocol/sdk/types.js';
-// import { spawnSwarmAgent, getSwarmState } from '../cli/commands/swarm-spawn.js';
+// import type { Tool } from '@modelcontextprotocol/sdk/types';
+// import { spawnSwarmAgent, getSwarmState } from '../cli/commands/swarm-spawn';
 
 export interface SwarmToolContext extends MCPContext {
   swarmCoordinator?: any;

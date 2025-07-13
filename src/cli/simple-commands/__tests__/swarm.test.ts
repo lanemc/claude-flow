@@ -3,7 +3,7 @@
  */
 
 import { jest } from '@jest/globals';
-import { swarmCommand } from '../swarm.js';
+import { swarmCommand } from '../swarm';
 import fs from 'fs-extra';
 import path from 'path';
 import { spawn } from 'child_process';

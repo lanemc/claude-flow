@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../../utils/error-handler.js';
+import { getErrorMessage } from '../../utils/error-handler';
 import { promises as fs } from 'node:fs';
 /**
  * Status command for Claude-Flow
@@ -7,7 +7,7 @@ import { promises as fs } from 'node:fs';
 import { Command } from 'commander';
 import chalk from 'chalk';
 import Table from 'cli-table3';
-import { formatHealthStatus, formatDuration, formatStatusIndicator } from '../formatter.js';
+import { formatHealthStatus, formatDuration, formatStatusIndicator } from '../formatter';
 
 export const statusCommand = new Command()
   .name('status')

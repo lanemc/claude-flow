@@ -4,19 +4,19 @@
  * This version avoids TypeScript issues in node_modules
  */
 
-import { 
+const { 
   executeCommand, 
   hasCommand, 
   showCommandHelp, 
   showAllCommands,
   listCommands 
-} from './command-registry.js';
-import { parseFlags } from './utils.js';
-import { args, cwd, isMainModule, exit, readTextFile, writeTextFile, mkdirAsync, errors } from './node-compat.js';
-import { spawn } from 'child_process';
-import process from 'process';
-import readline from 'readline';
-import { getMainHelp, getCommandHelp } from './help-text.js';
+} = require('./command-registry.js');
+const { parseFlags } = require('./utils.js');
+const { args, cwd, isMainModule, exit, readTextFile, writeTextFile, mkdirAsync, errors } = require('./node-compat.js');
+const { spawn } = require('child_process');
+const process = require('process');
+const readline = require('readline');
+const { getMainHelp, getCommandHelp } = require('./help-text.js');
 
 const VERSION = '2.0.0-alpha.49';
 
@@ -3321,6 +3321,6 @@ For more information about SPARC methodology, see: https://github.com/ruvnet/cla
 `;
 }
 
-if (isMainModule(import.meta.url)) {
-  await main();
+if (require.main === module) {
+  main().catch(console.error);
 }

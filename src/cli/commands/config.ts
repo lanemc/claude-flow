@@ -3,7 +3,7 @@
 import { Command } from 'commander';
 import chalk from 'chalk';
 import { readFileSync, writeFileSync } from 'fs';
-import { ConfigManager } from '../../core/config.js';
+import { ConfigManager } from '../../core/config';
 
 const configManager = ConfigManager.getInstance();
 

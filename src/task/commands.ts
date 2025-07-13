@@ -1,5 +1,5 @@
 // Task command creators
-import type { TaskCommandContext } from './types.js';
+import type { TaskCommandContext } from './types';
 
 export function createTaskCreateCommand(context: TaskCommandContext) {
   return {

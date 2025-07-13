@@ -1,9 +1,9 @@
-import { getErrorMessage } from '../../utils/error-handler.js';
+import { getErrorMessage } from '../../utils/error-handler';
 /**
  * Base interface for memory backends
  */
 
-import type { MemoryEntry, MemoryQuery } from '../../utils/types.js';
+import type { MemoryEntry, MemoryQuery } from '../../utils/types';
 
 export interface IMemoryBackend {
   initialize(): Promise<void>;

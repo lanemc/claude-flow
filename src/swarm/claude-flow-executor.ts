@@ -1,14 +1,14 @@
-import { getErrorMessage } from '../utils/error-handler.js';
+import { getErrorMessage } from '../utils/error-handler';
 /**
  * Claude Flow SPARC Executor
  * Executes tasks using the full claude-flow SPARC system in non-interactive mode
  */
 
-import type { TaskDefinition, AgentState, TaskResult } from './types.js';
-import { Logger } from '../core/logger.js';
+import type { TaskDefinition, AgentState, TaskResult } from './types';
+import { Logger } from '../core/logger';
 import * as path from 'node:path';
 import { spawn } from 'node:child_process';
-import { getClaudeFlowBin } from '../utils/paths.js';
+import { getClaudeFlowBin } from '../utils/paths';
 
 export interface ClaudeFlowExecutorConfig {
   logger?: Logger;

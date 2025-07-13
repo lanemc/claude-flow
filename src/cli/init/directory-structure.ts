@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../../utils/error-handler.js';
+import { getErrorMessage } from '../../utils/error-handler';
 // init/directory-structure.ts - Directory structure creation
 export async function createDirectoryStructure(): Promise<void> {
   const fs = await import('fs/promises');

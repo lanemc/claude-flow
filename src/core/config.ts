@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../utils/error-handler.js';
+import { getErrorMessage } from '../utils/error-handler';
 /**
  * Enterprise Configuration Management for Claude-Flow
  * Features: Security masking, change tracking, multi-format support, credential management
@@ -8,9 +8,9 @@ import { promises as fs } from 'fs';
 import { join } from 'path';
 import { homedir } from 'os';
 import { createHash, randomBytes, createCipheriv, createDecipheriv } from 'crypto';
-import type { Config } from '../utils/types.js';
-import { deepMerge, safeParseJSON } from '../utils/helpers.js';
-import { ConfigError, ValidationError } from '../utils/errors.js';
+import type { Config } from '../utils/types';
+import { deepMerge, safeParseJSON } from '../utils/helpers';
+import { ConfigError, ValidationError } from '../utils/errors';
 
 // Format parsers
 interface FormatParser {

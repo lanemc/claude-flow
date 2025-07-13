@@ -1,10 +1,10 @@
-import { getErrorMessage } from '../utils/error-handler.js';
+import { getErrorMessage } from '../utils/error-handler';
 /**
  * Circuit breaker pattern for fault tolerance
  */
 
-import type { ILogger } from '../core/logger.js';
-import type { IEventBus } from '../core/event-bus.js';
+import type { ILogger } from '../core/logger';
+import type { IEventBus } from '../core/event-bus';
 
 export interface CircuitBreakerConfig {
   failureThreshold: number; // Number of failures before opening

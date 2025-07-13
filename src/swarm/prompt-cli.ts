@@ -1,10 +1,10 @@
 #!/usr/bin/env node
-import { getErrorMessage } from '../utils/error-handler.js';
+import { getErrorMessage } from '../utils/error-handler';
 
 import { Command } from 'commander';
 import * as path from 'path';
-import { copyPrompts, CopyProgress, CopyOptions } from './prompt-copier.js';
-import { copyPromptsEnhanced } from './prompt-copier-enhanced.js';
+import { copyPrompts, CopyProgress, CopyOptions } from './prompt-copier';
+import { copyPromptsEnhanced } from './prompt-copier-enhanced';
 import { 
   PromptConfigManager, 
   PromptPathResolver, 
@@ -12,8 +12,8 @@ import {
   createProgressBar,
   formatFileSize,
   formatDuration
-} from './prompt-utils.js';
-import { logger } from '../core/logger.js';
+} from './prompt-utils';
+import { logger } from '../core/logger';
 
 const program = new Command();
 
@@ -244,7 +244,7 @@ program
   .description('Rollback from backup')
   .action(async (manifestPath) => {
     try {
-      const { PromptCopier } = await import('./prompt-copier.js');
+      const { PromptCopier } = await import('./prompt-copier');
       const copier = new PromptCopier({
         source: '',
         destination: ''

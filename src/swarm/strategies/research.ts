@@ -1,18 +1,18 @@
-import { getErrorMessage } from '../../utils/error-handler.js';
+import { getErrorMessage } from '../../utils/error-handler';
 /**
  * Optimized Research Strategy Implementation
  * Provides intelligent research capabilities with parallel processing,
  * semantic clustering, caching, and progressive refinement
  */
 
-import { BaseStrategy } from './base.js';
-import type { DecompositionResult, StrategyMetrics } from './base.js';
-import { Logger } from '../../core/logger.js';
-import { generateId } from '../../utils/helpers.js';
+import { BaseStrategy } from './base';
+import type { DecompositionResult, StrategyMetrics } from './base';
+import { Logger } from '../../core/logger';
+import { generateId } from '../../utils/helpers';
 import {
   SwarmObjective, TaskDefinition, TaskId, TaskType, TaskPriority,
   SwarmConfig, LoggingConfig, SWARM_CONSTANTS
-} from '../types.js';
+} from '../types';
 
 // Research-specific interfaces
 interface ResearchQuery {

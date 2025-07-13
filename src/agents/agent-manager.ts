@@ -1,12 +1,12 @@
-import { getErrorMessage } from '../utils/error-handler.js';
+import { getErrorMessage } from '../utils/error-handler';
 /**
  * Comprehensive agent management system
  */
 
 import { EventEmitter } from 'node:events';
 import { spawn, ChildProcess } from 'node:child_process';
-import type { ILogger } from '../core/logger.js';
-import type { IEventBus } from '../core/event-bus.js';
+import type { ILogger } from '../core/logger';
+import type { IEventBus } from '../core/event-bus';
 import type { 
   AgentId, 
   AgentType, 
@@ -19,9 +19,9 @@ import type {
   AgentError,
   TaskId,
   TaskDefinition
-} from '../swarm/types.js';
-import type { DistributedMemorySystem } from '../memory/distributed-memory.js';
-import { generateId } from '../utils/helpers.js';
+} from '../swarm/types';
+import type { DistributedMemorySystem } from '../memory/distributed-memory';
+import { generateId } from '../utils/helpers';
 
 export interface AgentManagerConfig {
   maxAgents: number;

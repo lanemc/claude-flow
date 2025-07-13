@@ -1,10 +1,10 @@
-import { getErrorMessage } from '../utils/error-handler.js';
+import { getErrorMessage } from '../utils/error-handler';
 /**
  * Memory cache implementation with LRU eviction
  */
 
-import type { MemoryEntry } from '../utils/types.js';
-import type { ILogger } from '../core/logger.js';
+import type { MemoryEntry } from '../utils/types';
+import type { ILogger } from '../core/logger';
 
 interface CacheEntry {
   data: MemoryEntry;

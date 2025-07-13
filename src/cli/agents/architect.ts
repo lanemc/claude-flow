@@ -2,11 +2,11 @@
  * Architect Agent - Specialized in system design and architecture
  */
 
-import { BaseAgent } from './base-agent.js';
-import type { AgentCapabilities, AgentConfig, AgentEnvironment, TaskDefinition } from '../../swarm/types.js';
-import type { ILogger } from '../../core/logger.js';
-import type { IEventBus } from '../../core/event-bus.js';
-import type { DistributedMemorySystem } from '../../memory/distributed-memory.js';
+import { BaseAgent } from './base-agent';
+import type { AgentCapabilities, AgentConfig, AgentEnvironment, TaskDefinition } from '../../swarm/types';
+import type { ILogger } from '../../core/logger';
+import type { IEventBus } from '../../core/event-bus';
+import type { DistributedMemorySystem } from '../../memory/distributed-memory';
 
 // Type definitions for architect analysis
 interface ArchitectureIssue {

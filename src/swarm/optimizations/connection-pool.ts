@@ -1,11 +1,11 @@
-import { getErrorMessage } from '../../utils/error-handler.js';
+import { getErrorMessage } from '../../utils/error-handler';
 /**
  * Connection Pool for Claude API
  * Manages reusable connections to improve performance
  */
 
 import { EventEmitter } from 'node:events';
-import { Logger } from '../../core/logger.js';
+import { Logger } from '../../core/logger';
 // Mock ClaudeAPI for testing when service doesn't exist
 export class ClaudeAPI {
   id: string;

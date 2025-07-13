@@ -1,13 +1,12 @@
 #!/usr/bin/env node
-import { getErrorMessage } from '../utils/error-handler.js';
+import { getErrorMessage } from '../utils/error-handler';
 /**
  * Claude-Flow CLI - Main entry point for Node.js
  */
 
-import { CLI, VERSION } from "./cli-core.js";
-import { setupCommands } from "./commands/index.js";
-import { fileURLToPath } from "node:url";
-import { dirname } from "node:path";
+import { CLI, VERSION } from "./cli-core";
+import { setupCommands } from "./commands/index";
+import { getFilename } from "../utils/import-meta-shim";
 
 async function main() {
   const cli = new CLI("claude-flow", "Advanced AI Agent Orchestration System");
@@ -20,8 +19,7 @@ async function main() {
 }
 
 // Check if this module is being run directly (Node.js equivalent of import.meta.main)
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const __filename = getFilename();
 const isMainModule = process.argv[1] === __filename || process.argv[1].endsWith('/main.js');
 
 if (isMainModule) {

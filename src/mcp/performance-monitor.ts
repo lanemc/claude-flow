@@ -1,12 +1,12 @@
-import { getErrorMessage } from '../utils/error-handler.js';
+import { getErrorMessage } from '../utils/error-handler';
 /**
  * MCP Performance Monitoring and Optimization
  */
 
 import { EventEmitter } from 'node:events';
 import { performance } from 'node:perf_hooks';
-import type { ILogger } from '../core/logger.js';
-import type { MCPSession, MCPRequest, MCPResponse, MCPMetrics } from '../utils/types.js';
+import type { ILogger } from '../core/logger';
+import type { MCPSession, MCPRequest, MCPResponse, MCPMetrics } from '../utils/types';
 
 export interface PerformanceMetrics {
   requestCount: number;

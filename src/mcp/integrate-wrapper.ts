@@ -1,9 +1,9 @@
 #!/usr/bin/env node
-import { getErrorMessage } from '../utils/error-handler.js';
+import { getErrorMessage } from '../utils/error-handler';
 import { spawn } from 'child_process';
-import { Client } from '@modelcontextprotocol/sdk/client/index.js';
-import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
-import { ClaudeCodeMCPWrapper } from './claude-code-wrapper.js';
+import { Client } from '@modelcontextprotocol/sdk/client/index';
+import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio';
+import { ClaudeCodeMCPWrapper } from './claude-code-wrapper';
 
 /**
  * Integration script that connects the Claude-Flow MCP wrapper
@@ -84,7 +84,8 @@ export function injectClaudeCodeClient(wrapper: ClaudeCodeMCPWrapper, client: Cl
 }
 
 // Main execution
-if (import.meta.url === `file://${process.argv[1]}`) {
+import { getFilename } from '../utils/import-meta-shim';
+if (getFilename() === process.argv[1]) {
   const integration = new MCPIntegration();
   integration.start().catch(console.error);
 }

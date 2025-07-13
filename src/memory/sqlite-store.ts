@@ -6,8 +6,8 @@
 import Database, { Statement } from 'better-sqlite3';
 import * as path from 'path';
 import { promises as fs } from 'fs';
-import { fileURLToPath } from 'url';
 import * as os from 'os';
+import { getFilename, getDirname } from '../utils/import-meta-shim';
 import type { 
   SQLiteMemoryStoreOptions, 
   SQLiteRow, 
@@ -17,10 +17,10 @@ import type {
   MemorySearchOptions,
   MemorySearchResult,
   IMemoryStore
-} from './types.js';
+} from './types';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __filename = getFilename();
+const __dirname = getDirname();
 
 class SqliteMemoryStore implements IMemoryStore {
   private db: Database.Database | null = null;

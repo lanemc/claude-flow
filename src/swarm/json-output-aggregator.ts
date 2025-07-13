@@ -5,12 +5,12 @@
 
 import { EventEmitter } from 'events';
 import { promises as fs } from 'node:fs';
-import { generateId } from '../utils/helpers.js';
-import { Logger } from '../core/logger.js';
+import { generateId } from '../utils/helpers';
+import { Logger } from '../core/logger';
 import type { 
   SwarmId, AgentId, TaskId, AgentState, TaskDefinition, 
   SwarmResults, SwarmMetrics, TaskResult 
-} from './types.js';
+} from './types';
 
 export interface SwarmOutputAggregate {
   swarmId: string;

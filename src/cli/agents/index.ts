@@ -3,40 +3,40 @@
  */
 
 // Agent Classes
-export { BaseAgent } from './base-agent.js';
-export { ResearcherAgent, createResearcherAgent } from './researcher.js';
-export { CoderAgent, createCoderAgent } from './coder.js';
-export { AnalystAgent, createAnalystAgent } from './analyst.js';
-export { ArchitectAgent, createArchitectAgent } from './architect.js';
-export { TesterAgent, createTesterAgent } from './tester.js';
-export { CoordinatorAgent, createCoordinatorAgent } from './coordinator.js';
+export { BaseAgent } from './base-agent';
+export { ResearcherAgent, createResearcherAgent } from './researcher';
+export { CoderAgent, createCoderAgent } from './coder';
+export { AnalystAgent, createAnalystAgent } from './analyst';
+export { ArchitectAgent, createArchitectAgent } from './architect';
+export { TesterAgent, createTesterAgent } from './tester';
+export { CoordinatorAgent, createCoordinatorAgent } from './coordinator';
 
 // Systems
-export { AgentCapabilitySystem } from './capabilities.js';
-export { AgentManager } from '../../agents/agent-manager.js';
-export { AgentRegistry } from '../../agents/agent-registry.js';
+export { AgentCapabilitySystem } from './capabilities';
+export { AgentManager } from '../../agents/agent-manager';
+export { AgentRegistry } from '../../agents/agent-registry';
 
 // Types
-export type { AgentState } from './base-agent.js';
+export type { AgentState } from './base-agent';
 export type {
   CapabilityMatch,
   TaskRequirements,
   CapabilityRegistry
-} from './capabilities.js';
+} from './capabilities';
 
 // Agent Factory
-import type { AgentType, AgentConfig, AgentEnvironment } from '../../swarm/types.js';
-import type { ILogger } from '../../core/logger.js';
-import type { IEventBus } from '../../core/event-bus.js';
-import type { DistributedMemorySystem } from '../../memory/distributed-memory.js';
-import { BaseAgent } from './base-agent.js';
-import { createResearcherAgent } from './researcher.js';
-import { createCoderAgent } from './coder.js';
-import { createAnalystAgent } from './analyst.js';
-import { createArchitectAgent } from './architect.js';
-import { createTesterAgent } from './tester.js';
-import { createCoordinatorAgent } from './coordinator.js';
-import { generateId } from '../../utils/helpers.js';
+import type { AgentType, AgentConfig, AgentEnvironment } from '../../swarm/types';
+import type { ILogger } from '../../core/logger';
+import type { IEventBus } from '../../core/event-bus';
+import type { DistributedMemorySystem } from '../../memory/distributed-memory';
+import { BaseAgent } from './base-agent';
+import { createResearcherAgent } from './researcher';
+import { createCoderAgent } from './coder';
+import { createAnalystAgent } from './analyst';
+import { createArchitectAgent } from './architect';
+import { createTesterAgent } from './tester';
+import { createCoordinatorAgent } from './coordinator';
+import { generateId } from '../../utils/helpers';
 
 export interface AgentFactoryConfig {
   logger: ILogger;

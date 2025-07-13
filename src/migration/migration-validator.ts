@@ -1,12 +1,12 @@
-import { getErrorMessage } from '../utils/error-handler.js';
+import { getErrorMessage } from '../utils/error-handler';
 /**
  * Migration Validator - Validates successful migration
  */
 
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import type { ValidationResult, ValidationCheck } from './types.js';
-import { logger } from './logger.js';
+import type { ValidationResult, ValidationCheck } from './types';
+import { logger } from './logger';
 import * as chalk from 'chalk';
 import { glob } from 'glob';
 

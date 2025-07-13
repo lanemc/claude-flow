@@ -1,11 +1,11 @@
-import { getErrorMessage } from '../utils/error-handler.js';
+import { getErrorMessage } from '../utils/error-handler';
 // Main exports for the swarm system
 
 // Coordinator exports
-export { SwarmCoordinator } from './coordinator.js';
+export { SwarmCoordinator } from './coordinator';
 
 // Executor exports
-export { TaskExecutor } from './executor.js';
+export { TaskExecutor } from './executor';
 export type {
   ExecutionContext,
   ExecutionResources,
@@ -15,26 +15,26 @@ export type {
   ClaudeExecutionOptions,
   ClaudeCommand,
   ExecutionMetrics
-} from './executor.js';
+} from './executor';
 
 // Type exports - safe to use export * for type-only files
-export * from './types.js';
+export * from './types';
 
 // Strategy exports
-export { BaseStrategy } from './strategies/base.js';
-export { AutoStrategy } from './strategies/auto.js';
-export { ResearchStrategy } from './strategies/research.js';
+export { BaseStrategy } from './strategies/base';
+export { AutoStrategy } from './strategies/auto';
+export { ResearchStrategy } from './strategies/research';
 
 // Memory exports
-export { SwarmMemoryManager } from './memory.js';
-export type { MemoryConfig, MemoryQuery, MemorySearchOptions, MemoryStatistics, MemoryBackup } from './memory.js';
+export { SwarmMemoryManager } from './memory';
+export type { MemoryConfig, MemoryQuery, MemorySearchOptions, MemoryStatistics, MemoryBackup } from './memory';
 
 // Prompt copying system exports
-export { PromptCopier, copyPrompts } from './prompt-copier.js';
-export type { CopyOptions, CopyResult, CopyProgress, CopyError, FileInfo } from './prompt-copier.js';
-export { EnhancedPromptCopier, copyPromptsEnhanced } from './prompt-copier-enhanced.js';
-export * from './prompt-utils.js';
-export { PromptManager } from './prompt-manager.js';
+export { PromptCopier, copyPrompts } from './prompt-copier';
+export type { CopyOptions, CopyResult, CopyProgress, CopyError, FileInfo } from './prompt-copier';
+export { EnhancedPromptCopier, copyPromptsEnhanced } from './prompt-copier-enhanced';
+export * from './prompt-utils';
+export { PromptManager } from './prompt-manager';
 
 // Optimizations - explicit exports to avoid conflicts
 export {
@@ -44,7 +44,7 @@ export {
   TTLMap,
   OptimizedExecutor,
   createOptimizedSwarmStack
-} from './optimizations/index.js';
+} from './optimizations/index';
 export type {
   PoolConfig,
   PooledConnection,
@@ -52,34 +52,34 @@ export type {
   TTLMapOptions,
   ExecutorConfig as OptimizedExecutorConfig,
   ExecutionMetrics as OptimizedExecutionMetrics
-} from './optimizations/index.js';
+} from './optimizations/index';
 
 // Utility function to get all exports
 export function getSwarmComponents() {
   return {
     // Core components
-    coordinator: () => import('./coordinator.js'),
-    executor: () => import('./executor.js'),
-    types: () => import('./types.js'),
+    coordinator: () => import('./coordinator'),
+    executor: () => import('./executor'),
+    types: () => import('./types'),
     
     // Strategies
     strategies: {
-      base: () => import('./strategies/base.js'),
-      auto: () => import('./strategies/auto.js'),
-      research: () => import('./strategies/research.js')
+      base: () => import('./strategies/base'),
+      auto: () => import('./strategies/auto'),
+      research: () => import('./strategies/research')
     },
     
     // Memory
-    memory: () => import('./memory.js'),
+    memory: () => import('./memory'),
     
     // Prompt system
-    promptCopier: () => import('./prompt-copier.js'),
-    promptCopierEnhanced: () => import('./prompt-copier-enhanced.js'),
-    promptUtils: () => import('./prompt-utils.js'),
-    promptManager: () => import('./prompt-manager.js'),
-    promptCli: () => import('./prompt-cli.js'),
+    promptCopier: () => import('./prompt-copier'),
+    promptCopierEnhanced: () => import('./prompt-copier-enhanced'),
+    promptUtils: () => import('./prompt-utils'),
+    promptManager: () => import('./prompt-manager'),
+    promptCli: () => import('./prompt-cli'),
     
     // Optimizations
-    optimizations: () => import('./optimizations/index.js')
+    optimizations: () => import('./optimizations/index')
   };
 }

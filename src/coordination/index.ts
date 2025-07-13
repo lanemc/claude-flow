@@ -3,11 +3,11 @@
  */
 
 // Core coordination components
-export { CoordinationManager } from './manager.js';
-export type { ICoordinationManager } from './manager.js';
-export { TaskScheduler } from './scheduler.js';
-export { ResourceManager } from './resources.js';
-export { MessageRouter } from './messaging.js';
+export { CoordinationManager } from './manager';
+export type { ICoordinationManager } from './manager';
+export { TaskScheduler } from './scheduler';
+export { ResourceManager } from './resources';
+export { MessageRouter } from './messaging';
 
 // Advanced scheduling
 export { 
@@ -16,40 +16,40 @@ export {
   RoundRobinSchedulingStrategy,
   LeastLoadedSchedulingStrategy,
   AffinitySchedulingStrategy
-} from './advanced-scheduler.js';
+} from './advanced-scheduler';
 export type {
   SchedulingStrategy,
   SchedulingContext
-} from './advanced-scheduler.js';
+} from './advanced-scheduler';
 
 // Work stealing
 export {
   WorkStealingCoordinator
-} from './work-stealing.js';
+} from './work-stealing';
 export type {
   WorkStealingConfig,
   AgentWorkload
-} from './work-stealing.js';
+} from './work-stealing';
 
 // Dependency management
 export {
   DependencyGraph
-} from './dependency-graph.js';
+} from './dependency-graph';
 export type {
   DependencyNode,
   DependencyPath
-} from './dependency-graph.js';
+} from './dependency-graph';
 
 // Circuit breakers
 export {
   CircuitBreaker,
   CircuitBreakerManager,
   CircuitState
-} from './circuit-breaker.js';
+} from './circuit-breaker';
 export type {
   CircuitBreakerConfig,
   CircuitBreakerMetrics
-} from './circuit-breaker.js';
+} from './circuit-breaker';
 
 // Conflict resolution
 export {
@@ -58,19 +58,19 @@ export {
   TimestampResolutionStrategy,
   VotingResolutionStrategy,
   OptimisticLockManager
-} from './conflict-resolution.js';
+} from './conflict-resolution';
 export type {
   ResourceConflict,
   TaskConflict,
   ConflictResolution,
   ConflictResolutionStrategy
-} from './conflict-resolution.js';
+} from './conflict-resolution';
 
 // Metrics and monitoring
 export {
   CoordinationMetricsCollector
-} from './metrics.js';
+} from './metrics';
 export type {
   CoordinationMetrics,
   MetricsSample
-} from './metrics.js';
+} from './metrics';

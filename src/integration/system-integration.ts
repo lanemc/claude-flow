@@ -3,16 +3,16 @@
  * Comprehensive integration manager for all system components
  */
 
-import { EventBus } from '../core/event-bus.js';
-import { Logger } from '../core/logger.js';
-import type { ConfigManager } from '../config/config-manager.js';
-import { MemoryManager } from '../memory/manager.js';
-import { AgentManager } from '../agents/agent-manager.js';
-import { TaskEngine } from '../task/engine.js';
-import { RealTimeMonitor } from '../monitoring/real-time-monitor.js';
-import { MCPServer } from '../mcp/server.js';
-import { getErrorMessage } from '../utils/error-handler.js';
-import type { IntegrationConfig, SystemHealth, ComponentStatus } from './types.js';
+import { EventBus } from '../core/event-bus';
+import { Logger } from '../core/logger';
+import type { ConfigManager } from '../config/config-manager';
+import { MemoryManager } from '../memory/manager';
+import { AgentManager } from '../agents/agent-manager';
+import { TaskEngine } from '../task/engine';
+import { RealTimeMonitor } from '../monitoring/real-time-monitor';
+import { MCPServer } from '../mcp/server';
+import { getErrorMessage } from '../utils/error-handler';
+import type { IntegrationConfig, SystemHealth, ComponentStatus } from './types';
 
 export class SystemIntegration {
   private static instance: SystemIntegration;
@@ -115,7 +115,7 @@ export class SystemIntegration {
       
       // Try to initialize orchestrator if available
       try {
-        const { Orchestrator } = await import('../core/orchestrator-fixed.js');
+        const { Orchestrator } = await import('../core/orchestrator-fixed');
         this.orchestrator = new Orchestrator(
           this.configManager,
           this.eventBus,
@@ -146,7 +146,7 @@ export class SystemIntegration {
     try {
       // Initialize memory manager
       try {
-        const { MemoryManager } = await import('../memory/manager.js');
+        const { MemoryManager } = await import('../memory/manager');
         this.memoryManager = new MemoryManager(
           { backend: 'sqlite', ttl: 3600000, maxSize: 1000, cacheSizeMB: 50 },
           this.eventBus,
@@ -177,7 +177,7 @@ export class SystemIntegration {
     try {
       // Initialize agent manager
       try {
-        const { AgentManager } = await import('../agents/agent-manager.js');
+        const { AgentManager } = await import('../agents/agent-manager');
         this.agentManager = new AgentManager(
           { maxAgents: 10, defaultTimeout: 30000, heartbeatInterval: 10000, healthCheckInterval: 30000, autoRestart: true },
           this.logger,
@@ -190,7 +190,7 @@ export class SystemIntegration {
         this.updateComponentStatus('agents', 'healthy', 'Agent manager initialized');
       } catch (error) {
         this.logger.warn('Agent manager not available, using mock:', getErrorMessage(error));
-        const { MockAgentManager } = await import('./mock-components.js');
+        const { MockAgentManager } = await import('./mock-components');
         this.agentManager = new MockAgentManager(this.eventBus, this.logger);
         await this.agentManager.initialize();
         this.updateComponentStatus('agents', 'warning', 'Using mock agent manager');
@@ -198,7 +198,7 @@ export class SystemIntegration {
       
       // Initialize swarm coordinator
       try {
-        const { SwarmCoordinator } = await import('../coordination/swarm-coordinator.js');
+        const { SwarmCoordinator } = await import('../coordination/swarm-coordinator');
         this.swarmCoordinator = new SwarmCoordinator({
           maxAgents: 10,
           maxConcurrentTasks: 5,
@@ -211,7 +211,7 @@ export class SystemIntegration {
         this.updateComponentStatus('swarm', 'healthy', 'Swarm coordinator initialized');
       } catch (error) {
         this.logger.warn('Swarm coordinator not available, using mock:', getErrorMessage(error));
-        const { MockSwarmCoordinator } = await import('./mock-components.js');
+        const { MockSwarmCoordinator } = await import('./mock-components');
         this.swarmCoordinator = new MockSwarmCoordinator(this.eventBus, this.logger, this.memoryManager!);
         await this.swarmCoordinator.initialize();
         this.updateComponentStatus('swarm', 'warning', 'Using mock swarm coordinator');
@@ -233,7 +233,7 @@ export class SystemIntegration {
     try {
       // Initialize task engine
       try {
-        const { TaskEngine } = await import('../task/engine.js');
+        const { TaskEngine } = await import('../task/engine');
         this.taskEngine = new TaskEngine(10, this.memoryManager!);
         if (typeof this.taskEngine.initialize === 'function') {
           await this.taskEngine.initialize();
@@ -241,7 +241,7 @@ export class SystemIntegration {
         this.updateComponentStatus('tasks', 'healthy', 'Task engine initialized');
       } catch (error) {
         this.logger.warn('Task engine not available, using mock:', getErrorMessage(error));
-        const { MockTaskEngine } = await import('./mock-components.js');
+        const { MockTaskEngine } = await import('./mock-components');
         this.taskEngine = new MockTaskEngine(this.eventBus, this.logger, this.memoryManager!);
         await this.taskEngine.initialize();
         this.updateComponentStatus('tasks', 'warning', 'Using mock task engine');
@@ -263,7 +263,7 @@ export class SystemIntegration {
     try {
       // Initialize real-time monitor
       try {
-        const { RealTimeMonitor } = await import('../monitoring/real-time-monitor.js');
+        const { RealTimeMonitor } = await import('../monitoring/real-time-monitor');
         this.monitor = new RealTimeMonitor(
           { 
             updateInterval: 1000,
@@ -296,7 +296,7 @@ export class SystemIntegration {
         this.updateComponentStatus('monitor', 'healthy', 'Real-time monitor initialized');
       } catch (error) {
         this.logger.warn('Real-time monitor not available, using mock:', getErrorMessage(error));
-        const { MockRealTimeMonitor } = await import('./mock-components.js');
+        const { MockRealTimeMonitor } = await import('./mock-components');
         this.monitor = new MockRealTimeMonitor(this.eventBus, this.logger);
         await this.monitor.initialize();
         this.updateComponentStatus('monitor', 'warning', 'Using mock monitor');
@@ -304,7 +304,7 @@ export class SystemIntegration {
       
       // Initialize MCP server
       try {
-        const { MCPServer } = await import('../mcp/server.js');
+        const { MCPServer } = await import('../mcp/server');
         this.mcpServer = new MCPServer(
           {
             transport: 'stdio',
@@ -321,7 +321,7 @@ export class SystemIntegration {
         this.updateComponentStatus('mcp', 'healthy', 'MCP server initialized');
       } catch (error) {
         this.logger.warn('MCP server not available, using mock:', getErrorMessage(error));
-        const { MockMcpServer } = await import('./mock-components.js');
+        const { MockMcpServer } = await import('./mock-components');
         this.mcpServer = new MockMcpServer(this.eventBus, this.logger);
         await this.mcpServer.initialize();
         this.updateComponentStatus('mcp', 'warning', 'Using mock MCP server');

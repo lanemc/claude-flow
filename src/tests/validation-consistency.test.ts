@@ -1,11 +1,11 @@
 import { describe, test, expect } from '@jest/globals';
-import { VALID_AGENT_TYPES } from '../constants/agent-types.js';
+import { VALID_AGENT_TYPES } from '../constants/agent-types';
 
 // Import validation schemas from various files
-const mcpServer = require('../mcp/mcp-server.js');
-import { getClaudeFlowTools } from '../mcp/claude-flow-tools.js';
-import { getRuvSwarmTools } from '../mcp/ruv-swarm-tools.js';
-import { getSwarmTools } from '../mcp/swarm-tools.js';
+const mcpServer = require('../mcp/mcp-server');
+import { getClaudeFlowTools } from '../mcp/claude-flow-tools';
+import { getRuvSwarmTools } from '../mcp/ruv-swarm-tools';
+import { getSwarmTools } from '../mcp/swarm-tools';
 
 describe('Agent Type Validation Consistency', () => {
   const expectedTypes = VALID_AGENT_TYPES.sort();

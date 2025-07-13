@@ -5,13 +5,13 @@
 // Tests will skip ClaudeAPI-dependent tests for now
 
 import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
-import { CircularBuffer } from '../circular-buffer.js';
-import { TTLMap } from '../ttl-map.js';
-import { ClaudeConnectionPool } from '../connection-pool.js';
-import { AsyncFileManager } from '../async-file-manager.js';
-import { OptimizedExecutor } from '../optimized-executor.js';
-import { generateId } from '../../../utils/helpers.js';
-import type { TaskDefinition, AgentId } from '../../types.js';
+import { CircularBuffer } from '../circular-buffer';
+import { TTLMap } from '../ttl-map';
+import { ClaudeConnectionPool } from '../connection-pool';
+import { AsyncFileManager } from '../async-file-manager';
+import { OptimizedExecutor } from '../optimized-executor';
+import { generateId } from '../../../utils/helpers';
+import type { TaskDefinition, AgentId } from '../../types';
 
 describe('Swarm Optimizations', () => {
   describe('CircularBuffer', () => {

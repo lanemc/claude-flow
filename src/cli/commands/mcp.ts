@@ -1,14 +1,14 @@
-import { getErrorMessage } from '../../utils/error-handler.js';
+import { getErrorMessage } from '../../utils/error-handler';
 /**
  * MCP command for Claude-Flow
  */
 
 import { Command } from 'commander';
 import chalk from 'chalk';
-import { logger } from '../../core/logger.js';
-import { configManager } from '../../core/config.js';
-import { MCPServer } from '../../mcp/server.js';
-import { eventBus } from '../../core/event-bus.js';
+import { logger } from '../../core/logger';
+import { configManager } from '../../core/config';
+import { MCPServer } from '../../mcp/server';
+import { eventBus } from '../../core/event-bus';
 
 let mcpServer: MCPServer | null = null;
 

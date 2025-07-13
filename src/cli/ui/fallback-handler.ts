@@ -1,11 +1,11 @@
-import { getErrorMessage } from '../../utils/type-guards.js';
+import { getErrorMessage } from '../../utils/type-guards';
 /**
  * Fallback UI Handler - Handles raw mode errors gracefully
  * Provides alternative UI when Ink/raw mode isn't supported
  */
 
 import chalk from 'chalk';
-import { createCompatibleUI } from './compatible-ui.js';
+import { createCompatibleUI } from './compatible-ui';
 
 export interface FallbackOptions {
   enableUI?: boolean;

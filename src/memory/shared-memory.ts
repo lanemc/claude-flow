@@ -24,7 +24,7 @@ import type {
   MemorySearchOptions,
   MemorySearchResult,
   IMemoryStore
-} from './types.js';
+} from './types';
 
 /**
  * Migration definitions for schema evolution

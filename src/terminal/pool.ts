@@ -1,12 +1,12 @@
-import { getErrorMessage } from '../utils/error-handler.js';
+import { getErrorMessage } from '../utils/error-handler';
 /**
  * Terminal pool management
  */
 
-import type { Terminal, ITerminalAdapter } from './adapters/base.js';
-import type { ILogger } from '../core/logger.js';
-import { TerminalError } from '../utils/errors.js';
-import { delay } from '../utils/helpers.js';
+import type { Terminal, ITerminalAdapter } from './adapters/base';
+import type { ILogger } from '../core/logger';
+import { TerminalError } from '../utils/errors';
+import { delay } from '../utils/helpers';
 
 interface PooledTerminal {
   terminal: Terminal;

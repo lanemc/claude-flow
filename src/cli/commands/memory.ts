@@ -1,5 +1,5 @@
 import chalk from 'chalk';
-import { getErrorMessage } from '../../utils/error-handler.js';
+import { getErrorMessage } from '../../utils/error-handler';
 /**
  * Memory management commands
  */

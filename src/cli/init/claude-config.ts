@@ -1,6 +1,6 @@
-import { getErrorMessage } from '../../utils/error-handler.js';
+import { getErrorMessage } from '../../utils/error-handler';
 // init/claude-config.ts - Claude configuration creation
-import type { InitOptions } from './index.js';
+import type { InitOptions } from './index';
 
 export async function createClaudeConfig(options: InitOptions): Promise<void> {
   const fs = await import('fs/promises');

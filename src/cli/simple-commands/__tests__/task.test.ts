@@ -3,7 +3,7 @@
  */
 
 import { jest } from '@jest/globals';
-import { taskCommand } from '../task.js';
+import { taskCommand } from '../task';
 import fs from 'fs-extra';
 import path from 'path';
 import chalk from 'chalk';

@@ -5,7 +5,7 @@
  * @module swarm-memory
  */
 
-import { SharedMemory } from './shared-memory.js';
+import { SharedMemory } from './shared-memory';
 import * as path from 'path';
 import type {
   SwarmMemoryOptions,
@@ -20,7 +20,7 @@ import type {
   ImportResult,
   MemorySearchOptions,
   MemoryStoreOptions
-} from './types.js';
+} from './types';
 
 /**
  * Swarm-specific namespaces

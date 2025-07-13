@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../../utils/error-handler.js';
+import { getErrorMessage } from '../../utils/error-handler';
 /**
  * Comprehensive Agent management commands with advanced features
  */
@@ -9,14 +9,14 @@ import Table from 'cli-table3';
 import chalk from 'chalk';
 import inquirer from 'inquirer';
 const { colors } = { colors: chalk }; // Compatibility shim
-import type { AgentProfile } from '../../utils/types.js';
-import { generateId } from '../../utils/helpers.js';
-import { AgentManager } from '../../agents/agent-manager.js';
-import type { MemoryManager } from '../../memory/manager.js';
-import { EventBus } from '../../core/event-bus.js';
-import { Logger } from '../../core/logger.js';
-import { DistributedMemorySystem } from '../../memory/distributed-memory.js';
-import { formatDuration, formatBytes, formatPercentage } from '../../utils/formatters.js';
+import type { AgentProfile } from '../../utils/types';
+import { generateId } from '../../utils/helpers';
+import { AgentManager } from '../../agents/agent-manager';
+import type { MemoryManager } from '../../memory/manager';
+import { EventBus } from '../../core/event-bus';
+import { Logger } from '../../core/logger';
+import { DistributedMemorySystem } from '../../memory/distributed-memory';
+import { formatDuration, formatBytes, formatPercentage } from '../../utils/formatters';
 import path from 'node:path';
 import fs from 'node:fs/promises';
 

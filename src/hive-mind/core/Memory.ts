@@ -7,15 +7,15 @@
 
 import { EventEmitter } from 'events';
 import { performance } from 'perf_hooks';
-import { DatabaseManager } from './DatabaseManager.js';
-import { MCPToolWrapper } from '../integration/MCPToolWrapper.js';
+import { DatabaseManager } from './DatabaseManager';
+import { MCPToolWrapper } from '../integration/MCPToolWrapper';
 import {
   MemoryEntry,
   MemoryNamespace,
   MemoryStats,
   MemorySearchOptions,
   MemoryPattern
-} from '../types.js';
+} from '../types';
 
 /**
  * High-performance LRU Cache with memory management
@@ -556,7 +556,7 @@ export class Memory extends EventEmitter {
           ttl: dbEntry.ttl,
           createdAt: new Date(dbEntry.created_at),
           accessCount: dbEntry.access_count,
-          lastAccessedAt: new Date(dbEntry.last_accessed_at)
+          lastAccessedAt: new Date(dbEntry.last_accessed_at || dbEntry.created_at)
         };
         
         if (!results.find(r => r.key === entry.key && r.namespace === entry.namespace)) {
@@ -638,7 +638,7 @@ export class Memory extends EventEmitter {
       ttl: dbEntry.ttl,
       createdAt: new Date(dbEntry.created_at),
       accessCount: dbEntry.access_count,
-      lastAccessedAt: new Date(dbEntry.last_accessed_at)
+      lastAccessedAt: new Date(dbEntry.last_accessed_at || dbEntry.created_at)
     }));
   }
 
@@ -863,7 +863,7 @@ export class Memory extends EventEmitter {
         ttl: dbEntry.ttl,
         createdAt: new Date(dbEntry.created_at),
         accessCount: dbEntry.access_count,
-        lastAccessedAt: new Date(dbEntry.last_accessed_at)
+        lastAccessedAt: new Date(dbEntry.last_accessed_at || dbEntry.created_at)
       };
       
       const cacheKey = this.getCacheKey(entry.key, entry.namespace);
@@ -1006,7 +1006,7 @@ export class Memory extends EventEmitter {
       ttl: row.ttl,
       createdAt: new Date(row.created_at),
       accessCount: row.access_count,
-      lastAccessedAt: new Date(row.last_accessed_at),
+      lastAccessedAt: new Date(row.last_accessed_at || row.created_at),
       expiresAt: row.expires_at ? new Date(row.expires_at) : undefined
     };
   }

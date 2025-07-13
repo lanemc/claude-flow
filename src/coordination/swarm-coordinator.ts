@@ -1,12 +1,12 @@
-import { getErrorMessage } from '../utils/error-handler.js';
+import { getErrorMessage } from '../utils/error-handler';
 import { EventEmitter } from 'node:events';
-import { createLogger, ILogger } from '../core/logger.js';
-import { EventBus } from '../core/event-bus.js';
-import { generateId } from '../utils/helpers.js';
-import { SwarmMonitor } from './swarm-monitor.js';
-import type { AdvancedTaskScheduler } from './advanced-scheduler.js';
-import { MemoryManager } from '../memory/manager.js';
-import type { Message } from '../communication/message-bus.js';
+import { createLogger, ILogger } from '../core/logger';
+import { EventBus } from '../core/event-bus';
+import { generateId } from '../utils/helpers';
+import { SwarmMonitor } from './swarm-monitor';
+import type { AdvancedTaskScheduler } from './advanced-scheduler';
+import { MemoryManager } from '../memory/manager';
+import type { Message } from '../communication/message-bus';
 
 export interface SwarmAgent {
   id: string;

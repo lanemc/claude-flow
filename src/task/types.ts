@@ -1,6 +1,6 @@
 // Task system types
-import type { TaskEngine } from './engine.js';
-import type { TaskCoordinator } from './coordination.js';
+import type { TaskEngine } from './engine';
+import type { TaskCoordinator } from './coordination';
 
 export interface TodoItem {
   id: string;

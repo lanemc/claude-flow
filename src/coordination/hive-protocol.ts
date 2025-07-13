@@ -4,7 +4,7 @@
  */
 
 import { EventEmitter } from 'events';
-import { generateId } from '../utils/helpers.js';
+import { generateId } from '../utils/helpers';
 
 export interface HiveMessage {
   id: string;

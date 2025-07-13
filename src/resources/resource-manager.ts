@@ -1,13 +1,13 @@
-import { getErrorMessage } from "../utils/error-handler.js";
+import { getErrorMessage } from "../utils/error-handler";
 /**
  * Comprehensive resource management system for swarm operations
  */
 
 import { EventEmitter } from "node:events";
-import type { ILogger } from "../core/logger.js";
-import type { IEventBus } from "../core/event-bus.js";
-import type { AgentId, TaskId } from "../swarm/types.js";
-import { generateId } from "../utils/helpers.js";
+import type { ILogger } from "../core/logger";
+import type { IEventBus } from "../core/event-bus";
+import type { AgentId, TaskId } from "../swarm/types";
+import { generateId } from "../utils/helpers";
 
 export interface ResourceManagerConfig {
   enableResourcePooling: boolean;

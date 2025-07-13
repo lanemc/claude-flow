@@ -1,11 +1,11 @@
-import { getErrorMessage } from '../utils/error-handler.js';
+import { getErrorMessage } from '../utils/error-handler';
 /**
  * Dependency graph management for task scheduling
  */
 
-import type { Task } from '../utils/types.js';
-import { TaskDependencyError } from '../utils/errors.js';
-import type { ILogger } from '../core/logger.js';
+import type { Task } from '../utils/types';
+import { TaskDependencyError } from '../utils/errors';
+import type { ILogger } from '../core/logger';
 
 export interface DependencyNode {
   taskId: string;

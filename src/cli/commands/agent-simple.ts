@@ -1,13 +1,13 @@
-import { getErrorMessage } from '../../utils/error-handler.js';
+import { getErrorMessage } from '../../utils/error-handler';
 /**
  * Comprehensive Agent management commands - Simplified version
  */
 
-import { AgentManager } from '../../agents/agent-manager.js';
-import { AgentRegistry } from '../../agents/agent-registry.js';
-import { DistributedMemorySystem } from '../../memory/distributed-memory.js';
-import { EventBus } from '../../core/event-bus.js';
-import { Logger } from '../../core/logger.js';
+import { AgentManager } from '../../agents/agent-manager';
+import { AgentRegistry } from '../../agents/agent-registry';
+import { DistributedMemorySystem } from '../../memory/distributed-memory';
+import { EventBus } from '../../core/event-bus';
+import { Logger } from '../../core/logger';
 
 // Global instances
 let agentManager: AgentManager | null = null;

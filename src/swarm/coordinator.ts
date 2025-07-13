@@ -1,10 +1,10 @@
-import { getErrorMessage } from "../utils/error-handler.js";
+import { getErrorMessage } from "../utils/error-handler";
 import { EventEmitter } from "events";
 import { promises as fs } from "node:fs";
 import { spawn } from "node:child_process";
 import { promisify } from "node:util";
-import { Logger } from "../core/logger.js";
-import { generateId } from "../utils/helpers.js";
+import { Logger } from "../core/logger";
+import { generateId } from "../utils/helpers";
 import {
   SwarmId,
   AgentId,
@@ -28,10 +28,10 @@ import {
   SwarmEventEmitter,
   ValidationResult,
   SWARM_CONSTANTS,
-} from "./types.js";
-import { AutoStrategy } from "./strategies/auto.js";
-import { getClaudeFlowRoot, getClaudeFlowBin } from "../utils/paths.js";
-import { SwarmJsonOutputAggregator } from "./json-output-aggregator.js";
+} from "./types";
+import { AutoStrategy } from "./strategies/auto";
+import { getClaudeFlowRoot, getClaudeFlowBin } from "../utils/paths";
+import { SwarmJsonOutputAggregator } from "./json-output-aggregator";
 
 export class SwarmCoordinator
   extends EventEmitter
@@ -2364,7 +2364,7 @@ Ensure your implementation is complete, well-structured, and follows best practi
 
     try {
       // Use Claude Flow executor for full SPARC system in non-interactive mode
-      const { ClaudeFlowExecutor } = await import("./claude-flow-executor.js");
+      const { ClaudeFlowExecutor } = await import("./claude-flow-executor");
       const executor = new ClaudeFlowExecutor({
         logger: this.logger,
         claudeFlowPath: getClaudeFlowBin(),
@@ -2695,7 +2695,7 @@ Ensure your implementation is complete, well-structured, and follows best practi
 
     try {
       // Ensure work directory exists
-      await Deno.mkdir(workDir, { recursive: true });
+      await fs.mkdir(workDir, { recursive: true });
 
       switch (task.type) {
         case "coding":
@@ -2750,7 +2750,7 @@ Ensure your implementation is complete, well-structured, and follows best practi
       // Create a REST API application
       const projectName = "rest-api";
       const projectDir = `${workDir}/${projectName}`;
-      await Deno.mkdir(projectDir, { recursive: true });
+      await fs.mkdir(projectDir, { recursive: true });
 
       // Create main API file
       const apiCode = `const express = require('express');
@@ -2940,7 +2940,7 @@ coverage/
     } else if (isHelloWorld) {
       // Create a simple hello world application
       const projectDir = `${workDir}/hello-world`;
-      await Deno.mkdir(projectDir, { recursive: true });
+      await fs.mkdir(projectDir, { recursive: true });
 
       // Create main application file
       const mainCode = `#!/usr/bin/env node
@@ -3021,7 +3021,7 @@ ${task.description}
 
     // For other code generation tasks, create a basic structure
     const projectDir = `${workDir}/generated-code`;
-    await Deno.mkdir(projectDir, { recursive: true });
+    await fs.mkdir(projectDir, { recursive: true });
 
     const code = `// Generated code for: ${task.name}
 // ${task.description}
@@ -3054,7 +3054,7 @@ main();
     this.logger.info("Executing analysis task", { taskId: task.id.id });
 
     const analysisDir = `${workDir}/analysis`;
-    await Deno.mkdir(analysisDir, { recursive: true });
+    await fs.mkdir(analysisDir, { recursive: true });
 
     const analysis = {
       task: task.name,
@@ -3094,7 +3094,7 @@ main();
     this.logger.info("Executing documentation task", { taskId: task.id.id });
 
     const docsDir = `${workDir}/docs`;
-    await Deno.mkdir(docsDir, { recursive: true });
+    await fs.mkdir(docsDir, { recursive: true });
 
     const documentation = `# ${task.name}
 
@@ -3139,7 +3139,7 @@ ${task.instructions}
     this.logger.info("Executing testing task", { taskId: task.id.id });
 
     const testDir = `${workDir}/tests`;
-    await Deno.mkdir(testDir, { recursive: true });
+    await fs.mkdir(testDir, { recursive: true });
 
     const testCode = `// Test suite for: ${task.name}
 // ${task.description}
@@ -3185,7 +3185,7 @@ console.log('Tests completed for: ${task.name}');
     this.logger.info("Executing generic task", { taskId: task.id.id });
 
     const outputDir = `${workDir}/output`;
-    await Deno.mkdir(outputDir, { recursive: true });
+    await fs.mkdir(outputDir, { recursive: true });
 
     const output = {
       task: task.name,

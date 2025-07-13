@@ -1,27 +1,27 @@
 // command-registry.ts - Extensible command registration system
 import process from 'process';
-import { initCommand } from './simple-commands/init/index.js';
-import { memoryCommand } from './simple-commands/memory.js';
-import { sparcCommand } from './simple-commands/sparc.js';
-import { agentCommand } from './simple-commands/agent.js';
-import { taskCommand } from './simple-commands/task.js';
-import { configCommand } from './simple-commands/config.js';
-import { statusCommand } from './simple-commands/status.js';
-import { mcpCommand } from './simple-commands/mcp.js';
-import { monitorCommand } from './simple-commands/monitor.js';
-import { startCommand } from './simple-commands/start.js';
-import { swarmCommand } from './simple-commands/swarm.js';
-import { batchManagerCommand } from './simple-commands/batch-manager.js';
-import { githubCommand } from './simple-commands/github.js';
-import { trainingAction } from './simple-commands/training.js';
-import { analysisAction } from './simple-commands/analysis.js';
-import { automationAction } from './simple-commands/automation.js';
-import { coordinationAction } from './simple-commands/coordination.js';
-import { hooksAction } from './simple-commands/hooks.js';
-import { hookSafetyCommand } from './simple-commands/hook-safety.js';
-import { hiveMindCommand } from './simple-commands/hive-mind.js';
-import hiveMindOptimizeCommand from './simple-commands/hive-mind-optimize.js';
-import { showUnifiedMetrics, fixTaskAttribution } from './simple-commands/swarm-metrics-integration.js';
+import { initCommand } from './simple-commands/init/index';
+import { memoryCommand } from './simple-commands/memory';
+import { sparcCommand } from './simple-commands/sparc';
+import { agentCommand } from './simple-commands/agent';
+import { taskCommand } from './simple-commands/task';
+import { configCommand } from './simple-commands/config';
+import { statusCommand } from './simple-commands/status';
+import { mcpCommand } from './simple-commands/mcp';
+import { monitorCommand } from './simple-commands/monitor';
+import { startCommand } from './simple-commands/start';
+import { swarmCommand } from './simple-commands/swarm';
+import { batchManagerCommand } from './simple-commands/batch-manager';
+import { githubCommand } from './simple-commands/github';
+import { trainingAction } from './simple-commands/training';
+import { analysisAction } from './simple-commands/analysis';
+import { automationAction } from './simple-commands/automation';
+import { coordinationAction } from './simple-commands/coordination';
+import { hooksAction } from './simple-commands/hooks';
+import { hookSafetyCommand } from './simple-commands/hook-safety';
+import { hiveMindCommand } from './simple-commands/hive-mind';
+import hiveMindOptimizeCommand from './simple-commands/hive-mind-optimize';
+import { showUnifiedMetrics, fixTaskAttribution } from './simple-commands/swarm-metrics-integration';
 
 // TypeScript interfaces for command system
 export interface CommandFlags {
@@ -119,7 +119,7 @@ First-time users should run: npx claude-flow@latest init --sparc`
   commandRegistry.set('start-ui', {
     handler: async (args: string[], flags: CommandFlags) => {
       // Import and use the direct UI launcher
-      const { launchUI } = await import('./simple-commands/start-ui.js');
+      const { launchUI } = await import('./simple-commands/start-ui');
       // Pass the full raw arguments from process.argv
       const fullArgs = process.argv.slice(3); // Skip node, script, and command
       return launchUI(fullArgs);

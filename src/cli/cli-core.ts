@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { getErrorMessage } from '../utils/error-handler.js';
+import { getErrorMessage } from '../utils/error-handler';
 /**
  * Claude-Flow CLI - Core implementation using Node.js
  */
@@ -297,7 +297,7 @@ async function main() {
     const cli = new CLI("claude-flow", "Advanced AI Agent Orchestration System");
 
     // Import and register all commands
-    const { setupCommands } = await import("./commands/index.js");
+    const { setupCommands } = await import("./commands/index");
     setupCommands(cli);
 
     // Run the CLI

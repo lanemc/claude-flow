@@ -6,17 +6,17 @@
  */
 
 import { EventEmitter } from 'events';
-import { HiveMind } from '../core/HiveMind.js';
-import { Agent } from '../core/Agent.js';
-import { DatabaseManager } from '../core/DatabaseManager.js';
-import { MCPToolWrapper } from './MCPToolWrapper.js';
+import { HiveMind } from '../core/HiveMind';
+import { Agent } from '../core/Agent';
+import { DatabaseManager } from '../core/DatabaseManager';
+import { MCPToolWrapper } from './MCPToolWrapper';
 import {
   Task,
   TaskStrategy,
   ExecutionPlan,
   OrchestrationResult,
   TaskAssignment
-} from '../types.js';
+} from '../types';
 
 export class SwarmOrchestrator extends EventEmitter {
   private hiveMind: HiveMind;

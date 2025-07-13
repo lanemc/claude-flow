@@ -1,36 +1,36 @@
 // command-registry.js - Extensible command registration system
-import process from 'process';
-import { initCommand } from './simple-commands/init/index.js';
-import { memoryCommand } from './simple-commands/memory.js';
-import { sparcCommand } from './simple-commands/sparc.js';
-import { agentCommand } from './simple-commands/agent.js';
-import { taskCommand } from './simple-commands/task.js';
-import { configCommand } from './simple-commands/config.js';
-import { statusCommand } from './simple-commands/status.js';
-import { mcpCommand } from './simple-commands/mcp.js';
-import { monitorCommand } from './simple-commands/monitor.js';
-import { startCommand } from './simple-commands/start.js';
-import { swarmCommand } from './simple-commands/swarm.js';
-import { batchManagerCommand } from './simple-commands/batch-manager.js';
-import { githubCommand } from './simple-commands/github.js';
-import { trainingAction } from './simple-commands/training.js';
-import { analysisAction } from './simple-commands/analysis.js';
-import { automationAction } from './simple-commands/automation.js';
-import { coordinationAction } from './simple-commands/coordination.js';
-import { hooksAction } from './simple-commands/hooks.js';
-import { hookSafetyCommand } from './simple-commands/hook-safety.js';
-import { hiveMindCommand } from './simple-commands/hive-mind.js';
-import hiveMindOptimizeCommand from './simple-commands/hive-mind-optimize.js';
-import { showUnifiedMetrics, fixTaskAttribution } from './simple-commands/swarm-metrics-integration.js';
+const process = require('process');
+const { initCommand } = require('./simple-commands/init/index.js');
+const { memoryCommand } = require('./simple-commands/memory.js');
+const { sparcCommand } = require('./simple-commands/sparc.js');
+const { agentCommand } = require('./simple-commands/agent.js');
+const { taskCommand } = require('./simple-commands/task.js');
+const { configCommand } = require('./simple-commands/config.js');
+const { statusCommand } = require('./simple-commands/status.js');
+const { mcpCommand } = require('./simple-commands/mcp.js');
+const { monitorCommand } = require('./simple-commands/monitor.js');
+const { startCommand } = require('./simple-commands/start.js');
+const { swarmCommand } = require('./simple-commands/swarm.js');
+const { batchManagerCommand } = require('./simple-commands/batch-manager.js');
+const { githubCommand } = require('./simple-commands/github.js');
+const { trainingAction } = require('./simple-commands/training.js');
+const { analysisAction } = require('./simple-commands/analysis.js');
+const { automationAction } = require('./simple-commands/automation.js');
+const { coordinationAction } = require('./simple-commands/coordination.js');
+const { hooksAction } = require('./simple-commands/hooks.js');
+const { hookSafetyCommand } = require('./simple-commands/hook-safety.js');
+const { hiveMindCommand } = require('./simple-commands/hive-mind.js');
+const { default: hiveMindOptimizeCommand } = require('./simple-commands/hive-mind-optimize.js');
+const { showUnifiedMetrics, fixTaskAttribution } = require('./simple-commands/swarm-metrics-integration.js');
 // Note: TypeScript imports commented out for Node.js compatibility
 // import { ruvSwarmAction } from './commands/ruv-swarm.ts';
 // import { configIntegrationAction } from './commands/config-integration.ts';
 
 // Command registry for extensible CLI
-export const commandRegistry = new Map();
+const commandRegistry = new Map();
 
 // Register core commands
-export function registerCoreCommands() {
+function registerCoreCommands() {
   commandRegistry.set('init', {
     handler: initCommand,
     description: 'Initialize Claude Code integration files and SPARC development environment',
@@ -642,7 +642,7 @@ Commands:
 }
 
 // Register a new command
-export function registerCommand(name, command) {
+function registerCommand(name, command) {
   if (commandRegistry.has(name)) {
     console.warn(`Command '${name}' already exists and will be overwritten`);
   }
@@ -657,12 +657,12 @@ export function registerCommand(name, command) {
 }
 
 // Get command handler
-export function getCommand(name) {
+function getCommand(name) {
   return commandRegistry.get(name);
 }
 
 // List all registered commands
-export function listCommands(includeHidden = false) {
+function listCommands(includeHidden = false) {
   const commands = [];
   for (const [name, command] of commandRegistry.entries()) {
     if (includeHidden || !command.hidden) {
@@ -676,12 +676,12 @@ export function listCommands(includeHidden = false) {
 }
 
 // Check if command exists
-export function hasCommand(name) {
+function hasCommand(name) {
   return commandRegistry.has(name);
 }
 
 // Execute a command
-export async function executeCommand(name, subArgs, flags) {
+async function executeCommand(name, subArgs, flags) {
   const command = commandRegistry.get(name);
   if (!command) {
     throw new Error(`Unknown command: ${name}`);
@@ -695,7 +695,7 @@ export async function executeCommand(name, subArgs, flags) {
 }
 
 // Helper to show command help
-export function showCommandHelp(name) {
+function showCommandHelp(name) {
   const command = commandRegistry.get(name);
   if (!command) {
     console.log(`Unknown command: ${name}`);
@@ -723,7 +723,7 @@ export function showCommandHelp(name) {
 }
 
 // Helper to show all commands
-export function showAllCommands() {
+function showAllCommands() {
   const commands = listCommands();
   
   console.log('Available commands:');
@@ -739,3 +739,15 @@ export function showAllCommands() {
 
 // Initialize the command registry
 registerCoreCommands();
+
+module.exports = {
+  commandRegistry,
+  registerCoreCommands,
+  registerCommand,
+  getCommand,
+  listCommands,
+  hasCommand,
+  executeCommand,
+  showCommandHelp,
+  showAllCommands
+};

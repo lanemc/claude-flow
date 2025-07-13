@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../../utils/error-handler.js';
+import { getErrorMessage } from '../../utils/error-handler';
 import * as process from 'node:process';
 /**
  * Native terminal adapter implementation
@@ -6,10 +6,10 @@ import * as process from 'node:process';
 
 import { spawn, ChildProcess } from 'child_process';
 import { platform } from 'os';
-import type { ITerminalAdapter, Terminal } from './base.js';
-import type { ILogger } from '../../core/logger.js';
-import { TerminalError, TerminalCommandError } from '../../utils/errors.js';
-import { generateId, delay, timeout, createDeferred } from '../../utils/helpers.js';
+import type { ITerminalAdapter, Terminal } from './base';
+import type { ILogger } from '../../core/logger';
+import { TerminalError, TerminalCommandError } from '../../utils/errors';
+import { generateId, delay, timeout, createDeferred } from '../../utils/helpers';
 
 /**
  * Platform-specific shell configuration

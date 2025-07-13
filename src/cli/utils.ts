@@ -1,6 +1,6 @@
 // utils.ts - Shared CLI utility functions with TypeScript types
 
-import { Deno, existsSync } from './node-compat.js';
+import { Deno, existsSync } from './node-compat';
 
 // Type definitions
 export interface ParseFlagsResult {

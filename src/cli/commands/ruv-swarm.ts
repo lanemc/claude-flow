@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../../utils/error-handler.js';
+import { getErrorMessage } from '../../utils/error-handler';
 /**
  * ruv-swarm CLI commands for Claude Code integration
  * 
@@ -6,12 +6,12 @@ import { getErrorMessage } from '../../utils/error-handler.js';
  * package to enable advanced swarm coordination and neural capabilities.
  */
 
-import { success, error, warning, info } from "../cli-core.js";
-import type { CommandContext } from "../cli-core.js";
-import { getRuvSwarmConfigManager } from '../../config/ruv-swarm-config.js';
-import { execAsync } from '../../utils/helpers.js';
-import { Logger } from '../../core/logger.js';
-import { isRuvSwarmAvailable, initializeRuvSwarmIntegration } from '../../mcp/ruv-swarm-tools.js';
+import { success, error, warning, info } from "../cli-core";
+import type { CommandContext } from "../cli-core";
+import { getRuvSwarmConfigManager } from '../../config/ruv-swarm-config';
+import { execAsync } from '../../utils/helpers';
+import { Logger } from '../../core/logger';
+import { isRuvSwarmAvailable, initializeRuvSwarmIntegration } from '../../mcp/ruv-swarm-tools';
 
 // Create logger for CLI commands
 const logger = new Logger({ level: "info", format: "text", destination: "console" });

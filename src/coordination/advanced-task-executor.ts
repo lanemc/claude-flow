@@ -1,15 +1,15 @@
-import { getErrorMessage, getErrorStack } from '../utils/type-guards.js';
+import { getErrorMessage, getErrorStack } from '../utils/type-guards';
 /**
  * Advanced task executor with timeout handling, retry logic, and resource management
  */
 
 import { EventEmitter } from 'node:events';
 import { spawn, ChildProcess } from 'node:child_process';
-import type { TaskDefinition, TaskResult, TaskStatus, AgentState, TaskError } from '../swarm/types.js';
-import type { ILogger } from '../core/logger.js';
-import type { IEventBus } from '../core/event-bus.js';
-import { CircuitBreaker, CircuitBreakerManager } from './circuit-breaker.js';
-import { generateId } from '../utils/helpers.js';
+import type { TaskDefinition, TaskResult, TaskStatus, AgentState, TaskError } from '../swarm/types';
+import type { ILogger } from '../core/logger';
+import type { IEventBus } from '../core/event-bus';
+import { CircuitBreaker, CircuitBreakerManager } from './circuit-breaker';
+import { generateId } from '../utils/helpers';
 
 export interface TaskExecutorConfig {
   maxConcurrentTasks: number;

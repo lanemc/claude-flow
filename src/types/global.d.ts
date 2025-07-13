@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../utils/error-handler.js';
+import { getErrorMessage } from '../utils/error-handler';
 // Global type definitions and environment compatibility
 
 // Node.js global augmentations
@@ -13,10 +13,7 @@ declare global {
   }
 }
 
-// Deno compatibility shims (when running in Node)
-declare global {
-  var Deno: any | undefined;
-}
+// Node.js only environment - no Deno types needed
 
 // Commander.js types extension
 import type { Command as CommanderCommand } from 'commander';

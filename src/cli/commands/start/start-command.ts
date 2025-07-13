@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../../../utils/error-handler.js';
+import { getErrorMessage } from '../../../utils/error-handler';
 import { promises as fs } from 'node:fs';
 /**
  * Unified start command implementation with robust service management
@@ -7,13 +7,13 @@ import { promises as fs } from 'node:fs';
 import { Command } from 'commander';
 import chalk from 'chalk';
 import inquirer from 'inquirer';
-import { ProcessManager } from './process-manager.js';
-import { ProcessUI } from './process-ui.js';
-import { SystemMonitor } from './system-monitor.js';
-import type { StartOptions } from './types.js';
-import { eventBus } from '../../../core/event-bus.js';
-import { logger } from '../../../core/logger.js';
-import { formatDuration } from '../../formatter.js';
+import { ProcessManager } from './process-manager';
+import { ProcessUI } from './process-ui';
+import { SystemMonitor } from './system-monitor';
+import type { StartOptions } from './types';
+import { eventBus } from '../../../core/event-bus';
+import { logger } from '../../../core/logger';
+import { formatDuration } from '../../formatter';
 
 export const startCommand = new Command('start')
   .description('Start the Claude-Flow orchestration system')
@@ -98,7 +98,7 @@ export const startCommand = new Command('start')
       if (options.ui) {
         // Check if web server is available
         try {
-          const { ClaudeCodeWebServer } = await import('../../simple-commands/web-server.js');
+          const { ClaudeCodeWebServer } = await import('../../simple-commands/web-server');
           
           // Start the web server
           console.log(chalk.blue('Starting Web UI server...'));
@@ -131,8 +131,8 @@ export const startCommand = new Command('start')
             process.exit(0);
           };
           
-          Deno.addSignalListener('SIGINT', shutdownWebUI);
-          Deno.addSignalListener('SIGTERM', shutdownWebUI);
+          process.on('SIGINT', shutdownWebUI);
+          process.on('SIGTERM', shutdownWebUI);
           
           // Keep process alive
           await new Promise<void>(() => {});
@@ -164,7 +164,7 @@ export const startCommand = new Command('start')
         }
 
         // Create PID file with metadata
-        const pid = Deno.pid;
+        const pid = process.pid;
         const pidData = {
           pid,
           startTime: Date.now(),
@@ -200,11 +200,18 @@ export const startCommand = new Command('start')
         console.log(chalk.gray('Press a key to select an option...'));
 
         // Handle user input
-        const decoder = new TextDecoder();
+        process.stdin.setRawMode(true);
+        process.stdin.resume();
+        process.stdin.setEncoding('utf8');
+        
         while (true) {
-          const buf = new Uint8Array(1);
-          await Deno.stdin.read(buf);
-          const key = decoder.decode(buf);
+          const key = await new Promise<string>((resolve) => {
+            const onData = (data: string) => {
+              process.stdin.removeListener('data', onData);
+              resolve(data);
+            };
+            process.stdin.once('data', onData);
+          });
 
           switch (key) {
             case '1':
@@ -231,7 +238,13 @@ export const startCommand = new Command('start')
               systemMonitor.printEventLog(10);
               console.log();
               console.log(chalk.gray('Press any key to continue...'));
-              await Deno.stdin.read(new Uint8Array(1));
+              await new Promise<void>((resolve) => {
+                const onData = () => {
+                  process.stdin.removeListener('data', onData);
+                  resolve();
+                };
+                process.stdin.once('data', onData);
+              });
               break;
 
             case 'q':
@@ -292,7 +305,7 @@ async function isSystemRunning(): Promise<boolean> {
     
     // Check if process is still running
     try {
-      Deno.kill(data.pid, 'SIGTERM');
+      process.kill(data.pid, 'SIGTERM');
       return false; // Process was killed, so it was running
     } catch {
       return false; // Process not found
@@ -308,19 +321,19 @@ async function stopExistingInstance(): Promise<void> {
     const data = JSON.parse(pidData);
     
     console.log(chalk.yellow('Stopping existing instance...'));
-    Deno.kill(data.pid, 'SIGTERM');
+    process.kill(data.pid, 'SIGTERM');
     
     // Wait for graceful shutdown
     await new Promise(resolve => setTimeout(resolve, 2000));
     
     // Force kill if still running
     try {
-      Deno.kill(data.pid, 'SIGKILL');
+      process.kill(data.pid, 'SIGKILL');
     } catch {
       // Process already stopped
     }
     
-    await Deno.remove('.claude-flow.pid').catch(() => {});
+    await fs.unlink('.claude-flow.pid').catch(() => {});
     console.log(chalk.green('✓ Existing instance stopped'));
   } catch (error) {
     console.warn(chalk.yellow('Warning: Could not stop existing instance'), (error as Error).message);
@@ -357,7 +370,7 @@ async function checkDiskSpace(): Promise<void> {
 
 async function checkMemoryAvailable(): Promise<void> {
   // Memory check - would integrate with system memory monitoring
-  const memoryInfo = Deno.memoryUsage();
+  const memoryInfo = process.memoryUsage();
   if (memoryInfo.heapUsed > 500 * 1024 * 1024) { // 500MB threshold
     throw new Error('High memory usage detected');
   }
@@ -383,7 +396,7 @@ async function checkDependencies(): Promise<void> {
   const requiredDirs = ['.claude-flow', 'memory', 'logs'];
   for (const dir of requiredDirs) {
     try {
-      await Deno.mkdir(dir, { recursive: true });
+      await fs.mkdir(dir, { recursive: true });
     } catch (error) {
       throw new Error(`Cannot create required directory: ${dir}`);
     }
@@ -405,8 +418,8 @@ function setupSystemEventHandlers(
     process.exit(0);
   };
   
-  Deno.addSignalListener('SIGINT', shutdownHandler);
-  Deno.addSignalListener('SIGTERM', shutdownHandler);
+  process.on('SIGINT', shutdownHandler);
+  process.on('SIGTERM', shutdownHandler);
   
   // Setup verbose logging if requested
   if (options.verbose) {
@@ -473,7 +486,7 @@ async function waitForSystemReady(processManager: ProcessManager): Promise<void>
 
 async function cleanupOnFailure(): Promise<void> {
   try {
-    await Deno.remove('.claude-flow.pid').catch(() => {});
+    await fs.unlink('.claude-flow.pid').catch(() => {});
     console.log(chalk.gray('Cleaned up PID file'));
   } catch {
     // Ignore cleanup errors
@@ -482,7 +495,7 @@ async function cleanupOnFailure(): Promise<void> {
 
 async function cleanupOnShutdown(): Promise<void> {
   try {
-    await Deno.remove('.claude-flow.pid').catch(() => {});
+    await fs.unlink('.claude-flow.pid').catch(() => {});
     console.log(chalk.gray('Cleaned up PID file'));
   } catch {
     // Ignore cleanup errors

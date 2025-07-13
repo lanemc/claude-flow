@@ -2,16 +2,16 @@
  * Health Check System for Claude Flow v2.0.0
  */
 
-import { EventBus } from "../core/event-bus.js";
-import { Logger } from "../core/logger.js";
-import { SystemIntegration } from "../integration/system-integration.js";
+import { EventBus } from "../core/event-bus";
+import { Logger } from "../core/logger";
+import { SystemIntegration } from "../integration/system-integration";
 import type {
   HealthCheckResult,
   ComponentStatus,
   SystemHealth,
   SystemMetrics,
-} from "../integration/types.js";
-import { getErrorMessage } from "../utils/error-handler.js";
+} from "../integration/types";
+import { getErrorMessage } from "../utils/error-handler";
 
 export interface HealthCheckConfig {
   interval?: number; // Health check interval in ms (default: 30000)

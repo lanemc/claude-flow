@@ -66,7 +66,18 @@ const config = {
   clearMocks: true,
   restoreMocks: true,
   // Enhanced globals
-  globals: {}
+  globals: {},
+  // Memory and performance optimizations
+  maxWorkers: '50%', // Use half the available cores to prevent resource exhaustion
+  cache: true,
+  cacheDirectory: '<rootDir>/node_modules/.cache/jest',
+  // Prevent memory leaks during testing
+  detectOpenHandles: true,
+  forceExit: true,
+  // Optimize memory usage
+  logHeapUsage: false,
+  // Reduce concurrent test runs to prevent race conditions
+  maxConcurrency: 5
 };
 
 export default config;

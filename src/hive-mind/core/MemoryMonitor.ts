@@ -7,8 +7,8 @@
 
 import { EventEmitter } from 'events';
 import { performance } from 'perf_hooks';
-import { Memory } from './Memory.js';
-import { DatabaseManager } from './DatabaseManager.js';
+import { Memory } from './Memory';
+import { DatabaseManager } from './DatabaseManager';
 
 interface MemoryAlert {
   level: 'info' | 'warning' | 'critical';
@@ -143,12 +143,12 @@ export class MemoryMonitor extends EventEmitter {
 
       // Get memory analytics
       const memoryAnalytics = this.memory.getAdvancedAnalytics();
-      const dbAnalytics = this.db.getDatabaseAnalytics();
+      const dbAnalytics = await this.db.getDatabaseAnalytics();
 
       // Extract key metrics
       const metrics = {
         cacheHitRate: memoryAnalytics.cache.hitRate || 0,
-        avgQueryTime: dbAnalytics.performance.query_execution?.avg || 0,
+        avgQueryTime: dbAnalytics.performance.avgQueryTime || 0,
         memoryUtilization: memoryAnalytics.cache.utilizationPercent || 0,
         poolEfficiency: this.calculatePoolEfficiency(memoryAnalytics.pools),
         dbFragmentation: dbAnalytics.fragmentation || 0,

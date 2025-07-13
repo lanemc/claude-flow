@@ -10,10 +10,11 @@ import { Command } from 'commander';
 import chalk from 'chalk';
 import ora from 'ora';
 import inquirer from 'inquirer';
-import { HiveMind } from '../../../hive-mind/core/HiveMind.js';
-import { TaskPriority, TaskStrategy } from '../../../hive-mind/types.js';
-import { formatSuccess, formatError, formatInfo, formatWarning } from '../../formatter.js';
-import { DatabaseManager } from '../../../hive-mind/core/DatabaseManager.js';
+import * as cliProgress from 'cli-progress';
+import { HiveMind } from '../../../hive-mind/core/HiveMind';
+import { TaskPriority, TaskStrategy } from '../../../hive-mind/types';
+import { formatSuccess, formatError, formatInfo, formatWarning } from '../../formatter';
+import { DatabaseManager } from '../../../hive-mind/core/DatabaseManager';
 
 export const taskCommand = new Command('task')
   .description('Submit and manage tasks in the Hive Mind')
@@ -234,8 +235,7 @@ async function watchTaskProgress(hiveMind: HiveMind, taskId: string) {
   let lastProgress = -1;
   let completed = false;
   
-  const progressBar = require('cli-progress');
-  const bar = new progressBar.SingleBar({
+  const bar = new cliProgress.SingleBar({
     format: 'Progress |' + chalk.cyan('{bar}') + '| {percentage}% | {status}',
     barCompleteChar: '\u2588',
     barIncompleteChar: '\u2591',

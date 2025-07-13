@@ -1,12 +1,12 @@
-import { getErrorMessage } from '../../../utils/error-handler.js';
+import { getErrorMessage } from '../../../utils/error-handler';
 /**
  * System Monitor - Real-time monitoring of system processes
  */
 
 import chalk from 'chalk';
-import type { ProcessManager } from './process-manager.js';
-import { SystemEvents } from '../../../utils/types.js';
-import { eventBus } from '../../../core/event-bus.js';
+import type { ProcessManager } from './process-manager';
+import { SystemEvents } from '../../../utils/types';
+import { eventBus } from '../../../core/event-bus';
 
 export class SystemMonitor {
   private processManager: ProcessManager;

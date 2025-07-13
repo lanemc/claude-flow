@@ -1,16 +1,16 @@
-import { getErrorMessage } from '../utils/error-handler.js';
+import { getErrorMessage } from '../utils/error-handler';
 import * as path from 'path';
 import { EventEmitter } from 'events';
-import { copyPrompts, CopyOptions, CopyResult } from './prompt-copier.js';
-import { copyPromptsEnhanced } from './prompt-copier-enhanced.js';
+import { copyPrompts, CopyOptions, CopyResult } from './prompt-copier';
+import { copyPromptsEnhanced } from './prompt-copier-enhanced';
 import { 
   PromptConfigManager, 
   PromptPathResolver, 
   PromptValidator,
   formatDuration,
   formatFileSize
-} from './prompt-utils.js';
-import { logger } from '../core/logger.js';
+} from './prompt-utils';
+import { logger } from '../core/logger';
 
 export interface PromptManagerOptions {
   configPath?: string;

@@ -1,11 +1,11 @@
-import { getErrorMessage } from '../utils/error-handler.js';
+import { getErrorMessage } from '../utils/error-handler';
 /**
  * Metrics and monitoring for coordination performance
  */
 
-import type { ILogger } from '../core/logger.js';
-import type { IEventBus } from '../core/event-bus.js';
-import { SystemEvents } from '../utils/types.js';
+import type { ILogger } from '../core/logger';
+import type { IEventBus } from '../core/event-bus';
+import { SystemEvents } from '../utils/types';
 
 export interface CoordinationMetrics {
   timestamp: Date;

@@ -1,10 +1,10 @@
-import { getErrorMessage } from '../utils/error-handler.js';
+import { getErrorMessage } from '../utils/error-handler';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import * as os from 'os';
-import { PromptCopier, copyPrompts } from '../prompt-copier.js';
-import { EnhancedPromptCopier, copyPromptsEnhanced } from '../prompt-copier-enhanced.js';
-import { PromptConfigManager, PromptValidator } from '../prompt-utils.js';
+import { PromptCopier, copyPrompts } from '../prompt-copier';
+import { EnhancedPromptCopier, copyPromptsEnhanced } from '../prompt-copier-enhanced';
+import { PromptConfigManager, PromptValidator } from '../prompt-utils';
 
 describe('PromptCopier', () => {
   let tempDir: string;

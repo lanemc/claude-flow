@@ -3,8 +3,8 @@
  * These are lightweight mocks for missing components during development
  */
 
-import { EventBus } from '../core/event-bus.js';
-import { Logger } from '../core/logger.js';
+import { EventBus } from '../core/event-bus';
+import { Logger } from '../core/logger';
 
 export class MockConfigManager {
   private config: Record<string, any> = {};

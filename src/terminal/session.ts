@@ -1,13 +1,13 @@
-import { getErrorMessage } from '../utils/error-handler.js';
+import { getErrorMessage } from '../utils/error-handler';
 /**
  * Terminal session management
  */
 
-import type { Terminal } from './adapters/base.js';
-import type { AgentProfile } from '../utils/types.js';
-import type { ILogger } from '../core/logger.js';
-import { TerminalCommandError } from '../utils/errors.js';
-import { generateId, timeout } from '../utils/helpers.js';
+import type { Terminal } from './adapters/base';
+import type { AgentProfile } from '../utils/types';
+import type { ILogger } from '../core/logger';
+import { TerminalCommandError } from '../utils/errors';
+import { generateId, timeout } from '../utils/helpers';
 
 /**
  * Terminal session wrapper

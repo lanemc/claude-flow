@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../utils/error-handler.js';
+import { getErrorMessage } from '../utils/error-handler';
 /**
  * Output formatting utilities for CLI
  */
@@ -6,7 +6,7 @@ import { getErrorMessage } from '../utils/error-handler.js';
 import chalk from 'chalk';
 import Table from 'cli-table3';
 // Using cli-table3 instead of @cliffy/table for Node.js compatibility
-import type { AgentProfile, Task, MemoryEntry, HealthStatus } from '../utils/types.js';
+import type { AgentProfile, Task, MemoryEntry, HealthStatus } from '../utils/types';
 import * as process from 'process';
 
 /**

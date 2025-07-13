@@ -3,8 +3,8 @@
  * Designed to handle npx environments where native modules may fail to load
  */
 
-import { SqliteMemoryStore } from './sqlite-store.js';
-import { InMemoryStore } from './in-memory-store.js';
+import { SqliteMemoryStore } from './sqlite-store';
+import { InMemoryStore } from './in-memory-store';
 import type {
   FallbackMemoryStoreOptions,
   MemoryStoreOptions,
@@ -13,7 +13,7 @@ import type {
   MemorySearchOptions,
   MemorySearchResult,
   IFallbackStore
-} from './types.js';
+} from './types';
 
 class FallbackMemoryStore implements IFallbackStore {
   protected primaryStore: SqliteMemoryStore | null = null;

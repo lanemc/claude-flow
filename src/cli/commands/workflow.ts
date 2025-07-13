@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../../utils/error-handler.js';
+import { getErrorMessage } from '../../utils/error-handler';
 /**
  * Workflow execution commands for Claude-Flow
  */
@@ -8,8 +8,8 @@ import { promises as fs } from 'node:fs';
 import chalk from 'chalk';
 import inquirer from 'inquirer';
 import * as Table from 'cli-table3';
-import { generateId } from '../../utils/helpers.js';
-import { formatDuration, formatStatusIndicator, formatProgressBar } from '../formatter.js';
+import { generateId } from '../../utils/helpers';
+import { formatDuration, formatStatusIndicator, formatProgressBar } from '../formatter';
 
 export const workflowCommand = new Command()
   .name('workflow')

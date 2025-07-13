@@ -1,7 +1,7 @@
-import { getErrorMessage } from '../utils/error-handler.js';
+import { getErrorMessage } from '../utils/error-handler';
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { logger } from '../core/logger.js';
+import { logger } from '../core/logger';
 
 export interface PromptConfig {
   sourceDirectories: string[];

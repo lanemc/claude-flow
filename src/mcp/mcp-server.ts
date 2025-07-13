@@ -7,7 +7,7 @@
 
 import { promises as fs } from "fs";
 import path from "path";
-import { fileURLToPath } from "url";
+import { getFilename, getDirname } from "../utils/import-meta-shim";
 import {
   MCPMessage,
   MCPResponse,
@@ -45,10 +45,10 @@ import {
   AgentResourceContent,
   ModelResourceContent,
   PerformanceResourceContent,
-} from "./types/index.js";
+} from "./types/index";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __filename = getFilename();
+const __dirname = getDirname();
 
 // Import the enhanced memory store - this would need to be implemented
 // For now, we'll create a mock interface
@@ -1457,6 +1457,6 @@ async function startMCPServer(): Promise<void> {
 }
 
 // Start the server if this file is run directly
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (getFilename() === process.argv[1]) {
   startMCPServer().catch(console.error);
 }

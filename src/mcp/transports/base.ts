@@ -1,9 +1,9 @@
-import { getErrorMessage } from '../../utils/error-handler.js';
+import { getErrorMessage } from '../../utils/error-handler';
 /**
  * Base transport interface for MCP
  */
 
-import type { MCPRequest, MCPResponse, MCPNotification } from '../../utils/types.js';
+import type { MCPRequest, MCPResponse, MCPNotification } from '../../utils/types';
 
 export type RequestHandler = (request: MCPRequest) => Promise<MCPResponse>;
 export type NotificationHandler = (notification: MCPNotification) => Promise<void>;

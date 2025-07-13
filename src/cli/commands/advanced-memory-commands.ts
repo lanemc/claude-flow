@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../../utils/error-handler.js';
+import { getErrorMessage } from '../../utils/error-handler';
 /**
  * Advanced Memory Management Commands
  * Implements comprehensive memory operations with advanced capabilities
@@ -7,8 +7,8 @@ import { getErrorMessage } from '../../utils/error-handler.js';
 
 import { promises as fs } from 'node:fs';
 import { join, extname, basename } from 'node:path';
-import { AdvancedMemoryManager, type QueryOptions, type ExportOptions, type ImportOptions, type CleanupOptions } from '../../memory/advanced-memory-manager.js';
-import { Logger } from '../../core/logger.js';
+import { AdvancedMemoryManager, type QueryOptions, type ExportOptions, type ImportOptions, type CleanupOptions } from '../../memory/advanced-memory-manager';
+import { Logger } from '../../core/logger';
 
 // Initialize logger
 const logger = Logger.getInstance();

@@ -1,13 +1,13 @@
-import { getErrorMessage } from '../utils/error-handler.js';
+import { getErrorMessage } from '../utils/error-handler';
 /**
  * Task Engine Core - Comprehensive task management with orchestration features
  * Integrates with TodoWrite/TodoRead for coordination and Memory for persistence
  */
 
 import { EventEmitter } from 'events';
-import type { Task, TaskStatus, AgentProfile, Resource } from '../utils/types.js';
-import type { TaskMetadata } from './types.js';
-import { generateId } from '../utils/helpers.js';
+import type { Task, TaskStatus, AgentProfile, Resource } from '../utils/types';
+import type { TaskMetadata } from './types';
+import { generateId } from '../utils/helpers';
 
 export interface TaskDependency {
   taskId: string;

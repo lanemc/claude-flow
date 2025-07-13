@@ -1,18 +1,18 @@
-import { getErrorMessage } from '../utils/error-handler.js';
+import { getErrorMessage } from '../utils/error-handler';
 /**
  * Coordination manager for task scheduling and resource management
  */
 
-import { Task, CoordinationConfig, SystemEvents } from '../utils/types.js';
-import type { IEventBus } from '../core/event-bus.js';
-import type { ILogger } from '../core/logger.js';
-import { CoordinationError, DeadlockError } from '../utils/errors.js';
-import { TaskScheduler } from './scheduler.js';
-import { ResourceManager } from './resources.js';
-import { MessageRouter } from './messaging.js';
-import { AdvancedTaskScheduler } from './advanced-scheduler.js';
-import { ConflictResolver } from './conflict-resolution.js';
-import { CoordinationMetricsCollector } from './metrics.js';
+import { Task, CoordinationConfig, SystemEvents } from '../utils/types';
+import type { IEventBus } from '../core/event-bus';
+import type { ILogger } from '../core/logger';
+import { CoordinationError, DeadlockError } from '../utils/errors';
+import { TaskScheduler } from './scheduler';
+import { ResourceManager } from './resources';
+import { MessageRouter } from './messaging';
+import { AdvancedTaskScheduler } from './advanced-scheduler';
+import { ConflictResolver } from './conflict-resolution';
+import { CoordinationMetricsCollector } from './metrics';
 
 export interface ICoordinationManager {
   initialize(): Promise<void>;

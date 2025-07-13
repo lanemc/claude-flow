@@ -1,12 +1,12 @@
-import { getErrorMessage } from '../../utils/error-handler.js';
+import { getErrorMessage } from '../../utils/error-handler';
 /**
  * Fallback Coordinator for MCP
  * Manages graceful degradation to CLI when MCP connection fails
  */
 
 import { EventEmitter } from 'node:events';
-import type { ILogger } from '../../core/logger.js';
-import type { MCPRequest } from '../../utils/types.js';
+import type { ILogger } from '../../core/logger';
+import type { MCPRequest } from '../../utils/types';
 import { exec } from 'node:child_process';
 import { promisify } from 'node:util';
 

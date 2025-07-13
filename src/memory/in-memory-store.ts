@@ -11,7 +11,7 @@ import type {
   MemorySearchOptions,
   MemorySearchResult,
   IMemoryStore
-} from './types.js';
+} from './types';
 
 class InMemoryStore implements IMemoryStore {
   private options: any;

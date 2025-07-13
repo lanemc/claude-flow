@@ -8,13 +8,13 @@ import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
 import * as os from 'node:os';
 import chalk from 'chalk';
-import { Logger } from '../core/logger.js';
-import { generateId } from '../utils/helpers.js';
-import { detectExecutionEnvironment, applySmartDefaults } from '../cli/utils/environment-detector.js';
+import { Logger } from '../core/logger';
+import { generateId } from '../utils/helpers';
+import { detectExecutionEnvironment, applySmartDefaults } from '../cli/utils/environment-detector';
 import {
   TaskDefinition, AgentState, TaskResult, SwarmEvent, EventType,
   SWARM_CONSTANTS
-} from './types.js';
+} from './types';
 import { 
   TaskExecutor, 
   ClaudeExecutionOptions, 
@@ -23,7 +23,7 @@ import {
   ExecutionContext,
   ClaudeCommand,
   ResourceUsage
-} from './executor.js';
+} from './executor';
 
 export interface ClaudeExecutionOptionsV2 extends ClaudeExecutionOptions {
   nonInteractive?: boolean;

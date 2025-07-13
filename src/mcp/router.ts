@@ -1,12 +1,12 @@
-import { getErrorMessage } from '../utils/error-handler.js';
+import { getErrorMessage } from '../utils/error-handler';
 /**
  * Request router for MCP
  */
 
-import type { MCPRequest } from '../utils/types.js';
-import type { ILogger } from '../core/logger.js';
-import { MCPMethodNotFoundError } from '../utils/errors.js';
-import type { ToolRegistry } from './tools.js';
+import type { MCPRequest } from '../utils/types';
+import type { ILogger } from '../core/logger';
+import { MCPMethodNotFoundError } from '../utils/errors';
+import type { ToolRegistry } from './tools';
 
 /**
  * Request router implementation

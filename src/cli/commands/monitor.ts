@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../../utils/error-handler.js';
+import { getErrorMessage } from '../../utils/error-handler';
 /**
  * Monitor command for Claude-Flow - Live dashboard mode
  */
@@ -8,7 +8,7 @@ import { promises as fs } from 'node:fs';
 import { existsSync } from 'fs';
 import chalk from 'chalk';
 import Table from 'cli-table3';
-import { formatProgressBar, formatDuration, formatStatusIndicator } from '../formatter.js';
+import { formatProgressBar, formatDuration, formatStatusIndicator } from '../formatter';
 
 // Type definitions
 interface ComponentStatus {
@@ -569,7 +569,7 @@ async function startMonitorDashboard(options: any): Promise<void> {
     // Check if export path is writable
     try {
       await fs.writeFile(options.export, '');
-      await Deno.remove(options.export);
+      await fs.unlink(options.export);
     } catch {
       console.error(chalk.red(`Cannot write to export file: ${options.export}`));
       return;

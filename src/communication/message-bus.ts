@@ -1,18 +1,18 @@
-import { getErrorMessage, hasAgentId } from '../utils/type-guards.js';
+import { getErrorMessage, hasAgentId } from '../utils/type-guards';
 /**
  * Advanced messaging and communication layer for swarm coordination
  */
 
 import { EventEmitter } from 'node:events';
-import type { ILogger } from '../core/logger.js';
-import type { IEventBus } from '../core/event-bus.js';
+import type { ILogger } from '../core/logger';
+import type { IEventBus } from '../core/event-bus';
 import type { 
   SwarmEvent, 
   EventType, 
   AgentId, 
   CommunicationStrategy 
-} from '../swarm/types.js';
-import { generateId } from '../utils/helpers.js';
+} from '../swarm/types';
+import { generateId } from '../utils/helpers';
 
 export interface MessageBusConfig {
   strategy: CommunicationStrategy;
