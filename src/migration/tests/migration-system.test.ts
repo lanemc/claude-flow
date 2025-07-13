@@ -1,10 +1,10 @@
-import { getErrorMessage } from '../utils/error-handler';
+import { getErrorMessage } from '../../utils/error-handler';
 /**
  * Migration System Tests
  * Comprehensive test suite for migration functionality
  */
 
-import { describe, it, expect, beforeEach, afterEach } from 'jest';
+import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as os from 'os';

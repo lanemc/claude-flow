@@ -5,7 +5,7 @@ import { VALID_AGENT_TYPES } from '../constants/agent-types';
 const mcpServer = require('../mcp/mcp-server');
 import { getClaudeFlowTools } from '../mcp/claude-flow-tools';
 import { getRuvSwarmTools } from '../mcp/ruv-swarm-tools';
-import { getSwarmTools } from '../mcp/swarm-tools';
+import { swarmTools } from '../mcp/swarm-tools';
 
 describe('Agent Type Validation Consistency', () => {
   const expectedTypes = VALID_AGENT_TYPES.sort();
@@ -31,7 +31,7 @@ describe('Agent Type Validation Consistency', () => {
   });
 
   test('Swarm tools use consistent agent types', () => {
-    const tools = getSwarmTools({} as any);
+    const tools = swarmTools;
     const spawnTool = tools.find(t => t.name === 'spawn_agent');
     const enumValues = spawnTool?.inputSchema.properties.type.enum;
     expect(enumValues?.sort()).toEqual(expectedTypes);

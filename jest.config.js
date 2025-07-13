@@ -1,109 +1,28 @@
-// Jest configuration with enhanced TypeScript and ES module support
-const config = {
-  preset: 'ts-jest/presets/default-esm',
-  extensionsToTreatAsEsm: ['.ts'],
+module.exports = {
   testEnvironment: 'node',
-  // Enhanced environment options for stability
-  testEnvironmentOptions: {
-    url: 'http://localhost'
-  },
-  roots: ['<rootDir>/src', '<rootDir>/tests'],
+  roots: ['<rootDir>/src', '<rootDir>/test'],
   testMatch: [
-    '<rootDir>/tests/**/*.test.ts',
-    '<rootDir>/tests/**/*.test.js',
-    '<rootDir>/tests/**/*.spec.ts',
-    '<rootDir>/tests/**/*.spec.js',
-    '<rootDir>/src/**/*.test.ts',
-    '<rootDir>/src/**/*.test.js',
-    '<rootDir>/src/**/*.spec.ts',
-    '<rootDir>/src/**/*.spec.js'
-  ],
-  testPathIgnorePatterns: [
-    '<rootDir>/node_modules/',
-    '<rootDir>/tests/e2e/',
-    '<rootDir>/tests/integration/',
-    '<rootDir>/tests/performance/',
-    '<rootDir>/tests/manual/',
-    '<rootDir>/tests/fixtures/',
-    '<rootDir>/tests/unit/cli/commands/init/',
-    '<rootDir>/tests/unit/memory/memory-backends.test.ts',
-    '<rootDir>/tests/unit/core/logger.test.ts',
-    '<rootDir>/tests/unit/cli/',
-    '<rootDir>/src/templates/'
+    '**/__tests__/**/*.{js,ts}',
+    '**/*.(test|spec).{js,ts}'
   ],
   transform: {
-    '^.+\\.ts$': ['ts-jest', {
-      useESM: true,
-      tsconfig: {
-        module: 'es2022',
-        moduleResolution: 'node',
-        allowSyntheticDefaultImports: true,
-        esModuleInterop: true,
-        target: 'es2022',
-        strict: false
-      }
-    }],
-    '^.+\\.js$': ['babel-jest', {
-      presets: [['@babel/preset-env', { 
-        modules: 'auto',
-        targets: { node: 'current' }
-      }]]
-    }]
+    '^.+\\.ts$': ['ts-jest', { useESM: false }],
+    '^.+\\.js$': 'babel-jest'
   },
-  moduleNameMapper: {
-    '^(\\.{1,2}/.*)\\.js$': '$1',
-    '^~/(.*)$': '<rootDir>/src/$1',
-    '^@/(.*)$': '<rootDir>/src/$1',
-    '^@tests/(.*)$': '<rootDir>/tests/$1'
-  },
-  modulePathIgnorePatterns: [
-    '<rootDir>/dist/',
-    '<rootDir>/bin/',
-    '<rootDir>/node_modules/'
-  ],
-  transformIgnorePatterns: [
-    'node_modules/(?!(chalk|ora|inquirer|nanoid|fs-extra|ansi-styles|ruv-swarm)/)'
-  ],
-  resolver: undefined,
   collectCoverageFrom: [
-    'src/**/*.ts',
-    'src/**/*.js',
+    'src/**/*.{js,ts}',
     '!src/**/*.d.ts',
-    '!src/**/*.test.ts',
-    '!src/**/*.test.js',
-    '!src/**/*.spec.ts',
-    '!src/**/*.spec.js'
+    '!src/test/**/*',
+    '!**/node_modules/**'
   ],
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html'],
-  setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
-  // Enhanced error handling
-  resetMocks: true,
-  resetModules: true,
+  setupFilesAfterEnv: ['<rootDir>/test/setup.js'],
   testTimeout: 30000,
-  verbose: true,
-  // Enhanced error handling
-  errorOnDeprecated: false,
-  // Better module resolution
-  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
-  // Clear mocks between tests
-  clearMocks: true,
-  restoreMocks: true,
-  // Enhanced globals - removed deprecated ts-jest config
-  globals: {},
-  // Memory and performance optimizations
-  maxWorkers: '50%', // Use half the available cores to prevent resource exhaustion
-  cache: true,
-  cacheDirectory: '<rootDir>/node_modules/.cache/jest',
-  // Enhanced process management to prevent hanging
-  detectOpenHandles: true,
-  forceExit: true,
-  // Handle async cleanup properly
-  openHandlesTimeout: 1000,
-  // Optimize memory usage
-  logHeapUsage: false,
-  // Reduce concurrent test runs to prevent race conditions
-  maxConcurrency: 5
+  maxWorkers: process.env.CI ? 2 : '50%',
+  verbose: !!process.env.CI,
+  bail: !!process.env.CI,
+  cache: !process.env.CI,
+  watchman: false, // Disable watchman for stability
+  moduleFileExtensions: ['js', 'ts', 'json', 'node']
 };
-
-export default config;

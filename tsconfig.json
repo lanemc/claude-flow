@@ -1,42 +1,38 @@
 {
   "compilerOptions": {
-    "target": "ES2020",
-    "module": "ES2020",
-    "moduleResolution": "node",
-    "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true,
-    "allowJs": true,
-    "skipLibCheck": true,
+    "target": "ES2022",
+    "module": "commonjs",
+    "lib": ["ES2022"],
     "outDir": "./dist",
     "rootDir": "./src",
     "strict": false,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "resolveJsonModule": true,
-    "isolatedModules": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "removeComments": false,
+    "noImplicitAny": false,
+    "strictNullChecks": false,
+    "strictFunctionTypes": false,
+    "noImplicitReturns": false,
+    "noFallthroughCasesInSwitch": false,
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "downlevelIteration": true,
-    "lib": ["ES2020", "DOM"],
-    "types": ["node", "jest"],
-    "typeRoots": ["./node_modules/@types", "./src/types"]
+    "resolveJsonModule": true,
+    "types": ["node", "jest"]
   },
   "include": [
-    "src/**/*.ts"
+    "src/**/*"
   ],
   "exclude": [
     "node_modules",
-    "dist/**/*",
+    "dist",
+    "test",
     "**/*.test.ts",
-    "**/*.spec.ts", 
-    "**/*.test.js",
-    "**/*.spec.js",
-    "tests/**/*",
-    "deno_modules",
-    "bin/**/*",
-    "src/terminal/vscode-bridge.ts"
-  ],
-  "ts-node": {
-    "esm": true,
-    "experimentalSpecifierResolution": "node"
-  }
+    "**/*.spec.ts"
+  ]
 }

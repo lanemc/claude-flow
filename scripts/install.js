@@ -1,72 +1,72 @@
 #!/usr/bin/env node
 
-const os = require('node:os');
-const path = require('node:path');
-const fs = require('node:fs');
-const https = require('node:https');
-const { spawn } = require('node:child_process');
+const os = require('os');
+const fs = require('fs');
+const path = require('path');
 
-console.log('Installing Claude-Flow...');
-
-// Check if Deno is available
-function checkDeno() {
-  return new Promise((resolve) => {
-    const deno = spawn('deno', ['--version'], { stdio: 'pipe' });
-    deno.on('close', (code) => {
-      resolve(code === 0);
-    });
-    deno.on('error', () => {
-      resolve(false);
-    });
-  });
+function detectEnvironment() {
+  const env = {
+    platform: os.platform(),
+    arch: os.arch(),
+    nodeVersion: process.version,
+    isCI: !!(process.env.CI || process.env.GITHUB_ACTIONS),
+    isNPX: process.env.npm_config_user_config?.includes('.npx'),
+    isCodespaces: !!process.env.CODESPACES,
+    isDocker: fs.existsSync('/.dockerenv')
+  };
+  
+  console.log('Environment detected:', env);
+  return env;
 }
 
-// Install Deno if not available
-async function installDeno() {
-  console.log('Deno not found. Installing Deno...');
-  
-  const platform = os.platform();
-  const arch = os.arch();
-  
-  if (platform === 'win32') {
-    console.log('Please install Deno manually from https://deno.land/');
-    process.exit(1);
-  }
-  
-  return new Promise((resolve, reject) => {
-    const installScript = spawn('curl', ['-fsSL', 'https://deno.land/x/install/install.sh'], { stdio: 'pipe' });
-    const sh = spawn('sh', [], { stdio: ['pipe', 'inherit', 'inherit'] });
-    
-    installScript.stdout.pipe(sh.stdin);
-    
-    sh.on('close', (code) => {
-      if (code === 0) {
-        console.log('Deno installed successfully!');
-        resolve();
-      } else {
-        reject(new Error('Failed to install Deno'));
-      }
-    });
-  });
-}
-
-// Main installation process
-async function main() {
+function validateSQLiteBinding() {
   try {
-    const denoAvailable = await checkDeno();
-    
-    if (!denoAvailable) {
-      await installDeno();
-    }
-    
-    console.log('Claude-Flow installation completed!');
-    console.log('You can now use: npx claude-flow or claude-flow (if installed globally)');
-    
+    require('better-sqlite3');
+    console.log('✓ SQLite bindings available');
+    return true;
   } catch (error) {
-    console.error('Installation failed:', error.message);
-    console.log('Please install Deno manually from https://deno.land/ and try again.');
-    process.exit(1);
+    console.log('⚠ SQLite bindings unavailable:', error.message);
+    return false;
   }
 }
 
-main();
+function createFallbackConfig() {
+  const configPath = path.join(__dirname, '..', 'config', 'runtime.json');
+  const config = {
+    storage: {
+      type: 'memory',
+      fallback: true,
+      reason: 'SQLite bindings unavailable'
+    },
+    features: {
+      memory: true,
+      persistence: false,
+      neural: true
+    },
+    timestamp: Date.now()
+  };
+  
+  fs.mkdirSync(path.dirname(configPath), { recursive: true });
+  fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+  console.log('✓ Fallback configuration created');
+}
+
+function main() {
+  console.log('Claude Flow post-install setup...');
+  
+  const env = detectEnvironment();
+  const sqliteAvailable = validateSQLiteBinding();
+  
+  if (!sqliteAvailable) {
+    console.log('Setting up fallback configuration...');
+    createFallbackConfig();
+  }
+  
+  console.log('✓ Installation complete');
+}
+
+if (require.main === module) {
+  main();
+}
+
+module.exports = { detectEnvironment, validateSQLiteBinding, createFallbackConfig };

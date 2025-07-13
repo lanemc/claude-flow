@@ -9,8 +9,20 @@ import path from 'path';
 import chalk from 'chalk';
 import ora from 'ora';
 
-jest.mock('fs-extra');
-jest.mock('ora');
+const mockPathExists = jest.fn();
+const mockReadJson = jest.fn();
+const mockWriteJson = jest.fn();
+const mockEnsureDir = jest.fn();
+
+jest.mock('fs-extra', () => ({
+  pathExists: mockPathExists,
+  readJson: mockReadJson,
+  writeJson: mockWriteJson,
+  ensureDir: mockEnsureDir
+}));
+
+const mockOra = jest.fn();
+jest.mock('ora', () => mockOra);
 jest.mock('chalk', () => ({
   default: {
     blue: jest.fn(str => str),
@@ -30,8 +42,8 @@ describe('Task Command', () => {
   let mockSpinner: any;
 
   beforeEach(() => {
-    consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
-    consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+    consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+    consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
     
     mockSpinner = {
       start: jest.fn().mockReturnThis(),
@@ -41,7 +53,7 @@ describe('Task Command', () => {
       warn: jest.fn().mockReturnThis(),
       text: '',
     };
-    ora.mockReturnValue(mockSpinner);
+    mockOra.mockReturnValue(mockSpinner);
     
     jest.clearAllMocks();
   });
@@ -78,8 +90,8 @@ describe('Task Command', () => {
         ]
       };
 
-      fs.pathExists.mockResolvedValue(true);
-      fs.readJson.mockResolvedValue(mockTasks);
+      mockPathExists.mockResolvedValue(true);
+      mockReadJson.mockResolvedValue(mockTasks);
 
       await taskCommand(['list'], {});
       
@@ -100,8 +112,8 @@ describe('Task Command', () => {
         ]
       };
 
-      fs.pathExists.mockResolvedValue(true);
-      fs.readJson.mockResolvedValue(mockTasks);
+      mockPathExists.mockResolvedValue(true);
+      mockReadJson.mockResolvedValue(mockTasks);
 
       await taskCommand(['list'], { status: 'in-progress' });
       
@@ -120,8 +132,8 @@ describe('Task Command', () => {
         ]
       };
 
-      fs.pathExists.mockResolvedValue(true);
-      fs.readJson.mockResolvedValue(mockTasks);
+      mockPathExists.mockResolvedValue(true);
+      mockReadJson.mockResolvedValue(mockTasks);
 
       await taskCommand(['list'], { assignee: 'agent-1' });
       
@@ -132,8 +144,8 @@ describe('Task Command', () => {
     });
 
     test('should show empty list message', async () => {
-      fs.pathExists.mockResolvedValue(true);
-      fs.readJson.mockResolvedValue({ tasks: [] });
+      mockPathExists.mockResolvedValue(true);
+      mockReadJson.mockResolvedValue({ tasks: [] });
 
       await taskCommand(['list'], {});
       
@@ -145,9 +157,9 @@ describe('Task Command', () => {
 
   describe('create subcommand', () => {
     test('should create a new task', async () => {
-      fs.pathExists.mockResolvedValue(true);
-      fs.readJson.mockResolvedValue({ tasks: [] });
-      fs.writeJson.mockResolvedValue(undefined);
+      mockPathExists.mockResolvedValue(true);
+      mockReadJson.mockResolvedValue({ tasks: [] });
+      mockWriteJson.mockResolvedValue(undefined);
 
       await taskCommand(['create', 'New task title', 'Task description'], {});
       
@@ -155,7 +167,7 @@ describe('Task Command', () => {
         expect.stringContaining('Task created')
       );
       
-      const writeCall = fs.writeJson.mock.calls[0];
+      const writeCall = mockWriteJson.mock.calls[0];
       expect(writeCall[1].tasks).toHaveLength(1);
       expect(writeCall[1].tasks[0].title).toBe('New task title');
       expect(writeCall[1].tasks[0].description).toBe('Task description');
@@ -163,47 +175,47 @@ describe('Task Command', () => {
     });
 
     test('should create task with priority', async () => {
-      fs.pathExists.mockResolvedValue(true);
-      fs.readJson.mockResolvedValue({ tasks: [] });
-      fs.writeJson.mockResolvedValue(undefined);
+      mockPathExists.mockResolvedValue(true);
+      mockReadJson.mockResolvedValue({ tasks: [] });
+      mockWriteJson.mockResolvedValue(undefined);
 
       await taskCommand(['create', 'High priority task'], { priority: 'high' });
       
-      const writeCall = fs.writeJson.mock.calls[0];
+      const writeCall = mockWriteJson.mock.calls[0];
       expect(writeCall[1].tasks[0].priority).toBe('high');
     });
 
     test('should create task with tags', async () => {
-      fs.pathExists.mockResolvedValue(true);
-      fs.readJson.mockResolvedValue({ tasks: [] });
-      fs.writeJson.mockResolvedValue(undefined);
+      mockPathExists.mockResolvedValue(true);
+      mockReadJson.mockResolvedValue({ tasks: [] });
+      mockWriteJson.mockResolvedValue(undefined);
 
       await taskCommand(['create', 'Tagged task'], { tags: 'api,security,urgent' });
       
-      const writeCall = fs.writeJson.mock.calls[0];
+      const writeCall = mockWriteJson.mock.calls[0];
       expect(writeCall[1].tasks[0].tags).toEqual(['api', 'security', 'urgent']);
     });
 
     test('should create task with assignment', async () => {
-      fs.pathExists.mockResolvedValue(true);
-      fs.readJson.mockResolvedValue({ tasks: [] });
-      fs.writeJson.mockResolvedValue(undefined);
+      mockPathExists.mockResolvedValue(true);
+      mockReadJson.mockResolvedValue({ tasks: [] });
+      mockWriteJson.mockResolvedValue(undefined);
 
       await taskCommand(['create', 'Assigned task'], { assign: 'agent-1' });
       
-      const writeCall = fs.writeJson.mock.calls[0];
+      const writeCall = mockWriteJson.mock.calls[0];
       expect(writeCall[1].tasks[0].assignedTo).toBe('agent-1');
     });
 
     test('should create tasks file if not exists', async () => {
-      fs.pathExists.mockResolvedValue(false);
-      fs.ensureDir.mockResolvedValue(undefined);
-      fs.writeJson.mockResolvedValue(undefined);
+      mockPathExists.mockResolvedValue(false);
+      mockEnsureDir.mockResolvedValue(undefined);
+      mockWriteJson.mockResolvedValue(undefined);
 
       await taskCommand(['create', 'First task'], {});
       
-      expect(fs.ensureDir).toHaveBeenCalled();
-      expect(fs.writeJson).toHaveBeenCalled();
+      expect(mockEnsureDir).toHaveBeenCalled();
+      expect(mockWriteJson).toHaveBeenCalled();
     });
   });
 
@@ -215,13 +227,13 @@ describe('Task Command', () => {
         ]
       };
 
-      fs.pathExists.mockResolvedValue(true);
-      fs.readJson.mockResolvedValue(mockTasks);
-      fs.writeJson.mockResolvedValue(undefined);
+      mockPathExists.mockResolvedValue(true);
+      mockReadJson.mockResolvedValue(mockTasks);
+      mockWriteJson.mockResolvedValue(undefined);
 
       await taskCommand(['update', 'task-1'], { status: 'in-progress' });
       
-      const writeCall = fs.writeJson.mock.calls[0];
+      const writeCall = mockWriteJson.mock.calls[0];
       expect(writeCall[1].tasks[0].status).toBe('in-progress');
       expect(mockSpinner.succeed).toHaveBeenCalledWith(
         expect.stringContaining('Task updated')
@@ -235,13 +247,13 @@ describe('Task Command', () => {
         ]
       };
 
-      fs.pathExists.mockResolvedValue(true);
-      fs.readJson.mockResolvedValue(mockTasks);
-      fs.writeJson.mockResolvedValue(undefined);
+      mockPathExists.mockResolvedValue(true);
+      mockReadJson.mockResolvedValue(mockTasks);
+      mockWriteJson.mockResolvedValue(undefined);
 
       await taskCommand(['update', 'task-1'], { assign: 'agent-2' });
       
-      const writeCall = fs.writeJson.mock.calls[0];
+      const writeCall = mockWriteJson.mock.calls[0];
       expect(writeCall[1].tasks[0].assignedTo).toBe('agent-2');
     });
 
@@ -252,19 +264,19 @@ describe('Task Command', () => {
         ]
       };
 
-      fs.pathExists.mockResolvedValue(true);
-      fs.readJson.mockResolvedValue(mockTasks);
-      fs.writeJson.mockResolvedValue(undefined);
+      mockPathExists.mockResolvedValue(true);
+      mockReadJson.mockResolvedValue(mockTasks);
+      mockWriteJson.mockResolvedValue(undefined);
 
       await taskCommand(['update', 'task-1'], { priority: 'high' });
       
-      const writeCall = fs.writeJson.mock.calls[0];
+      const writeCall = mockWriteJson.mock.calls[0];
       expect(writeCall[1].tasks[0].priority).toBe('high');
     });
 
     test('should handle non-existent task', async () => {
-      fs.pathExists.mockResolvedValue(true);
-      fs.readJson.mockResolvedValue({ tasks: [] });
+      mockPathExists.mockResolvedValue(true);
+      mockReadJson.mockResolvedValue({ tasks: [] });
 
       await taskCommand(['update', 'nonexistent'], { status: 'completed' });
       
@@ -297,8 +309,8 @@ describe('Task Command', () => {
         ]
       };
 
-      fs.pathExists.mockResolvedValue(true);
-      fs.readJson.mockResolvedValue(mockTasks);
+      mockPathExists.mockResolvedValue(true);
+      mockReadJson.mockResolvedValue(mockTasks);
 
       await taskCommand(['show', 'task-1'], {});
       
@@ -312,8 +324,8 @@ describe('Task Command', () => {
     });
 
     test('should handle non-existent task', async () => {
-      fs.pathExists.mockResolvedValue(true);
-      fs.readJson.mockResolvedValue({ tasks: [] });
+      mockPathExists.mockResolvedValue(true);
+      mockReadJson.mockResolvedValue({ tasks: [] });
 
       await taskCommand(['show', 'nonexistent'], {});
       
@@ -332,13 +344,13 @@ describe('Task Command', () => {
         ]
       };
 
-      fs.pathExists.mockResolvedValue(true);
-      fs.readJson.mockResolvedValue(mockTasks);
-      fs.writeJson.mockResolvedValue(undefined);
+      mockPathExists.mockResolvedValue(true);
+      mockReadJson.mockResolvedValue(mockTasks);
+      mockWriteJson.mockResolvedValue(undefined);
 
       await taskCommand(['delete', 'task-1'], { force: true });
       
-      const writeCall = fs.writeJson.mock.calls[0];
+      const writeCall = mockWriteJson.mock.calls[0];
       expect(writeCall[1].tasks).toHaveLength(1);
       expect(writeCall[1].tasks[0].id).toBe('task-2');
       
@@ -352,8 +364,8 @@ describe('Task Command', () => {
         tasks: [{ id: 'task-1', title: 'Task 1' }]
       };
 
-      fs.pathExists.mockResolvedValue(true);
-      fs.readJson.mockResolvedValue(mockTasks);
+      mockPathExists.mockResolvedValue(true);
+      mockReadJson.mockResolvedValue(mockTasks);
 
       await taskCommand(['delete', 'task-1'], {});
       
@@ -375,8 +387,8 @@ describe('Task Command', () => {
         ]
       };
 
-      fs.pathExists.mockResolvedValue(true);
-      fs.readJson.mockResolvedValue(mockTasks);
+      mockPathExists.mockResolvedValue(true);
+      mockReadJson.mockResolvedValue(mockTasks);
 
       await taskCommand(['stats'], {});
       
@@ -402,8 +414,8 @@ describe('Task Command', () => {
         ]
       };
 
-      fs.pathExists.mockResolvedValue(true);
-      fs.readJson.mockResolvedValue(mockTasks);
+      mockPathExists.mockResolvedValue(true);
+      mockReadJson.mockResolvedValue(mockTasks);
 
       await taskCommand(['search', 'API'], {});
       
@@ -422,8 +434,8 @@ describe('Task Command', () => {
         ]
       };
 
-      fs.pathExists.mockResolvedValue(true);
-      fs.readJson.mockResolvedValue(mockTasks);
+      mockPathExists.mockResolvedValue(true);
+      mockReadJson.mockResolvedValue(mockTasks);
 
       await taskCommand(['search'], { tags: 'api' });
       
@@ -447,7 +459,7 @@ describe('Task Command', () => {
 
   describe('error handling', () => {
     test('should handle file system errors', async () => {
-      fs.pathExists.mockRejectedValue(new Error('Permission denied'));
+      mockPathExists.mockRejectedValue(new Error('Permission denied'));
 
       await taskCommand(['list'], {});
       
@@ -457,8 +469,8 @@ describe('Task Command', () => {
     });
 
     test('should handle invalid priority', async () => {
-      fs.pathExists.mockResolvedValue(true);
-      fs.readJson.mockResolvedValue({ tasks: [] });
+      mockPathExists.mockResolvedValue(true);
+      mockReadJson.mockResolvedValue({ tasks: [] });
 
       await taskCommand(['create', 'Test task'], { priority: 'invalid' });
       
@@ -469,8 +481,8 @@ describe('Task Command', () => {
 
     test('should handle invalid status', async () => {
       const mockTasks = { tasks: [{ id: 'task-1', status: 'pending' }] };
-      fs.pathExists.mockResolvedValue(true);
-      fs.readJson.mockResolvedValue(mockTasks);
+      mockPathExists.mockResolvedValue(true);
+      mockReadJson.mockResolvedValue(mockTasks);
 
       await taskCommand(['update', 'task-1'], { status: 'invalid-status' });
       
