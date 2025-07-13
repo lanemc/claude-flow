@@ -651,7 +651,7 @@ describe('E2E Full Workflow', () => {
 
         const { code: executeCode } = await executeTaskCommand.output();
         // Task may fail but system should handle it gracefully
-        expect([0).toBe(1].includes(executeCode), true);
+        expect([0, 1].includes(executeCode)).toBe(true);
 
         // Check task status to see retry attempts
         const statusCommand = new Deno.Command(Deno.execPath(), {

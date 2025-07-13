@@ -18,19 +18,6 @@ const config = {
     '<rootDir>/src/**/*.spec.ts',
     '<rootDir>/src/**/*.spec.js'
   ],
-  testPathIgnorePatterns: [
-    '<rootDir>/node_modules/',
-    '<rootDir>/tests/e2e/',
-    '<rootDir>/tests/integration/',
-    '<rootDir>/tests/performance/',
-    '<rootDir>/tests/manual/',
-    '<rootDir>/tests/fixtures/',
-    '<rootDir>/tests/unit/cli/commands/init/',
-    '<rootDir>/tests/unit/memory/memory-backends.test.ts',
-    '<rootDir>/tests/unit/core/logger.test.ts',
-    '<rootDir>/tests/unit/cli/',
-    '<rootDir>/src/templates/'
-  ],
   transform: {
     '^.+\\.ts$': ['ts-jest', {
       useESM: true,
@@ -39,15 +26,11 @@ const config = {
         moduleResolution: 'node',
         allowSyntheticDefaultImports: true,
         esModuleInterop: true,
-        target: 'es2022',
-        strict: false
+        target: 'es2022'
       }
     }],
     '^.+\\.js$': ['babel-jest', {
-      presets: [['@babel/preset-env', { 
-        modules: 'auto',
-        targets: { node: 'current' }
-      }]]
+      presets: [['@babel/preset-env', { modules: false }]]
     }]
   },
   moduleNameMapper: {
@@ -80,6 +63,7 @@ const config = {
   // Enhanced error handling
   resetMocks: true,
   resetModules: true,
+  // Prevent test contamination
   testTimeout: 30000,
   verbose: true,
   // Enhanced error handling
@@ -89,8 +73,20 @@ const config = {
   // Clear mocks between tests
   clearMocks: true,
   restoreMocks: true,
-  // Enhanced globals - removed deprecated ts-jest config
-  globals: {},
+  // Enhanced globals
+  globals: {
+    'ts-jest': {
+      useESM: true,
+          tsconfig: {
+        module: 'es2022',
+        moduleResolution: 'node',
+        allowSyntheticDefaultImports: true,
+        esModuleInterop: true,
+        target: 'es2022',
+        strict: false
+      }
+    }
+  },
   // Memory and performance optimizations
   maxWorkers: '50%', // Use half the available cores to prevent resource exhaustion
   cache: true,

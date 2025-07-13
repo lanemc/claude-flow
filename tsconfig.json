@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "ES2020",
-    "module": "commonjs",
+    "module": "ES2020",
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
@@ -15,6 +15,7 @@
     "isolatedModules": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
+    "downlevelIteration": true,
     "lib": ["ES2020", "DOM"],
     "types": ["node", "jest"],
     "typeRoots": ["./node_modules/@types", "./src/types"]
@@ -24,14 +25,14 @@
   ],
   "exclude": [
     "node_modules",
-    "dist",
+    "dist/**/*",
     "**/*.test.ts",
-    "**/*.spec.ts",
+    "**/*.spec.ts", 
     "**/*.test.js",
     "**/*.spec.js",
     "tests/**/*",
     "deno_modules",
-    "bin",
+    "bin/**/*",
     "src/terminal/vscode-bridge.ts"
   ],
   "ts-node": {

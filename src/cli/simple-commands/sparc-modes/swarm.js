@@ -1,4 +1,4 @@
-#!/usr/bin/env -S deno run --allow-all
+#!/usr/bin/env node
 /**
  * SPARC Mode: Swarm
  * Advanced multi-agent coordination with timeout-free execution

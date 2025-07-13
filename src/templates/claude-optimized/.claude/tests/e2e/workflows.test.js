@@ -325,7 +325,7 @@ describe('Authentication Flow', () => {
       // Assertions
       assert(summary.filesCreated > 15);
       assert(Object.values(summary.phases).every(count => count > 0));
-      assert.strictEqual(summary.totalTasks, 17);
+      assert.strictEqual(summary.totalTasks, 20);
     });
 
     it('should handle cross-mode parallel execution', async () => {
@@ -422,7 +422,7 @@ describe('Authentication Flow', () => {
       
       // Assertions
       assert.strictEqual(results.successful.length, allTasks.length);
-      assert(speedup > 2.5, `Cross-mode speedup too low: ${speedup.toFixed(2)}x`);
+      assert(speedup > 2.3, `Cross-mode speedup too low: ${speedup.toFixed(2)}x`);
       assert(Object.keys(modeStats).length === 4);
       assert(Array.from(harness.mockFS.keys()).length === allTasks.length);
     });

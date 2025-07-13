@@ -1,14 +1,112 @@
 /**
  * Comprehensive test utilities for Claude-Flow
+ * Node.js/Jest version (migrated from Deno)
  */
 
-import { assertEquals, assertExists, assertRejects, assertThrows } from "https://deno.land/std@0.220.0/assert/mod.ts";
-import { delay } from "https://deno.land/std@0.220.0/async/delay.ts";
-import { stub, Spy } from "https://deno.land/std@0.220.0/testing/mock.ts";
-import { FakeTime } from "https://deno.land/std@0.220.0/testing/time.ts";
+// Global type declarations for Node.js environment
+declare global {
+  var gc: (() => void) | undefined;
+}
 
-export { assertEquals, assertExists, assertRejects, assertThrows, stub, delay, FakeTime };
-export type { Spy };
+// Jest testing utilities for Node.js environment
+// Replacing Deno imports with Jest equivalents
+
+// Re-export Jest assertions with Deno-compatible names
+export const assertEquals = (actual: any, expected: any, message?: string) => {
+  expect(actual).toEqual(expected);
+};
+
+export const assertExists = (value: any, message?: string) => {
+  expect(value).toBeDefined();
+  expect(value).not.toBeNull();
+};
+
+export const assertRejects = async (fn: () => Promise<any>, ErrorClass?: any, msgIncludes?: string) => {
+  if (ErrorClass) {
+    await expect(fn()).rejects.toThrow(ErrorClass);
+  } else {
+    await expect(fn()).rejects.toThrow();
+  }
+};
+
+export const assertThrows = (fn: () => any, ErrorClass?: any, msgIncludes?: string) => {
+  if (ErrorClass) {
+    expect(fn).toThrow(ErrorClass);
+  } else {
+    expect(fn).toThrow();
+  }
+};
+
+// Node.js delay function
+export const delay = (ms: number): Promise<void> => {
+  return new Promise(resolve => setTimeout(resolve, ms));
+};
+
+// Mock/Spy utilities using Jest
+export interface Spy {
+  calls: Array<{ args: any[]; returned?: any; thrown?: any }>;
+  [key: string]: any;
+}
+
+export const stub = (obj: any, methodName: string, implementation?: Function): Spy => {
+  const originalMethod = obj[methodName];
+  const spy = jest.fn(implementation || originalMethod) as any;
+  
+  // Add Deno-compatible properties
+  Object.defineProperty(spy, 'calls', {
+    get() {
+      return spy.mock.calls.map((args: any[], index: number) => ({
+        args,
+        returned: spy.mock.results[index]?.value,
+        thrown: spy.mock.results[index]?.type === 'throw' ? spy.mock.results[index].value : undefined
+      }));
+    }
+  });
+  
+  obj[methodName] = spy;
+  return spy;
+};
+
+// FakeTime utility using Jest timers
+export class FakeTime {
+  private initialized = false;
+
+  constructor(private startTime?: number) {
+    if (typeof jest !== 'undefined') {
+      jest.useFakeTimers();
+      if (startTime) {
+        jest.setSystemTime(startTime);
+      }
+      this.initialized = true;
+    }
+  }
+
+  tick(ms: number): void {
+    if (this.initialized && typeof jest !== 'undefined') {
+      jest.advanceTimersByTime(ms);
+    }
+  }
+
+  restore(): void {
+    if (this.initialized && typeof jest !== 'undefined') {
+      jest.useRealTimers();
+    }
+  }
+
+  next(): void {
+    if (this.initialized && typeof jest !== 'undefined') {
+      jest.runOnlyPendingTimers();
+    }
+  }
+
+  runAll(): void {
+    if (this.initialized && typeof jest !== 'undefined') {
+      jest.runAllTimers();
+    }
+  }
+}
+
+// All exports are defined above
 
 /**
  * Test utilities for async operations
@@ -144,7 +242,7 @@ export class MemoryTestUtils {
     // Start memory monitoring
     const monitoringPromise = (async () => {
       while (monitoring && sampleCount < maxSamples) {
-        const memInfo = Deno.memoryUsage();
+        const memInfo = process.memoryUsage();
         memoryStats.push({
           timestamp: Date.now(),
           heapUsed: memInfo.heapUsed,
@@ -171,9 +269,9 @@ export class MemoryTestUtils {
    * Trigger garbage collection (if available)
    */
   static async forceGC(): Promise<void> {
-    // Deno doesn't expose GC directly, but we can try to encourage it
-    if ('gc' in globalThis) {
-      (globalThis as any).gc();
+    // Node.js GC exposure (requires --expose-gc flag)
+    if (global.gc) {
+      global.gc();
     }
     await delay(10); // Give time for GC to run
   }
@@ -207,7 +305,7 @@ export class MemoryTestUtils {
   private static getAverageMemoryUsage(samples: number): number {
     let total = 0;
     for (let i = 0; i < samples; i++) {
-      total += Deno.memoryUsage().heapUsed;
+      total += process.memoryUsage().heapUsed;
     }
     return total / samples;
   }
@@ -408,7 +506,11 @@ export class FileSystemTestUtils {
    * Create temporary directory for testing
    */
   static async createTempDir(prefix = 'claude-flow-test-'): Promise<string> {
-    const tempDir = await Deno.makeTempDir({ prefix });
+    const fs = await import('fs/promises');
+    const os = await import('os');
+    const path = await import('path');
+    
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), prefix));
     return tempDir;
   }
 
@@ -420,8 +522,13 @@ export class FileSystemTestUtils {
     options: { suffix?: string; dir?: string } = {}
   ): Promise<string> {
     const { suffix = '.tmp', dir } = options;
-    const tempFile = await Deno.makeTempFile({ suffix, dir });
-    await Deno.writeTextFile(tempFile, content);
+    const fs = await import('fs/promises');
+    const path = await import('path');
+    const os = await import('os');
+    
+    const tempDir = dir || os.tmpdir();
+    const tempFile = path.join(tempDir, `temp-${Date.now()}${suffix}`);
+    await fs.writeFile(tempFile, content, 'utf8');
     return tempFile;
   }
 
@@ -436,15 +543,17 @@ export class FileSystemTestUtils {
     
     for (const [fileName, content] of Object.entries(fixtures)) {
       const filePath = `${fixtureDir}/${fileName}`;
-      const dirPath = filePath.substring(0, filePath.lastIndexOf('/'));
+      const path = await import('path');
+      const fs = await import('fs/promises');
+      const dirPath = path.dirname(filePath);
       
       try {
-        await Deno.mkdir(dirPath, { recursive: true });
+        await fs.mkdir(dirPath, { recursive: true });
       } catch {
         // Directory already exists
       }
       
-      await Deno.writeTextFile(filePath, content);
+      await fs.writeFile(filePath, content, 'utf8');
     }
 
     return fixtureDir;
@@ -454,10 +563,11 @@ export class FileSystemTestUtils {
    * Clean up temporary files and directories
    */
   static async cleanup(paths: string[]): Promise<void> {
+    const fs = await import('fs/promises');
     await Promise.all(
-      paths.map(async path => {
+      paths.map(async filePath => {
         try {
-          await Deno.remove(path, { recursive: true });
+          await fs.rm(filePath, { recursive: true, force: true });
         } catch {
           // Ignore if already removed
         }

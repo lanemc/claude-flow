@@ -146,6 +146,36 @@ class LoadTestRunner {
   reset(): void {
     this.results = [];
   }
+
+  public calculateLoadTestGrade(throughput: number, errorRate: number, responseTime: number, memoryGrowth: number): string {
+    let score = 100;
+
+    // Throughput scoring
+    if (throughput < 1) score -= 20;
+    else if (throughput < 5) score -= 10;
+    else if (throughput < 10) score -= 5;
+
+    // Error rate scoring
+    if (errorRate > 10) score -= 30;
+    else if (errorRate > 5) score -= 15;
+    else if (errorRate > 2) score -= 5;
+
+    // Response time scoring
+    if (responseTime > 500) score -= 25;
+    else if (responseTime > 200) score -= 10;
+    else if (responseTime > 100) score -= 5;
+
+    // Memory usage scoring
+    if (memoryGrowth > 500) score -= 15;
+    else if (memoryGrowth > 300) score -= 8;
+    else if (memoryGrowth > 200) score -= 3;
+
+    if (score >= 90) return 'A';
+    if (score >= 80) return 'B';
+    if (score >= 70) return 'C';
+    if (score >= 60) return 'D';
+    return 'F';
+  }
 }
 
 describe('Hive Mind Optimization Load Testing', () => {
@@ -601,7 +631,7 @@ describe('Hive Mind Optimization Load Testing', () => {
           'Continue load testing in production-like environments',
           'Implement continuous performance monitoring'
         ],
-        load_test_grade: this.calculateLoadTestGrade(avgThroughput, avgErrorRate, avgResponseTime, totalMemoryGrowth)
+        load_test_grade: loadTestRunner.calculateLoadTestGrade(avgThroughput, avgErrorRate, avgResponseTime, totalMemoryGrowth)
       };
 
       // Save analysis
@@ -617,35 +647,5 @@ describe('Hive Mind Optimization Load Testing', () => {
       console.log(`✓ Load test analysis complete: ${performanceAnalysis.load_test_grade} grade`);
       console.log(`Analysis saved to: ${analysisPath}`);
     });
-  }
-
-  private calculateLoadTestGrade(throughput: number, errorRate: number, responseTime: number, memoryGrowth: number): string {
-    let score = 100;
-
-    // Throughput scoring
-    if (throughput < 1) score -= 20;
-    else if (throughput < 5) score -= 10;
-    else if (throughput < 10) score -= 5;
-
-    // Error rate scoring
-    if (errorRate > 10) score -= 30;
-    else if (errorRate > 5) score -= 15;
-    else if (errorRate > 2) score -= 5;
-
-    // Response time scoring
-    if (responseTime > 500) score -= 25;
-    else if (responseTime > 200) score -= 10;
-    else if (responseTime > 100) score -= 5;
-
-    // Memory usage scoring
-    if (memoryGrowth > 500) score -= 15;
-    else if (memoryGrowth > 300) score -= 8;
-    else if (memoryGrowth > 200) score -= 3;
-
-    if (score >= 90) return 'A';
-    if (score >= 80) return 'B';
-    if (score >= 70) return 'C';
-    if (score >= 60) return 'D';
-    return 'F';
-  }
+  });
 });

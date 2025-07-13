@@ -13,8 +13,21 @@ class TestDataGenerator {
     return result;
   }
 
+  static randomNumber(min: number, max: number): number {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+
   static randomArray<T>(generator: () => T, length: number): T[] {
     return Array.from({ length }, generator);
+  }
+
+  static largeDataset(size: number): Array<{ id: string; name: string; value: number; data: string }> {
+    return Array.from({ length: size }, (_, i) => ({
+      id: `item-${i}`,
+      name: this.randomString(20),
+      value: this.randomNumber(1, 1000),
+      data: this.randomString(100),
+    }));
   }
 }
 

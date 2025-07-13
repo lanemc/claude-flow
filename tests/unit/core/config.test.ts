@@ -37,7 +37,7 @@ describe('ConfigManager', () => {
     ];
     
     envKeys.forEach(key => {
-      originalEnv[key] = Deno.env.get(key) || '';
+      originalEnv[key] = process.env[key] || '';
     });
     
     // Reset singleton
@@ -49,9 +49,9 @@ describe('ConfigManager', () => {
     // Restore env vars
     Object.entries(originalEnv).forEach(([key, value]) => {
       if (value) {
-        Deno.env.set(key, value);
+        process.env[key] = value;
       } else {
-        Deno.env.delete(key);
+        delete process.env[key];
       }
     });
     
@@ -120,12 +120,12 @@ describe('ConfigManager', () => {
     });
 
     it('should load configuration from environment variables', async () => {
-      Deno.env.set('CLAUDE_FLOW_MAX_AGENTS', '5');
-      Deno.env.set('CLAUDE_FLOW_TERMINAL_TYPE', 'vscode');
-      Deno.env.set('CLAUDE_FLOW_MEMORY_BACKEND', 'sqlite');
-      Deno.env.set('CLAUDE_FLOW_MCP_TRANSPORT', 'http');
-      Deno.env.set('CLAUDE_FLOW_MCP_PORT', '9000');
-      Deno.env.set('CLAUDE_FLOW_LOG_LEVEL', 'debug');
+      process.env['CLAUDE_FLOW_MAX_AGENTS'] = '5';
+      process.env['CLAUDE_FLOW_TERMINAL_TYPE'] = 'vscode';
+      process.env['CLAUDE_FLOW_MEMORY_BACKEND'] = 'sqlite';
+      process.env['CLAUDE_FLOW_MCP_TRANSPORT'] = 'http';
+      process.env['CLAUDE_FLOW_MCP_PORT'] = '9000';
+      process.env['CLAUDE_FLOW_LOG_LEVEL'] = 'debug';
       
       const config = await configManager.load();
       
@@ -148,7 +148,7 @@ describe('ConfigManager', () => {
       };
       
       const configFile = await createTestFile('config.json', JSON.stringify(configData));
-      Deno.env.set('CLAUDE_FLOW_MAX_AGENTS', '15');
+      process.env['CLAUDE_FLOW_MAX_AGENTS'] = '15';
       
       const config = await configManager.load(configFile);
       
@@ -157,7 +157,7 @@ describe('ConfigManager', () => {
     });
 
     it('should ignore invalid env values', async () => {
-      Deno.env.set('CLAUDE_FLOW_TERMINAL_TYPE', 'invalid-type');
+      process.env['CLAUDE_FLOW_TERMINAL_TYPE'] = 'invalid-type';
       
       const config = await configManager.load();
       
@@ -321,7 +321,8 @@ describe('ConfigManager', () => {
       
       await configManager.save(savePath);
       
-      const savedContent = await Deno.readTextFile(savePath);
+      const { readFileSync } = require('fs');
+      const savedContent = readFileSync(savePath, 'utf8');
       const savedConfig = JSON.parse(savedContent);
       
       expect(savedConfig.orchestrator.maxConcurrentAgents).toBe(15);
@@ -344,7 +345,8 @@ describe('ConfigManager', () => {
       
       await configManager.save();
       
-      const savedContent = await Deno.readTextFile(configFile);
+      const { readFileSync } = require('fs');
+      const savedContent = readFileSync(configFile, 'utf8');
       const savedConfig = JSON.parse(savedContent);
       
       expect(savedConfig.orchestrator.maxConcurrentAgents).toBe(30);

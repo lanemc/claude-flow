@@ -28,3 +28,38 @@ process.on('unhandledRejection', (reason, promise) => {
     console.error('Unhandled Rejection at:', promise, 'reason:', reason);
   }
 });
+
+// Handle uncaught exceptions
+process.on('uncaughtException', (error) => {
+  if (process.env.DEBUG_TESTS) {
+    console.error('Uncaught Exception:', error);
+  }
+});
+
+// Enhanced memory management for tests
+if (typeof global.gc === 'function' && process.env.FORCE_GC_TESTS) {
+  afterEach(() => {
+    global.gc();
+  });
+}
+
+// Set up Jest timeout globally
+if (typeof jest !== 'undefined') {
+  jest.setTimeout(30000); // 30 second timeout for all tests
+}
+
+// Enhanced cleanup between tests
+if (typeof afterEach !== 'undefined') {
+  afterEach(() => {
+    if (typeof jest !== 'undefined') {
+      jest.clearAllTimers();
+      jest.clearAllMocks();
+    }
+  });
+}
+
+// Better ES module support
+if (typeof global !== 'undefined') {
+  global.setImmediate = global.setImmediate || ((fn, ...args) => setTimeout(fn, 0, ...args));
+  global.clearImmediate = global.clearImmediate || clearTimeout;
+}

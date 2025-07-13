@@ -1,21 +1,20 @@
-import { assertEquals, assertExists, assertStringIncludes } from "@std/assert/mod.ts";
-import { exists } from "@std/fs/mod.ts";
-import { join } from "@std/path/mod.ts";
-import { beforeEach, afterEach, describe, it } from "@std/testing/bdd.ts";
+import { join } from "path";
+import { existsSync, mkdtempSync, rmSync } from "fs";
+import { tmpdir } from "os";
 import { createSparcStructureManually } from "../../../../../src/cli/simple-commands/init/sparc-structure.js";
 
 describe("SPARC Structure Creation Tests", () => {
   let testDir: string;
 
-  beforeEach(async () => {
-    testDir = await Deno.makeTempDir({ prefix: "sparc_structure_test_" });
-    Deno.env.set("PWD", testDir);
-    Deno.chdir(testDir);
+  beforeEach(() => {
+    testDir = mkdtempSync(join(tmpdir(), "sparc_structure_test_"));
+    process.env["PWD"] = testDir;
+    process.chdir(testDir);
   });
 
-  afterEach(async () => {
+  afterEach(() => {
     try {
-      await Deno.remove(testDir, { recursive: true });
+      rmSync(testDir, { recursive: true, force: true });
     } catch {
       // Ignore cleanup errors
     }
@@ -26,20 +25,21 @@ describe("SPARC Structure Creation Tests", () => {
       await createSparcStructureManually();
 
       // Check main directories
-      expect(await exists(join(testDir, ".roo").toBeDefined()));
-      expect(await exists(join(testDir, ".roo/templates").toBeDefined()));
-      expect(await exists(join(testDir, ".roo/workflows").toBeDefined()));
-      expect(await exists(join(testDir, ".roo/modes").toBeDefined()));
-      expect(await exists(join(testDir, ".roo/configs").toBeDefined()));
+      expect(existsSync(join(testDir, ".roo"))).toBeDefined();
+      expect(existsSync(join(testDir, ".roo/templates"))).toBeDefined();
+      expect(existsSync(join(testDir, ".roo/workflows"))).toBeDefined();
+      expect(existsSync(join(testDir, ".roo/modes"))).toBeDefined();
+      expect(existsSync(join(testDir, ".roo/configs"))).toBeDefined();
     });
 
     it("should create .roomodes configuration file", async () => {
       await createSparcStructureManually();
 
-      expect(await exists(join(testDir, ".roomodes").toBeDefined()));
+      expect(existsSync(join(testDir, ".roomodes"))).toBeDefined();
 
       // Check content is valid JSON
-      const roomodesContent = await Deno.readTextFile(join(testDir, ".roomodes"));
+      const { readFileSync } = require('fs');
+      const roomodesContent = readFileSync(join(testDir, ".roomodes"), 'utf8');
       const roomodesData = JSON.parse(roomodesContent);
       
       expect(typeof roomodesData).toBe("object");
@@ -49,32 +49,34 @@ describe("SPARC Structure Creation Tests", () => {
     it("should create workflow templates", async () => {
       await createSparcStructureManually();
 
-      expect(await exists(join(testDir, ".roo/workflows/basic-tdd.json").toBeDefined()));
+      expect(existsSync(join(testDir, ".roo/workflows/basic-tdd.json"))).toBeDefined();
 
       // Check workflow is valid JSON
-      const workflowContent = await Deno.readTextFile(join(testDir, ".roo/workflows/basic-tdd.json"));
+      const { readFileSync } = require('fs');
+      const workflowContent = readFileSync(join(testDir, ".roo/workflows/basic-tdd.json"), 'utf8');
       const workflowData = JSON.parse(workflowContent);
       
       expect(typeof workflowData).toBe("object");
-      assertStringIncludes(workflowContent, "tdd");
+      expect(workflowContent).toContain("tdd");
     });
 
     it("should create README for .roo directory", async () => {
       await createSparcStructureManually();
 
-      expect(await exists(join(testDir, ".roo/README.md").toBeDefined()));
+      expect(existsSync(join(testDir, ".roo/README.md"))).toBeDefined();
 
-      const readmeContent = await Deno.readTextFile(join(testDir, ".roo/README.md"));
-      assertStringIncludes(readmeContent, "# SPARC Development Environment");
-      assertStringIncludes(readmeContent, "## Directory Structure");
+      const { readFileSync } = require('fs');
+      const readmeContent = readFileSync(join(testDir, ".roo/README.md"), 'utf8');
+      expect(readmeContent).toContain("# SPARC Development Environment");
+      expect(readmeContent).toContain("## Directory Structure");
     });
 
     it("should create Claude commands directory", async () => {
       await createSparcStructureManually();
 
-      expect(await exists(join(testDir, ".claude").toBeDefined()));
-      expect(await exists(join(testDir, ".claude/commands").toBeDefined()));
-      expect(await exists(join(testDir, ".claude/commands/sparc").toBeDefined()));
+      expect(existsSync(join(testDir, ".claude"))).toBeDefined();
+      expect(existsSync(join(testDir, ".claude/commands"))).toBeDefined();
+      expect(existsSync(join(testDir, ".claude/commands/sparc"))).toBeDefined();
     });
   });
 
@@ -85,26 +87,28 @@ describe("SPARC Structure Creation Tests", () => {
         existing: true
       }, null, 2);
       
-      await Deno.writeTextFile(join(testDir, ".roomodes"), existingContent);
+      const { writeFileSync, readFileSync } = require('fs');
+      writeFileSync(join(testDir, ".roomodes"), existingContent, 'utf8');
 
       await createSparcStructureManually();
 
-      const preservedContent = await Deno.readTextFile(join(testDir, ".roomodes"));
+      const preservedContent = readFileSync(join(testDir, ".roomodes"), 'utf8');
       expect(preservedContent).toBe(existingContent);
     });
 
     it("should handle existing directories gracefully", async () => {
       // Create some directories first
-      await Deno.mkdir(join(testDir, ".roo"), { recursive: true });
-      await Deno.mkdir(join(testDir, ".roo/templates"), { recursive: true });
+      const { mkdirSync } = require('fs');
+      mkdirSync(join(testDir, ".roo"), { recursive: true });
+      mkdirSync(join(testDir, ".roo/templates"), { recursive: true });
 
       // Should not fail
       await createSparcStructureManually();
 
       // Should still create missing directories
-      expect(await exists(join(testDir, ".roo/workflows").toBeDefined()));
-      expect(await exists(join(testDir, ".roo/modes").toBeDefined()));
-      expect(await exists(join(testDir, ".roo/configs").toBeDefined()));
+      expect(existsSync(join(testDir, ".roo/workflows"))).toBeDefined();
+      expect(existsSync(join(testDir, ".roo/modes"))).toBeDefined();
+      expect(existsSync(join(testDir, ".roo/configs"))).toBeDefined();
     });
   });
 

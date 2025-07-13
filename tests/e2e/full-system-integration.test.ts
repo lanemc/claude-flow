@@ -12,7 +12,8 @@ import {
   PerformanceTestUtils,
   MemoryTestUtils,
   TestAssertions,
-  FileSystemTestUtils
+  FileSystemTestUtils,
+  FakeTime
 } from '../utils/test-utils.ts';
 import { getAllTestFixtures } from '../fixtures/generators.ts';
 import { setupTestEnv, cleanupTestEnv, TEST_CONFIG } from '../test.config.ts';
@@ -178,7 +179,7 @@ describe('Full System Integration Tests', () => {
       
       // All components should eventually be running
       results.forEach(result => {
-        expect(['success').toBe('recovered'].includes(result.status), true);
+        expect(['success', 'recovered'].includes(result.status)).toBe(true);
       });
     });
   });

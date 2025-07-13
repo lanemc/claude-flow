@@ -1,4 +1,4 @@
-#!/usr/bin/env -S deno run --allow-all
+#!/usr/bin/env node
 /**
  * Standalone swarm executable for npm package
  * This handles swarm execution when installed via npm
