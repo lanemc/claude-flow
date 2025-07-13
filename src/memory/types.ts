@@ -335,7 +335,7 @@ export type SwarmNamespace = typeof SWARM_NAMESPACES[keyof typeof SWARM_NAMESPAC
 // ==== Error Types ====
 
 export class MemoryStoreError extends Error {
-  constructor(message: string, public cause?: Error) {
+  constructor(message: string, public override cause?: Error) {
     super(message);
     this.name = 'MemoryStoreError';
   }

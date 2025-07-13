@@ -18,8 +18,8 @@ import {
 
 export class ConsensusEngine extends EventEmitter {
   private threshold: number;
-  private db: DatabaseManager;
-  private mcpWrapper: MCPToolWrapper;
+  private db: DatabaseManager | null = null;
+  private mcpWrapper: MCPToolWrapper | null = null;
   private activeProposals: Map<string, ConsensusProposal>;
   private votingStrategies: Map<string, VotingStrategy>;
   private metrics: ConsensusMetrics;
@@ -48,6 +48,14 @@ export class ConsensusEngine extends EventEmitter {
     this.db = await DatabaseManager.getInstance();
     this.mcpWrapper = new MCPToolWrapper();
     
+    if (!this.db) {
+      throw new Error('Failed to initialize database manager');
+    }
+    
+    if (!this.mcpWrapper) {
+      throw new Error('Failed to initialize MCP wrapper');
+    }
+    
     // Start consensus monitoring
     this.startProposalMonitor();
     this.startTimeoutChecker();
@@ -61,6 +69,7 @@ export class ConsensusEngine extends EventEmitter {
    * Create a new consensus proposal
    */
   async createProposal(proposal: ConsensusProposal): Promise<string> {
+    if (!this.db) throw new Error('Database not initialized');
     // Store in database
     await this.db.createConsensusProposal(proposal);
     
@@ -93,6 +102,7 @@ export class ConsensusEngine extends EventEmitter {
     }
     
     // Store vote
+    if (!this.db) throw new Error('Database not initialized');
     await this.db.submitConsensusVote(
       vote.proposalId,
       vote.agentId,
@@ -110,6 +120,7 @@ export class ConsensusEngine extends EventEmitter {
    * Get proposal status
    */
   async getProposalStatus(proposalId: string): Promise<any> {
+    if (!this.db) throw new Error('Database not initialized');
     const dbProposal = await this.db.getConsensusProposal(proposalId);
     if (!dbProposal) {
       throw new Error('Proposal not found');
@@ -129,7 +140,7 @@ export class ConsensusEngine extends EventEmitter {
       currentRatio: voteCount > 0 ? positiveVotes / voteCount : 0,
       votes: votes,
       deadline: dbProposal.deadline_at,
-      timeRemaining: new Date(dbProposal.deadline_at).getTime() - Date.now()
+      timeRemaining: dbProposal.deadline_at ? new Date(dbProposal.deadline_at).getTime() - Date.now() : 0
     };
   }
 
@@ -147,6 +158,7 @@ export class ConsensusEngine extends EventEmitter {
     }
     
     // Analyze proposal using neural patterns
+    if (!this.mcpWrapper) throw new Error('MCP wrapper not initialized');
     const analysis = await this.mcpWrapper.analyzePattern({
       action: 'analyze',
       operation: 'consensus_proposal',
@@ -254,6 +266,7 @@ export class ConsensusEngine extends EventEmitter {
    */
   private async initiateVoting(proposal: ConsensusProposal): Promise<void> {
     // Broadcast proposal to all eligible voters
+    if (!this.db) throw new Error('Database not initialized');
     await this.db.createCommunication({
       from_agent_id: 'consensus-engine',
       to_agent_id: null, // broadcast
@@ -333,6 +346,7 @@ export class ConsensusEngine extends EventEmitter {
     result: ConsensusResult
   ): Promise<void> {
     // Update proposal status
+    if (!this.db) throw new Error('Database not initialized');
     await this.db.updateConsensusStatus(proposal.id, 'achieved');
     
     // Remove from active proposals
@@ -361,6 +375,7 @@ export class ConsensusEngine extends EventEmitter {
     result: ConsensusResult
   ): Promise<void> {
     // Update proposal status
+    if (!this.db) throw new Error('Database not initialized');
     await this.db.updateConsensusStatus(proposal.id, 'failed');
     
     // Remove from active proposals
@@ -422,6 +437,7 @@ export class ConsensusEngine extends EventEmitter {
     result: ConsensusResult,
     achieved: boolean
   ): Promise<void> {
+    if (!this.db) throw new Error('Database not initialized');
     await this.db.createCommunication({
       from_agent_id: 'consensus-engine',
       to_agent_id: null, // broadcast
@@ -450,10 +466,13 @@ export class ConsensusEngine extends EventEmitter {
     const decision = proposal.proposal;
     
     if (decision.action === 'approve_task') {
+      if (!this.db) throw new Error('Database not initialized');
       await this.db.updateTaskStatus(proposal.taskId, 'approved');
     } else if (decision.action === 'modify_task') {
+      if (!this.db) throw new Error('Database not initialized');
       await this.db.updateTask(proposal.taskId, decision.modifications);
     } else if (decision.action === 'cancel_task') {
+      if (!this.db) throw new Error('Database not initialized');
       await this.db.updateTaskStatus(proposal.taskId, 'cancelled');
     }
     
@@ -508,12 +527,13 @@ export class ConsensusEngine extends EventEmitter {
       
       try {
         // Calculate average voting time
-        const recentProposals = await this.db.getRecentConsensusProposals(10);
+        if (!this.db) throw new Error('Database not initialized');
+        const recentProposals = await this.getRecentConsensusProposals(10);
         
         if (recentProposals.length > 0) {
           const votingTimes = recentProposals
             .filter(p => p.completed_at)
-            .map(p => new Date(p.completed_at).getTime() - new Date(p.created_at).getTime());
+            .map(p => new Date(p.completed_at!).getTime() - new Date(p.created_at!).getTime());
           
           if (votingTimes.length > 0) {
             this.metrics.avgVotingTime = 
@@ -534,6 +554,7 @@ export class ConsensusEngine extends EventEmitter {
    * Store consensus metrics
    */
   private async storeMetrics(): Promise<void> {
+    if (!this.mcpWrapper) throw new Error('MCP wrapper not initialized');
     await this.mcpWrapper.storeMemory({
       action: 'store',
       key: 'consensus-metrics',
@@ -547,15 +568,18 @@ export class ConsensusEngine extends EventEmitter {
    * Database helper methods (to be implemented in DatabaseManager)
    */
   private async getConsensusProposal(id: string): Promise<any> {
+    if (!this.db) throw new Error('Database not initialized');
     return this.db.prepare('SELECT * FROM consensus WHERE id = ?').get(id);
   }
 
   private async updateConsensusStatus(id: string, status: string): Promise<void> {
+    if (!this.db) throw new Error('Database not initialized');
     this.db.prepare('UPDATE consensus SET status = ?, completed_at = CURRENT_TIMESTAMP WHERE id = ?')
       .run(status, id);
   }
 
   private async getRecentConsensusProposals(limit: number): Promise<any[]> {
+    if (!this.db) throw new Error('Database not initialized');
     return this.db.prepare('SELECT * FROM consensus ORDER BY created_at DESC LIMIT ?').all(limit);
   }
 

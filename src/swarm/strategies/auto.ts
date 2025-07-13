@@ -493,6 +493,7 @@ export class AutoStrategy extends BaseStrategy {
       type: params.type,
       name: params.name,
       description: params.description,
+      objective: `Execute ${params.type} task: ${params.name} with ${params.capabilities.join(', ')} capabilities`,
       instructions: params.description,
       requirements: {
         capabilities: params.capabilities,

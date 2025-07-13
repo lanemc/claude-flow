@@ -2068,12 +2068,12 @@ async function startRepl() {
       agents: [],
       tasks: [],
       terminals: [],
-      memory: {}
+      memory: {} as Record<string, any>
     }
   };
   
   // REPL command handlers
-  const replCommands: { [key: string]: (...args: string[]) => void | Promise<void> } = {
+  const replCommands: Record<string, (...args: string[]) => void | Promise<void>> = {
     help: () => {
       console.log(`
 📚 Available REPL Commands:
@@ -2141,7 +2141,7 @@ Shortcuts:
         const config = JSON.parse(await fs.readFile('claude-flow.config.json', 'utf8'));
         if (key) {
           const keys = key.split('.');
-          let value = config;
+          let value: any = config;
           for (const k of keys) {
             value = value[k];
           }

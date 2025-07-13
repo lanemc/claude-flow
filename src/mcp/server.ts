@@ -586,9 +586,10 @@ export class MCPServer implements IMCPServer {
         const originalHandler = tool.handler;
         tool.handler = async (input: unknown, context?: MCPContext) => {
           const ruvSwarmContext: RuvSwarmToolContext = {
-            ...context,
+            sessionId: context?.sessionId || `mcp-session-${Date.now()}`,
+            agentId: context?.agentId,
+            logger: context?.logger || this.logger,
             workingDirectory,
-            sessionId: `mcp-session-${Date.now()}`,
             swarmId: process.env.CLAUDE_SWARM_ID || `mcp-swarm-${Date.now()}`
           };
           
@@ -608,7 +609,7 @@ export class MCPServer implements IMCPServer {
     }
   }
 
-  private errorToMCPError(error): MCPError {
+  private errorToMCPError(error: unknown): MCPError {
     if (error instanceof MCPMethodNotFoundError) {
       return {
         code: -32601,
@@ -642,16 +643,23 @@ export class MCPServer implements IMCPServer {
 
 // Export a function to run the MCP server
 export async function runMCPServer(): Promise<void> {
-  const server = new MCPServer({
+  const mcpConfig: MCPConfig = {
     transport: 'stdio',
-    version: '1.0.0' as MCPProtocolVersion,
-    capabilities: {
-      tools: true,
-      prompts: false,
-      resources: false,
-      sampling: false,
-    },
-  });
+  };
+  
+  const { EventEmitter } = await import('node:events');
+  const eventBus = new EventEmitter();
+  
+  // Create a mock logger
+  const mockLogger: ILogger = {
+    debug: (message: string, meta?: unknown) => console.debug(message, meta),
+    info: (message: string, meta?: unknown) => console.info(message, meta),
+    warn: (message: string, meta?: unknown) => console.warn(message, meta),
+    error: (message: string, error?: unknown) => console.error(message, error),
+    configure: async () => {},
+  };
+  
+  const server = new MCPServer(mcpConfig, eventBus, mockLogger);
   
   await server.start();
 }

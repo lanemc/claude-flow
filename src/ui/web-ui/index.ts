@@ -167,7 +167,7 @@ export async function initializeEnhancedUI(options: UIInitializationOptions = {}
   } = options;
 
   try {
-    if (mode === 'full' || (mode === 'auto' && typeof globalThis !== 'undefined' && typeof globalThis.window !== 'undefined')) {
+    if (mode === 'full' || (mode === 'auto' && typeof globalThis !== 'undefined' && typeof (globalThis as any).window !== 'undefined')) {
       // Browser environment - full UI manager
       console.log('Initializing full UI manager for browser environment');
       const uiManager = new mockUIManager();
@@ -322,8 +322,8 @@ export function getArchitectureInfo(): ArchitectureInfo {
 }
 
 // Auto-initialization for browser environments
-if (typeof globalThis !== 'undefined' && typeof globalThis.window !== 'undefined') {
-  const window = globalThis.window as any;
+if (typeof globalThis !== 'undefined' && typeof (globalThis as any).window !== 'undefined') {
+  const window = (globalThis as any).window as any;
   
   // Check if we should auto-initialize
   const claudeFlowEnhancedUI: WindowClaudeFlowUI = {

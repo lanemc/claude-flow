@@ -45,7 +45,7 @@ export class MessageRouter {
     this.logger.info('Shutting down message router');
     
     // Reject all pending responses
-    for (const [id, pending] of this.pendingResponses) {
+    for (const [id, pending] of Array.from(this.pendingResponses)) {
       pending.reject(new Error('Message router shutdown'));
       clearTimeout(pending.timeout);
     }
@@ -154,7 +154,7 @@ export class MessageRouter {
     let totalMessages = 0;
     let totalHandlers = 0;
 
-    for (const queue of this.queues.values()) {
+    for (const queue of Array.from(this.queues.values())) {
       totalMessages += queue.messages.length;
       totalHandlers += queue.handlers.size;
     }
@@ -254,7 +254,7 @@ export class MessageRouter {
     const now = Date.now();
 
     // Clean up old messages
-    for (const [agentId, queue] of this.queues) {
+    for (const [agentId, queue] of Array.from(this.queues)) {
       const filtered = queue.messages.filter(msg => {
         const age = now - msg.timestamp.getTime();
         const maxAge = msg.expiry 
@@ -281,7 +281,7 @@ export class MessageRouter {
     }
 
     // Clean up timed out responses
-    for (const [id, pending] of this.pendingResponses) {
+    for (const [id, pending] of Array.from(this.pendingResponses)) {
       // This is handled by the timeout, but double-check
       clearTimeout(pending.timeout);
       pending.reject(new Error('Response timeout during cleanup'));

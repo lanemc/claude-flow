@@ -2,8 +2,8 @@
  * Tests to ensure backward compatibility with existing start command functionality
  */
 
-import { describe, it, beforeEach, afterEach, expect } from "../test.utils.ts";
-import { describe, it, beforeEach, afterEach, expect } from "../test.utils.ts";
+import { describe, it, beforeEach, afterEach, expect } from '../test.utils';
+import { describe, it, beforeEach, afterEach, expect } from '../test.utils';
 
 describe('Start Command Backward Compatibility', () => {
   describe('CLI imports', () => {

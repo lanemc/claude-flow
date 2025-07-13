@@ -6,7 +6,7 @@ import { getErrorMessage } from '../utils/error-handler.js';
 import { promises as fs } from 'node:fs';
 import * as path from 'node:path';
 import { Buffer } from 'node:buffer';
-import process from 'node:process';
+import * as process from 'node:process';
 import type { LoggingConfig } from '../utils/types.js';
 import { formatBytes } from '../utils/helpers.js';
 
@@ -80,16 +80,28 @@ export class Logger implements ILogger {
   static getInstance(config?: LoggingConfig): Logger {
     if (!Logger.instance) {
       if (!config) {
-        // Use default config if none provided and not in test environment
+        // Use default config if none provided
         const isTestEnv = process.env.CLAUDE_FLOW_ENV === 'test';
         if (isTestEnv) {
-          throw new Error('Logger configuration required for initialization');
+          // Use global test config if available
+          const globalTestConfig = (globalThis as any).testLoggerConfig;
+          if (globalTestConfig) {
+            config = globalTestConfig;
+          } else {
+            // Fallback test config
+            config = {
+              level: 'error',
+              format: 'text',
+              destination: 'console',
+            };
+          }
+        } else {
+          config = {
+            level: 'info',
+            format: 'json',
+            destination: 'console',
+          };
         }
-        config = {
-          level: 'info',
-          format: 'json',
-          destination: 'console',
-        };
       }
       Logger.instance = new Logger(config);
     }

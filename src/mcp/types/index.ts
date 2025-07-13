@@ -335,7 +335,15 @@ export type MCPToolExecutionResult =
   | MemoryListResult
   | MemorySearchResult
   | PerformanceReport
-  | { success: boolean; tool: string; message: string; args: any; timestamp: string };
+  | PatternRecognitionResult
+  | CognitiveAnalysisResult
+  | LearningAdaptationResult
+  | ModelCompressionResult
+  | EnsembleCreationResult
+  | TransferLearningResult
+  | NeuralExplanationResult
+  | { success: boolean; tool: string; message: string; args: any; timestamp: string }
+  | { success: false; error: string; timestamp: string };
 
 // Enhanced Memory Store Interface
 export interface EnhancedMemoryStore {
@@ -560,4 +568,87 @@ export interface PerformanceResourceContent {
   swe_bench_rate: string;
   speed_improvement: string;
   memory_efficiency: string;
+}
+
+// MCP Server Integration Interfaces
+export interface MCPServer {
+  start(): Promise<void>;
+  stop(): Promise<void>;
+  registerTool(tool: MCPTool): void;
+  getHealthStatus(): Promise<{
+    healthy: boolean;
+    error?: string;
+    metrics?: Record<string, number>;
+  }>;
+  getMetrics(): any;
+  getSessions(): any[];
+  getSession(sessionId: string): any | undefined;
+  terminateSession(sessionId: string): void;
+}
+
+export interface MCPLifecycleManager {
+  start(): Promise<void>;
+  stop(): Promise<void>;
+  getState(): string;
+  isHealthy(): Promise<boolean>;
+  registerHealthCheck(name: string, check: () => Promise<boolean>): void;
+  unregisterHealthCheck(name: string): void;
+  restart(): Promise<void>;
+}
+
+export interface MCPPerformanceMonitor {
+  start(): void;
+  stop(): void;
+  recordMetrics(metrics: any): void;
+  getMetrics(): any;
+  getAlerts(): any[];
+  addAlertRule(rule: any): void;
+  removeAlertRule(ruleId: string): void;
+}
+
+export interface MCPOrchestrationConfig {
+  enabledIntegrations: {
+    orchestrator: boolean;
+    swarm: boolean;
+    agents: boolean;
+    resources: boolean;
+    memory: boolean;
+    monitoring: boolean;
+    terminals: boolean;
+  };
+  autoStart: boolean;
+  healthCheckInterval: number;
+  reconnectAttempts: number;
+  reconnectDelay: number;
+  enableMetrics: boolean;
+  enableAlerts: boolean;
+}
+
+export interface OrchestrationComponents {
+  orchestrator?: any;
+  swarmCoordinator?: any;
+  agentManager?: any;
+  resourceManager?: any;
+  memoryManager?: any;
+  messageBus?: any;
+  monitor?: any;
+  eventBus?: any;
+  terminalManager?: any;
+}
+
+export interface MCPOrchestrationIntegration {
+  start(): Promise<void>;
+  stop(): Promise<void>;
+  getStatus(): Map<string, any>;
+  isHealthy(): boolean;
+  getServer(): MCPServer | undefined;
+  getLifecycleManager(): MCPLifecycleManager | undefined;
+  getPerformanceMonitor(): MCPPerformanceMonitor | undefined;
+}
+
+export interface MCPProtocolManager {
+  negotiate(clientVersion: any): Promise<any>;
+  validateRequest(request: any): boolean;
+  getVersion(): any;
+  isCompatible(version: any): boolean;
 }

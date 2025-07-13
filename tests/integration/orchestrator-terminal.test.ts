@@ -11,7 +11,7 @@ import {
   assertExists,
   assertRejects,
   spy,
-} from '../test.utils.ts';
+} from '../test.utils';
 import { Orchestrator } from '../../src/core/orchestrator.ts';
 import { TerminalManager } from '../../src/terminal/manager.ts';
 import { EventBus } from '../../src/core/event-bus.ts';

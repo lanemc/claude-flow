@@ -1,13 +1,18 @@
-import { getErrorMessage } from '../utils/error-handler.js';
+import { getErrorMessage } from "../utils/error-handler.js";
 /**
  * MCP Client for Model Context Protocol
  */
 
-import { EventEmitter } from 'node:events';
-import type { ITransport } from './transports/base.js';
-import { logger } from '../core/logger.js';
-import type { MCPRequest, MCPResponse, MCPNotification, MCPConfig } from '../utils/types.js';
-import { RecoveryManager, RecoveryConfig } from './recovery/index.js';
+import { EventEmitter } from "node:events";
+import type { ITransport } from "./transports/base.js";
+import { logger } from "../core/logger.js";
+import type {
+  MCPRequest,
+  MCPResponse,
+  MCPNotification,
+  MCPConfig,
+} from "../utils/types.js";
+import { RecoveryManager, RecoveryConfig } from "./recovery/index.js";
 
 export interface MCPClientConfig {
   transport: ITransport;
@@ -22,7 +27,10 @@ export class MCPClient extends EventEmitter {
   private timeout: number;
   private connected = false;
   private recoveryManager?: RecoveryManager;
-  private pendingRequests = new Map<string, { resolve: Function; reject: Function; timer: NodeJS.Timeout }>();
+  private pendingRequests = new Map<
+    string,
+    { resolve: Function; reject: Function; timer: NodeJS.Timeout }
+  >();
 
   constructor(config: MCPClientConfig) {
     super();
@@ -31,9 +39,11 @@ export class MCPClient extends EventEmitter {
 
     // Initialize recovery manager if enabled
     if (config.enableRecovery) {
+      // Create type guard to ensure MCPConfig compatibility
+      const mcpConfig = this.validateMCPConfig(config.mcpConfig || {});
       this.recoveryManager = new RecoveryManager(
         this,
-        config.mcpConfig || {},
+        mcpConfig,
         logger,
         config.recoveryConfig
       );
@@ -45,23 +55,23 @@ export class MCPClient extends EventEmitter {
     try {
       await this.transport.connect();
       this.connected = true;
-      logger.info('MCP Client connected');
-      
+      logger.info("MCP Client connected");
+
       // Start recovery manager if enabled
       if (this.recoveryManager) {
         await this.recoveryManager.start();
       }
-      
-      this.emit('connected');
+
+      this.emit("connected");
     } catch (error) {
-      logger.error('Failed to connect MCP client', error);
+      logger.error("Failed to connect MCP client", error);
       this.connected = false;
-      
+
       // Trigger recovery if enabled
       if (this.recoveryManager) {
         await this.recoveryManager.forceRecovery();
       }
-      
+
       throw error;
     }
   }
@@ -72,18 +82,18 @@ export class MCPClient extends EventEmitter {
       if (this.recoveryManager) {
         await this.recoveryManager.stop();
       }
-      
+
       await this.transport.disconnect();
       this.connected = false;
-      logger.info('MCP Client disconnected');
-      
-      this.emit('disconnected');
+      logger.info("MCP Client disconnected");
+
+      this.emit("disconnected");
     }
   }
 
   async request(method: string, params?: unknown): Promise<unknown> {
     const request: MCPRequest = {
-      jsonrpc: '2.0' as const,
+      jsonrpc: "2.0" as const,
       method,
       params,
       id: Math.random().toString(36).slice(2),
@@ -95,52 +105,56 @@ export class MCPClient extends EventEmitter {
     }
 
     if (!this.connected) {
-      throw new Error('Client not connected');
+      throw new Error("Client not connected");
     }
 
     // Create promise for tracking the request
     const requestPromise = new Promise((resolve, reject) => {
       const timer = setTimeout(() => {
-        this.pendingRequests.delete(request.id!);
+        this.pendingRequests.delete(String(request.id!));
         reject(new Error(`Request timeout: ${method}`));
       }, this.timeout);
 
-      this.pendingRequests.set(request.id!, { resolve, reject, timer });
+      this.pendingRequests.set(String(request.id!), { resolve, reject, timer });
     });
 
     try {
       const response = await this.transport.sendRequest(request);
-      
+
       // Clear pending request
-      const pending = this.pendingRequests.get(request.id!);
+      const pending = this.pendingRequests.get(String(request.id!));
       if (pending) {
         clearTimeout(pending.timer);
-        this.pendingRequests.delete(request.id!);
+        this.pendingRequests.delete(String(request.id!));
       }
-      
-      if ('error' in response) {
-        throw new Error(response.error);
+
+      if ("error" in response && response.error) {
+        const errorMessage =
+          typeof response.error === "string"
+            ? response.error
+            : response.error.message || JSON.stringify(response.error);
+        throw new Error(errorMessage);
       }
 
       return response.result;
     } catch (error) {
       // Clear pending request on error
-      const pending = this.pendingRequests.get(request.id!);
+      const pending = this.pendingRequests.get(String(request.id!));
       if (pending) {
         clearTimeout(pending.timer);
-        this.pendingRequests.delete(request.id!);
+        this.pendingRequests.delete(String(request.id!));
       }
-      
+
       throw error;
     }
   }
 
   async notify(method: string, params?: unknown): Promise<void> {
     // Special handling for heartbeat notifications
-    if (method === 'heartbeat') {
+    if (method === "heartbeat") {
       // Always allow heartbeat notifications for recovery
       const notification: MCPNotification = {
-        jsonrpc: '2.0' as const,
+        jsonrpc: "2.0" as const,
         method,
         params,
       };
@@ -152,11 +166,11 @@ export class MCPClient extends EventEmitter {
     }
 
     if (!this.connected) {
-      throw new Error('Client not connected');
+      throw new Error("Client not connected");
     }
 
     const notification: MCPNotification = {
-      jsonrpc: '2.0' as const,
+      jsonrpc: "2.0" as const,
       method,
       params,
     };
@@ -164,7 +178,7 @@ export class MCPClient extends EventEmitter {
     if (this.transport.sendNotification) {
       await this.transport.sendNotification(notification);
     } else {
-      throw new Error('Transport does not support notifications');
+      throw new Error("Transport does not support notifications");
     }
   }
 
@@ -184,7 +198,7 @@ export class MCPClient extends EventEmitter {
    */
   async forceRecovery(): Promise<boolean> {
     if (!this.recoveryManager) {
-      throw new Error('Recovery not enabled');
+      throw new Error("Recovery not enabled");
     }
     return this.recoveryManager.forceRecovery();
   }
@@ -195,40 +209,64 @@ export class MCPClient extends EventEmitter {
     }
 
     // Handle recovery events
-    this.recoveryManager.on('recoveryStart', ({ trigger }) => {
-      logger.info('Recovery started', { trigger });
-      this.emit('recoveryStart', { trigger });
+    this.recoveryManager.on("recoveryStart", ({ trigger }) => {
+      logger.info("Recovery started", { trigger });
+      this.emit("recoveryStart", { trigger });
     });
 
-    this.recoveryManager.on('recoveryComplete', ({ success, duration }) => {
+    this.recoveryManager.on("recoveryComplete", ({ success, duration }) => {
       if (success) {
-        logger.info('Recovery completed successfully', { duration });
+        logger.info("Recovery completed successfully", { duration });
         this.connected = true;
-        this.emit('recoverySuccess', { duration });
+        this.emit("recoverySuccess", { duration });
       } else {
-        logger.error('Recovery failed');
-        this.emit('recoveryFailed', { duration });
+        logger.error("Recovery failed");
+        this.emit("recoveryFailed", { duration });
       }
     });
 
-    this.recoveryManager.on('fallbackActivated', (state) => {
-      logger.warn('Fallback mode activated', state);
-      this.emit('fallbackActivated', state);
+    this.recoveryManager.on("fallbackActivated", (state) => {
+      logger.warn("Fallback mode activated", state);
+      this.emit("fallbackActivated", state);
     });
 
-    this.recoveryManager.on('healthChange', (newStatus, oldStatus) => {
-      this.emit('healthChange', newStatus, oldStatus);
+    this.recoveryManager.on("healthChange", (newStatus, oldStatus) => {
+      this.emit("healthChange", newStatus, oldStatus);
     });
   }
 
   /**
    * Cleanup resources
    */
+  /**
+   * Type guard to validate MCPConfig
+   */
+  private validateMCPConfig(config: MCPConfig | {}): MCPConfig {
+    // Check if it's a valid MCPConfig by checking required properties
+    if (typeof config === "object" && config !== null) {
+      const hasTransport =
+        "transport" in config || Object.keys(config).length === 0;
+      if (hasTransport || Object.keys(config).length === 0) {
+        // Return valid MCPConfig with defaults
+        const cfg = config as MCPConfig;
+        return {
+          ...cfg,
+          transport: cfg.transport || "stdio",
+        };
+      }
+    }
+
+    // Return default MCPConfig if validation fails
+    return {
+      transport: "stdio",
+    };
+  }
+
   async cleanup(): Promise<void> {
     // Clear all pending requests
     for (const [id, pending] of this.pendingRequests) {
       clearTimeout(pending.timer);
-      pending.reject(new Error('Client cleanup'));
+      pending.reject(new Error("Client cleanup"));
     }
     this.pendingRequests.clear();
 

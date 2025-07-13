@@ -12,7 +12,7 @@ import {
   assertExists,
   assertStringIncludes,
   spy,
-} from '../test.utils.ts';
+} from '../test.utils';
 import { cleanupTestEnv, setupTestEnv } from '../test.config.ts';
 import { delay, generateId } from '../../src/utils/helpers.ts';
 

@@ -121,7 +121,7 @@ export class SwarmJsonOutputAggregator extends EventEmitter {
       return;
     }
     
-    const agentIdStr = typeof agent.id === 'string' ? agent.id : agent.id.id;
+    const agentIdStr = typeof agent.id === 'string' ? agent.id : (agent.id?.id ?? 'unknown');
     const agentData: AgentOutputData = {
       agentId: agentIdStr,
       name: agent.name || agentIdStr,
@@ -174,7 +174,7 @@ export class SwarmJsonOutputAggregator extends EventEmitter {
       return;
     }
     
-    const taskIdStr = typeof task.id === 'string' ? task.id : task.id.id;
+    const taskIdStr = typeof task.id === 'string' ? task.id : (task.id?.id ?? 'unknown');
     const taskData: TaskOutputData = {
       taskId: taskIdStr,
       name: task.name || taskIdStr,
@@ -249,7 +249,7 @@ export class SwarmJsonOutputAggregator extends EventEmitter {
     // Finalize agent data
     this.agents.forEach(agent => {
       if (!agent.endTime) {
-        agent.endTime = this.endTime.toISOString();
+        agent.endTime = this.endTime?.toISOString() ?? new Date().toISOString();
         agent.duration = Date.now() - new Date(agent.startTime).getTime();
       }
     });

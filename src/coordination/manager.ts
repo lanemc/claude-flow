@@ -270,7 +270,7 @@ export class CoordinationManager implements ICoordinationManager {
     const graph = new Map<string, Set<string>>();
     
     // Add edges for resources agents are waiting for
-    for (const [agentId, resources] of waitingFor) {
+    for (const [agentId, resources] of Array.from(waitingFor)) {
       if (!graph.has(agentId)) {
         graph.set(agentId, new Set());
       }
@@ -294,7 +294,7 @@ export class CoordinationManager implements ICoordinationManager {
       recursionStack.add(node);
 
       const neighbors = graph.get(node) || new Set();
-      for (const neighbor of neighbors) {
+      for (const neighbor of Array.from(neighbors)) {
         if (!visited.has(neighbor)) {
           if (hasCycle(neighbor)) {
             cycle.unshift(node);
@@ -312,7 +312,7 @@ export class CoordinationManager implements ICoordinationManager {
     };
 
     // Check for cycles
-    for (const node of graph.keys()) {
+    for (const node of Array.from(graph.keys())) {
       if (!visited.has(node) && hasCycle(node)) {
         // Extract unique agents in cycle
         const agents = Array.from(new Set(cycle));

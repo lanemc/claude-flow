@@ -47,7 +47,7 @@ export class MemoryManager implements IMemoryManager {
   private indexer: MemoryIndexer;
   private banks = new Map<string, MemoryBank>();
   private initialized = false;
-  private syncInterval?: number;
+  private syncInterval?: NodeJS.Timeout;
 
   constructor(
     private config: MemoryConfig,
@@ -238,7 +238,7 @@ export class MemoryManager implements IMemoryManager {
       if (query.search) {
         results = results.filter(entry => 
           entry.content.toLowerCase().includes(query.search!.toLowerCase()) ||
-          entry.tags.some(tag => tag.toLowerCase().includes(query.search!.toLowerCase())),
+          entry.tags?.some(tag => tag.toLowerCase().includes(query.search!.toLowerCase())),
         );
       }
 
@@ -283,7 +283,7 @@ export class MemoryManager implements IMemoryManager {
       ...existing,
       ...updates,
       id: existing.id, // Ensure ID doesn't change
-      version: existing.version + 1,
+      version: (existing.version || 0) + 1,
       timestamp: new Date(),
     };
 
@@ -361,7 +361,7 @@ export class MemoryManager implements IMemoryManager {
 
     try {
       // Clean up old entries based on retention policy
-      if (this.config.retentionDays > 0) {
+      if (this.config?.retentionDays && this.config.retentionDays > 0) {
         const cutoffDate = new Date();
         cutoffDate.setDate(cutoffDate.getDate() - this.config.retentionDays);
         

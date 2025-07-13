@@ -181,12 +181,12 @@ export class MemoryCache {
     // String fields
     size += entry.id.length * 2; // UTF-16
     size += entry.agentId.length * 2;
-    size += entry.sessionId.length * 2;
+    size += (entry.sessionId?.length || 0) * 2;
     size += entry.type.length * 2;
     size += entry.content.length * 2;
     
     // Tags
-    size += entry.tags.reduce((sum, tag) => sum + tag.length * 2, 0);
+    size += (entry.tags?.reduce((sum, tag) => sum + tag.length * 2, 0) || 0);
     
     // JSON objects (rough estimate)
     size += JSON.stringify(entry.context).length * 2;

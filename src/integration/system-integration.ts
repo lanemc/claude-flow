@@ -147,7 +147,11 @@ export class SystemIntegration {
       // Initialize memory manager
       try {
         const { MemoryManager } = await import('../memory/manager.js');
-        this.memoryManager = new MemoryManager();
+        this.memoryManager = new MemoryManager(
+          { backend: 'sqlite', ttl: 3600000, maxSize: 1000, cacheSizeMB: 50 },
+          this.eventBus,
+          this.logger
+        );
         if (typeof this.memoryManager.initialize === 'function') {
           await this.memoryManager.initialize();
         }
@@ -174,7 +178,12 @@ export class SystemIntegration {
       // Initialize agent manager
       try {
         const { AgentManager } = await import('../agents/agent-manager.js');
-        this.agentManager = new AgentManager(this.eventBus, this.logger);
+        this.agentManager = new AgentManager(
+          { maxAgents: 10, defaultTimeout: 30000, heartbeatInterval: 10000, healthCheckInterval: 30000, autoRestart: true },
+          this.logger,
+          this.eventBus,
+          this.memoryManager!
+        );
         if (typeof this.agentManager.initialize === 'function') {
           await this.agentManager.initialize();
         }
@@ -190,11 +199,12 @@ export class SystemIntegration {
       // Initialize swarm coordinator
       try {
         const { SwarmCoordinator } = await import('../coordination/swarm-coordinator.js');
-        this.swarmCoordinator = new SwarmCoordinator(
-          this.eventBus,
-          this.logger,
-          this.memoryManager!
-        );
+        this.swarmCoordinator = new SwarmCoordinator({
+          maxAgents: 10,
+          maxConcurrentTasks: 5,
+          taskTimeout: 300000,
+          enableMonitoring: true
+        });
         if (typeof this.swarmCoordinator.initialize === 'function') {
           await this.swarmCoordinator.initialize();
         }
@@ -224,11 +234,7 @@ export class SystemIntegration {
       // Initialize task engine
       try {
         const { TaskEngine } = await import('../task/engine.js');
-        this.taskEngine = new TaskEngine(
-          this.eventBus,
-          this.logger,
-          this.memoryManager!
-        );
+        this.taskEngine = new TaskEngine(10, this.memoryManager!);
         if (typeof this.taskEngine.initialize === 'function') {
           await this.taskEngine.initialize();
         }
@@ -258,7 +264,32 @@ export class SystemIntegration {
       // Initialize real-time monitor
       try {
         const { RealTimeMonitor } = await import('../monitoring/real-time-monitor.js');
-        this.monitor = new RealTimeMonitor(this.eventBus, this.logger);
+        this.monitor = new RealTimeMonitor(
+          { 
+            updateInterval: 1000,
+            retentionPeriod: 86400000,
+            alertingEnabled: true,
+            alertThresholds: { 
+              cpu: { warning: 70, critical: 80 },
+              memory: { warning: 70, critical: 80 },
+              disk: { warning: 80, critical: 90 },
+              errorRate: { warning: 5, critical: 10 },
+              responseTime: { warning: 1000, critical: 2000 },
+              queueDepth: { warning: 10, critical: 20 },
+              agentHealth: { warning: 80, critical: 50 },
+              swarmUtilization: { warning: 80, critical: 90 }
+            },
+            metricsEnabled: true,
+            tracingEnabled: false,
+            dashboardEnabled: true,
+            exportEnabled: false,
+            exportFormat: 'json',
+            debugMode: false
+          },
+          this.logger,
+          this.eventBus,
+          this.memoryManager!
+        );
         if (typeof this.monitor.initialize === 'function') {
           await this.monitor.initialize();
         }
@@ -274,16 +305,16 @@ export class SystemIntegration {
       // Initialize MCP server
       try {
         const { MCPServer } = await import('../mcp/server.js');
-        this.mcpServer = new MCPServer({
-          transport: 'stdio',
-          version: '1.0.0',
-          capabilities: {
-            tools: true,
-            prompts: false,
-            resources: false,
-            sampling: false,
+        this.mcpServer = new MCPServer(
+          {
+            transport: 'stdio',
+            sessionTimeout: 300000,
+            maxSessions: 10,
+            enableMetrics: true
           },
-        });
+          this.eventBus,
+          this.logger
+        );
         if (typeof this.mcpServer.initialize === 'function') {
           await this.mcpServer.initialize();
         }
@@ -347,18 +378,18 @@ export class SystemIntegration {
    */
   private setupEventHandlers(): void {
     // System health monitoring
-    this.eventBus.on('component:status', (event) => {
+    this.eventBus.on('component:status', (event: any) => {
       this.updateComponentStatus(event.component, event.status, event.message);
     });
     
     // Error handling
-    this.eventBus.on('system:error', (event) => {
+    this.eventBus.on('system:error', (event: any) => {
       this.logger.error(`System Error in ${event.component}:`, event.error);
       this.updateComponentStatus(event.component, 'unhealthy', event.error.message);
     });
     
     // Performance monitoring
-    this.eventBus.on('performance:metric', (event) => {
+    this.eventBus.on('performance:metric', (event: any) => {
       this.logger.debug(`Performance Metric: ${event.metric} = ${event.value}`);
     });
   }

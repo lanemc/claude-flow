@@ -3,6 +3,10 @@
  * Export all optimization components
  */
 
+import { ClaudeConnectionPool } from './connection-pool.js';
+import { AsyncFileManager } from './async-file-manager.js';
+import { OptimizedExecutor } from './optimized-executor.js';
+
 export { ClaudeConnectionPool } from './connection-pool.js';
 export type { PoolConfig, PooledConnection } from './connection-pool.js';
 

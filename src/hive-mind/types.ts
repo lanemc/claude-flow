@@ -144,6 +144,7 @@ export type MessageType =
   | 'response'
   | 'notification'
   | 'task_assignment'
+  | 'task_failed'
   | 'progress_update'
   | 'coordination'
   | 'channel';

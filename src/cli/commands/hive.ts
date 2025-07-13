@@ -78,7 +78,7 @@ export async function hiveAction(ctx: CommandContext) {
     });
 
     // Initialize Hive memory
-    const memory = new SwarmMemoryManager({
+    const memory = new SwarmMemory({
       namespace: options.memoryNamespace,
       enableDistribution: true,
       enableKnowledgeBase: true,
@@ -201,7 +201,7 @@ function getAgentConfigsForTopology(topology: string) {
 
 async function executeHive(
   coordinator: SwarmCoordinator,
-  memory: SwarmMemoryManager,
+  memory: SwarmMemory,
   objectiveId: string,
   agents: HiveAgent[],
   options: HiveOptions
@@ -225,7 +225,7 @@ async function executeHive(
 
 async function executeSparcHive(
   coordinator: SwarmCoordinator,
-  memory: SwarmMemoryManager,
+  memory: SwarmMemory,
   objectiveId: string,
   agents: HiveAgent[],
   options: HiveOptions
@@ -269,7 +269,7 @@ async function executeSparcHive(
 }
 
 async function conductConsensusRound(
-  memory: SwarmMemoryManager,
+  memory: SwarmMemory,
   agents: HiveAgent[],
   phase: string,
   context: any
@@ -309,7 +309,7 @@ async function conductConsensusRound(
 
 async function decomposeWithConsensus(
   coordinator: SwarmCoordinator,
-  memory: SwarmMemoryManager,
+  memory: SwarmMemory,
   objective: string,
   agents: HiveAgent[],
   options: HiveOptions
@@ -339,7 +339,7 @@ async function decomposeWithConsensus(
 
 async function assignTasksWithVoting(
   coordinator: SwarmCoordinator,
-  memory: SwarmMemoryManager,
+  memory: SwarmMemory,
   tasks: any[],
   agents: HiveAgent[],
   options: HiveOptions
@@ -382,7 +382,7 @@ function calculateBidScore(agent: HiveAgent, task: any): number {
 
 async function executeTasksWithMonitoring(
   coordinator: SwarmCoordinator,
-  memory: SwarmMemoryManager,
+  memory: SwarmMemory,
   assignments: Map<string, string>,
   agents: HiveAgent[],
   options: HiveOptions
@@ -413,7 +413,7 @@ async function executeTasksWithMonitoring(
 
 async function aggregateResultsWithQuality(
   coordinator: SwarmCoordinator,
-  memory: SwarmMemoryManager,
+  memory: SwarmMemory,
   objectiveId: string,
   agents: HiveAgent[],
   options: HiveOptions
@@ -422,7 +422,7 @@ async function aggregateResultsWithQuality(
   const results = [];
   for (const agent of agents) {
     const pattern = `execution/${agent.id}/*`;
-    const executions = await memory.search(pattern, 10);
+    const executions = await memory.search(pattern, { limit: 10 });
     results.push(...executions);
   }
   

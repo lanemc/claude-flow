@@ -3,8 +3,8 @@
  * Tests complete workflows and system integration
  */
 
-import { describe, it, beforeEach, afterEach  } from "../test.utils.ts";
-import { assertEquals, assertExists, assertStringIncludes  } from "../test.utils.ts";
+import { describe, it, beforeEach, afterEach  } from '../test.utils';
+import { assertEquals, assertExists, assertStringIncludes  } from '../test.utils';
 // FakeTime equivalent available in test.utils.ts
 
 import { 

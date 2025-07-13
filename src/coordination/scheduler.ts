@@ -122,7 +122,7 @@ export class TaskScheduler {
     // Check and start dependent tasks
     const dependents = this.taskDependencies.get(taskId);
     if (dependents) {
-      for (const dependentId of dependents) {
+      for (const dependentId of Array.from(dependents)) {
         const dependent = this.tasks.get(dependentId);
         if (dependent && this.canStartTask(dependent.task)) {
           this.startTask(dependentId);
@@ -239,7 +239,7 @@ export class TaskScheduler {
       taskCount: taskIds.size,
     });
 
-    for (const taskId of taskIds) {
+    for (const taskId of Array.from(taskIds)) {
       const scheduled = this.tasks.get(taskId);
       if (scheduled && scheduled.task.status === 'running') {
         // Reset task status
@@ -277,7 +277,7 @@ export class TaskScheduler {
       cancelled: 0,
     };
 
-    for (const scheduled of this.tasks.values()) {
+    for (const scheduled of Array.from(this.tasks.values())) {
       tasksByStatus[scheduled.task.status]++;
     }
 
@@ -299,7 +299,7 @@ export class TaskScheduler {
     }
 
     const tasks: Task[] = [];
-    for (const taskId of taskIds) {
+    for (const taskId of Array.from(taskIds)) {
       const scheduled = this.tasks.get(taskId);
       if (scheduled) {
         tasks.push(scheduled.task);
@@ -317,7 +317,7 @@ export class TaskScheduler {
     
     // Check for stuck tasks
     const now = new Date();
-    for (const [taskId, scheduled] of this.tasks) {
+    for (const [taskId, scheduled] of Array.from(this.tasks)) {
       if (scheduled.task.status === 'running' && scheduled.task.startedAt) {
         const runtime = now.getTime() - scheduled.task.startedAt.getTime();
         if (runtime > this.config.resourceTimeout * 2) {
@@ -368,7 +368,7 @@ export class TaskScheduler {
       return;
     }
 
-    for (const dependentId of dependents) {
+    for (const dependentId of Array.from(dependents)) {
       await this.cancelTask(dependentId, reason);
     }
   }

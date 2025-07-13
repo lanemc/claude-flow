@@ -79,7 +79,7 @@ export class DependencyGraph {
     }
 
     // Remove from dependents of dependencies
-    for (const depId of node.dependencies) {
+    for (const depId of Array.from(node.dependencies)) {
       const depNode = this.nodes.get(depId);
       if (depNode) {
         depNode.dependents.delete(taskId);
@@ -87,7 +87,7 @@ export class DependencyGraph {
     }
 
     // Remove from dependencies of dependents
-    for (const depId of node.dependents) {
+    for (const depId of Array.from(node.dependents)) {
       const depNode = this.nodes.get(depId);
       if (depNode) {
         depNode.dependencies.delete(taskId);
@@ -117,7 +117,7 @@ export class DependencyGraph {
     // Find newly ready tasks
     const readyTasks: string[] = [];
     
-    for (const dependentId of node.dependents) {
+    for (const dependentId of Array.from(node.dependents)) {
       const dependent = this.nodes.get(dependentId);
       if (dependent && dependent.status === 'pending' && this.isTaskReady(dependentId)) {
         dependent.status = 'ready';
@@ -166,7 +166,7 @@ export class DependencyGraph {
     }
 
     // All dependencies must be completed
-    for (const depId of node.dependencies) {
+    for (const depId of Array.from(node.dependencies)) {
       if (!this.completedTasks.has(depId)) {
         return false;
       }
@@ -181,7 +181,7 @@ export class DependencyGraph {
   getReadyTasks(): string[] {
     const ready: string[] = [];
     
-    for (const [taskId, node] of this.nodes) {
+    for (const [taskId, node] of Array.from(this.nodes)) {
       if (node.status === 'ready' || (node.status === 'pending' && this.isTaskReady(taskId))) {
         ready.push(taskId);
         node.status = 'ready';
@@ -209,7 +209,7 @@ export class DependencyGraph {
         return;
       }
 
-      for (const depId of node.dependents) {
+      for (const depId of Array.from(node.dependents)) {
         if (!visited.has(depId)) {
           dependents.push(depId);
           visit(depId);
@@ -242,7 +242,7 @@ export class DependencyGraph {
         return false;
       }
 
-      for (const depId of node.dependencies) {
+      for (const depId of Array.from(node.dependencies)) {
         if (!visited.has(depId)) {
           if (hasCycle(depId)) {
             return true;
@@ -263,7 +263,7 @@ export class DependencyGraph {
     };
 
     // Check all nodes
-    for (const taskId of this.nodes.keys()) {
+    for (const taskId of Array.from(this.nodes.keys())) {
       if (!visited.has(taskId)) {
         hasCycle(taskId);
       }
@@ -298,7 +298,7 @@ export class DependencyGraph {
       }
 
       // Visit dependencies first
-      for (const depId of node.dependencies) {
+      for (const depId of Array.from(node.dependencies)) {
         if (!visited.has(depId)) {
           visit(depId);
         }
@@ -308,7 +308,7 @@ export class DependencyGraph {
     };
 
     // Visit all nodes
-    for (const taskId of this.nodes.keys()) {
+    for (const taskId of Array.from(this.nodes.keys())) {
       if (!visited.has(taskId)) {
         visit(taskId);
       }
@@ -377,7 +377,7 @@ export class DependencyGraph {
         continue;
       }
 
-      for (const depId of node.dependents) {
+      for (const depId of Array.from(node.dependents)) {
         if (depId === to) {
           return [...path, to];
         }
@@ -408,7 +408,7 @@ export class DependencyGraph {
     };
 
     let totalDeps = 0;
-    for (const node of this.nodes.values()) {
+    for (const node of Array.from(this.nodes.values())) {
       totalDeps += node.dependencies.size;
       stats.maxDependencies = Math.max(stats.maxDependencies, node.dependencies.size);
       
@@ -442,7 +442,7 @@ export class DependencyGraph {
     dot += '  node [shape=box];\n\n';
 
     // Add nodes with status colors
-    for (const [taskId, node] of this.nodes) {
+    for (const [taskId, node] of Array.from(this.nodes)) {
       let color = 'white';
       switch (node.status) {
         case 'ready':
@@ -464,8 +464,8 @@ export class DependencyGraph {
     dot += '\n';
 
     // Add edges
-    for (const [taskId, node] of this.nodes) {
-      for (const depId of node.dependencies) {
+    for (const [taskId, node] of Array.from(this.nodes)) {
+      for (const depId of Array.from(node.dependencies)) {
         dot += `  "${depId}" -> "${taskId}";\n`;
       }
     }

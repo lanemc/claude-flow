@@ -105,6 +105,18 @@ class HighPerformanceCache<T> {
     return this.cache.has(key);
   }
 
+  get size(): number {
+    return this.cache.size;
+  }
+
+  entries(): IterableIterator<[string, { data: T; timestamp: number; size: number }]> {
+    return this.cache.entries();
+  }
+
+  [Symbol.iterator](): IterableIterator<[string, { data: T; timestamp: number; size: number }]> {
+    return this.cache.entries();
+  }
+
   delete(key: string): boolean {
     const entry = this.cache.get(key);
     if (entry) {
@@ -160,8 +172,8 @@ class ObjectPool<T> {
 
 export class Memory extends EventEmitter {
   private swarmId: string;
-  private db: DatabaseManager;
-  private mcpWrapper: MCPToolWrapper;
+  private db: DatabaseManager | null = null;
+  private mcpWrapper: MCPToolWrapper | null = null;
   private cache: HighPerformanceCache<any>;
   private namespaces: Map<string, MemoryNamespace>;
   private accessPatterns: Map<string, number>;
@@ -217,6 +229,14 @@ export class Memory extends EventEmitter {
     this.db = await DatabaseManager.getInstance();
     this.mcpWrapper = new MCPToolWrapper();
     
+    if (!this.db) {
+      throw new Error('Failed to initialize database manager');
+    }
+    
+    if (!this.mcpWrapper) {
+      throw new Error('Failed to initialize MCP wrapper');
+    }
+    
     // Optimize database connection
     await this.optimizeDatabaseSettings();
     
@@ -256,10 +276,10 @@ export class Memory extends EventEmitter {
     
     // Pool for search results
     this.objectPools.set('searchResult', new ObjectPool(
-      () => ({ results: [], metadata: {} }),
-      (obj) => {
+      () => ({ results: [], metadata: {} as Record<string, any> }),
+      (obj: any) => {
         obj.results.length = 0;
-        Object.keys(obj.metadata).forEach(k => delete obj.metadata[k]);
+        Object.keys(obj.metadata).forEach((k: string) => delete obj.metadata[k]);
       }
     ));
   }
@@ -281,6 +301,7 @@ export class Memory extends EventEmitter {
    * Optimized store method with compression and batching
    */
   async store(key: string, value: any, namespace: string = 'default', ttl?: number): Promise<void> {
+    this.ensureInitialized();
     const startTime = performance.now();
     
     // Use object pool if available
@@ -314,7 +335,7 @@ export class Memory extends EventEmitter {
       entry.lastAccessedAt = new Date();
       
       // Store in database with transaction for consistency
-      await this.db.storeMemory({
+      await this.db!.storeMemory({
         key,
         namespace,
         value: serializedValue,
@@ -327,7 +348,7 @@ export class Memory extends EventEmitter {
       });
       
       // Async MCP storage (non-blocking)
-      this.mcpWrapper.storeMemory({
+      this.mcpWrapper!.storeMemory({
         action: 'store',
         key: `${this.swarmId}/${namespace}/${key}`,
         value: serializedValue,
@@ -397,6 +418,7 @@ export class Memory extends EventEmitter {
    * High-performance retrieve method with intelligent caching
    */
   async retrieve(key: string, namespace: string = 'default'): Promise<any> {
+    this.ensureInitialized();
     const startTime = performance.now();
     const cacheKey = this.getCacheKey(key, namespace);
     
@@ -410,7 +432,7 @@ export class Memory extends EventEmitter {
       }
       
       // Database lookup with prepared statements
-      const dbEntry = await this.db.getMemory(key, namespace);
+      const dbEntry = await this.db!.getMemory(key, namespace);
       if (dbEntry) {
         let value = dbEntry.value;
         
@@ -428,7 +450,7 @@ export class Memory extends EventEmitter {
         // Update access stats in background
         setImmediate(() => {
           this.updateAccessPattern(key, 'db_hit');
-          this.db.updateMemoryAccess(key, namespace).catch(err => this.emit('error', err));
+          this.db!.updateMemoryAccess(key, namespace).catch(err => this.emit('error', err));
         });
         
         this.recordPerformance('retrieve_db', performance.now() - startTime);
@@ -436,7 +458,7 @@ export class Memory extends EventEmitter {
       }
       
       // Fallback to MCP memory (async, non-blocking)
-      this.mcpWrapper.retrieveMemory({
+      this.mcpWrapper!.retrieveMemory({
         action: 'retrieve',
         key: `${this.swarmId}/${namespace}/${key}`,
         namespace: 'hive-mind'
@@ -524,7 +546,7 @@ export class Memory extends EventEmitter {
     
     // If not enough results, search database with optimized query
     if (results.length < (options.limit || 10)) {
-      const dbResults = await this.db.searchMemory(options);
+      const dbResults = await this.db!.searchMemory(options);
       
       for (const dbEntry of dbResults) {
         const entry: MemoryEntry = {
@@ -591,10 +613,10 @@ export class Memory extends EventEmitter {
     this.cache.delete(cacheKey);
     
     // Remove from database
-    await this.db.deleteMemory(key, namespace);
+    await this.db!.deleteMemory(key, namespace);
     
     // Remove from MCP memory
-    await this.mcpWrapper.deleteMemory({
+    await this.mcpWrapper!.deleteMemory({
       action: 'delete',
       key: `${this.swarmId}/${namespace}/${key}`,
       namespace: 'hive-mind'
@@ -607,7 +629,7 @@ export class Memory extends EventEmitter {
    * List all entries in a namespace
    */
   async list(namespace: string = 'default', limit: number = 100): Promise<MemoryEntry[]> {
-    const entries = await this.db.listMemory(namespace, limit);
+    const entries = await this.db!.listMemory(namespace, limit);
     
     return entries.map(dbEntry => ({
       key: dbEntry.key,
@@ -624,11 +646,11 @@ export class Memory extends EventEmitter {
    * Get memory statistics
    */
   async getStats(): Promise<MemoryStats> {
-    const stats = await this.db.getMemoryStats();
+    const stats = await this.db!.getMemoryStats();
     
     const byNamespace: Record<string, any> = {};
     for (const ns of this.namespaces.values()) {
-      const nsStats = await this.db.getNamespaceStats(ns.name);
+      const nsStats = await this.db!.getNamespaceStats(ns.name);
       byNamespace[ns.name] = nsStats;
     }
     
@@ -658,7 +680,7 @@ export class Memory extends EventEmitter {
     
     // Train neural patterns
     if (coAccessPatterns.length > 0) {
-      await this.mcpWrapper.trainNeural({
+      await this.mcpWrapper!.trainNeural({
         pattern_type: 'prediction',
         training_data: JSON.stringify({
           accessPatterns: accessData,
@@ -685,7 +707,7 @@ export class Memory extends EventEmitter {
    * Predict next memory access
    */
   async predictNextAccess(currentKey: string): Promise<string[]> {
-    const prediction = await this.mcpWrapper.predict({
+    const prediction = await this.mcpWrapper!.predict({
       modelId: 'memory-access-predictor',
       input: currentKey
     });
@@ -697,9 +719,14 @@ export class Memory extends EventEmitter {
    * Compress memory entries
    */
   async compress(namespace?: string): Promise<void> {
-    const entries = namespace 
+    const rawEntries = namespace 
       ? await this.list(namespace)
-      : await this.db.getAllMemoryEntries();
+      : await this.db!.getAllMemoryEntries();
+    
+    // Convert to MemoryEntry format
+    const entries = rawEntries.map(entry => 
+      'createdAt' in entry ? entry as MemoryEntry : this.convertRowToEntry(entry)
+    );
     
     for (const entry of entries) {
       if (this.shouldCompress(entry)) {
@@ -720,7 +747,7 @@ export class Memory extends EventEmitter {
    * Backup memory to external storage
    */
   async backup(path: string): Promise<void> {
-    const allEntries = await this.db.getAllMemoryEntries();
+    const allEntries = await this.db!.getAllMemoryEntries();
     
     const backup = {
       swarmId: this.swarmId,
@@ -731,7 +758,7 @@ export class Memory extends EventEmitter {
     };
     
     // Store backup using MCP
-    await this.mcpWrapper.storeMemory({
+    await this.mcpWrapper!.storeMemory({
       action: 'store',
       key: `backup/${this.swarmId}/${Date.now()}`,
       value: JSON.stringify(backup),
@@ -745,7 +772,7 @@ export class Memory extends EventEmitter {
    * Restore memory from backup
    */
   async restore(backupId: string): Promise<void> {
-    const backupData = await this.mcpWrapper.retrieveMemory({
+    const backupData = await this.mcpWrapper!.retrieveMemory({
       action: 'retrieve',
       key: backupId,
       namespace: 'hive-mind-backups'
@@ -758,7 +785,7 @@ export class Memory extends EventEmitter {
     const backup = JSON.parse(backupData);
     
     // Clear existing memory
-    await this.db.clearMemory(this.swarmId);
+    await this.db!.clearMemory(this.swarmId);
     this.cache.clear();
     
     // Restore entries
@@ -826,7 +853,7 @@ export class Memory extends EventEmitter {
    * Load memory from database
    */
   private async loadMemoryFromDatabase(): Promise<void> {
-    const recentEntries = await this.db.getRecentMemoryEntries(100);
+    const recentEntries = await this.db!.getRecentMemoryEntries(100);
     
     for (const dbEntry of recentEntries) {
       const entry: MemoryEntry = {
@@ -970,6 +997,28 @@ export class Memory extends EventEmitter {
   /**
    * Enhanced helper methods with performance optimizations
    */
+  
+  private convertRowToEntry(row: any): MemoryEntry {
+    return {
+      key: row.key,
+      namespace: row.namespace,
+      value: row.value,
+      ttl: row.ttl,
+      createdAt: new Date(row.created_at),
+      accessCount: row.access_count,
+      lastAccessedAt: new Date(row.last_accessed_at),
+      expiresAt: row.expires_at ? new Date(row.expires_at) : undefined
+    };
+  }
+  
+  private ensureInitialized(): void {
+    if (!this.db) {
+      throw new Error('Database not initialized. Call initialize() first.');
+    }
+    if (!this.mcpWrapper) {
+      throw new Error('MCP wrapper not initialized. Call initialize() first.');
+    }
+  }
   
   private getCacheKey(key: string, namespace: string): string {
     return `${namespace}:${key}`;
@@ -1135,7 +1184,7 @@ export class Memory extends EventEmitter {
     this.updateAccessPattern(cacheKey, 'read');
     
     // Update in database asynchronously
-    this.db.updateMemoryAccess(entry.key, entry.namespace).catch(err => {
+    this.db!.updateMemoryAccess(entry.key, entry.namespace).catch(err => {
       this.emit('error', err);
     });
   }
@@ -1250,15 +1299,21 @@ export class Memory extends EventEmitter {
     const now = Date.now();
     const toEvict: string[] = [];
     
-    for (const [cacheKey, entry] of this.cache) {
-      if (entry.ttl && entry.createdAt.getTime() + (entry.ttl * 1000) < now) {
+    for (const [cacheKey, cacheEntry] of this.cache) {
+      const entry = cacheEntry.data;
+      if (entry && entry.ttl && entry.createdAt && entry.createdAt.getTime() + (entry.ttl * 1000) < now) {
         toEvict.push(cacheKey);
       }
     }
     
     for (const key of toEvict) {
-      const entry = this.cache.get(key)!;
-      await this.delete(entry.key, entry.namespace);
+      const cacheEntry = this.cache.get(key);
+      if (cacheEntry && cacheEntry.data) {
+        const entry = cacheEntry.data;
+        if (entry.key && entry.namespace) {
+          await this.delete(entry.key, entry.namespace);
+        }
+      }
     }
   }
 
@@ -1268,7 +1323,7 @@ export class Memory extends EventEmitter {
     if (this.cache.size > maxCacheSize) {
       // Evict least recently used entries
       const entries = Array.from(this.cache.entries())
-        .sort((a, b) => a[1].lastAccessedAt.getTime() - b[1].lastAccessedAt.getTime());
+        .sort((a, b) => a[1].timestamp - b[1].timestamp); // Sort by timestamp (last access)
       
       const toEvict = entries.slice(0, entries.length - maxCacheSize);
       
@@ -1279,9 +1334,12 @@ export class Memory extends EventEmitter {
   }
 
   private async compressOldEntries(): Promise<void> {
-    const oldEntries = await this.db.getOldMemoryEntries(30); // 30 days old
+    const rawEntries = await this.db!.getOldMemoryEntries(30); // 30 days old
     
-    for (const entry of oldEntries) {
+    // Convert to MemoryEntry format
+    const entries = rawEntries.map(entry => this.convertRowToEntry(entry));
+    
+    for (const entry of entries) {
       if (this.shouldCompress(entry)) {
         const compressed = await this.compressEntry(entry);
         await this.store(
@@ -1296,16 +1354,16 @@ export class Memory extends EventEmitter {
 
   private async optimizeNamespaces(): Promise<void> {
     for (const namespace of this.namespaces.values()) {
-      const stats = await this.db.getNamespaceStats(namespace.name);
+      const stats = await this.db!.getNamespaceStats(namespace.name);
       
       // Apply retention policies
       if (namespace.retentionPolicy === 'time-based' && namespace.ttl) {
-        await this.db.deleteOldEntries(namespace.name, namespace.ttl);
+        await this.db!.deleteOldEntries(namespace.name, namespace.ttl);
       }
       
       if (namespace.retentionPolicy === 'size-based' && namespace.maxEntries) {
         if (stats.entries > namespace.maxEntries) {
-          await this.db.trimNamespace(namespace.name, namespace.maxEntries);
+          await this.db!.trimNamespace(namespace.name, namespace.maxEntries);
         }
       }
     }

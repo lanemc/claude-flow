@@ -57,10 +57,10 @@ export interface FileInfo {
 }
 
 export class PromptCopier extends EventEmitter {
-  private options: Required<CopyOptions>;
-  private fileQueue: FileInfo[] = [];
-  private copiedFiles: Set<string> = new Set();
-  private errors: CopyError[] = [];
+  protected options: Required<CopyOptions>;
+  protected fileQueue: FileInfo[] = [];
+  protected copiedFiles: Set<string> = new Set();
+  protected errors: CopyError[] = [];
   private backupMap: Map<string, string> = new Map();
   private rollbackStack: Array<() => Promise<void>> = [];
 
@@ -366,7 +366,7 @@ export class PromptCopier extends EventEmitter {
     await fs.writeFile(destPath, mergedContent, 'utf-8');
   }
 
-  private async verifyFiles(): Promise<void> {
+  protected async verifyFiles(): Promise<void> {
     logger.info('Verifying copied files...');
     
     for (const file of this.fileQueue) {
@@ -406,12 +406,12 @@ export class PromptCopier extends EventEmitter {
     }
   }
 
-  private async calculateFileHash(filePath: string): Promise<string> {
+  protected async calculateFileHash(filePath: string): Promise<string> {
     const content = await fs.readFile(filePath);
     return createHash('sha256').update(content).digest('hex');
   }
 
-  private async fileExists(filePath: string): Promise<boolean> {
+  protected async fileExists(filePath: string): Promise<boolean> {
     try {
       await fs.access(filePath);
       return true;
@@ -465,7 +465,7 @@ export class PromptCopier extends EventEmitter {
     }
   }
 
-  private reportProgress(completed: number): void {
+  protected reportProgress(completed: number): void {
     const progress: CopyProgress = {
       total: this.fileQueue.length,
       completed,

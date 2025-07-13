@@ -2,8 +2,8 @@
  * Integration tests for the Enhanced REPL
  */
 
-import { describe, it, beforeEach, afterEach, expect } from "../test.utils.ts";
-import { describe, it, beforeEach, afterEach, expect } from "../test.utils.ts";
+import { describe, it, beforeEach, afterEach, expect } from '../test.utils';
+import { describe, it, beforeEach, afterEach, expect } from '../test.utils';
 
 // Mock implementations for testing
 class MockInput {

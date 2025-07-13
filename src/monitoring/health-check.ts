@@ -2,16 +2,16 @@
  * Health Check System for Claude Flow v2.0.0
  */
 
-import { EventBus } from '../core/event-bus.js';
-import { Logger } from '../core/logger.js';
-import { SystemIntegration } from '../integration/system-integration.js';
-import type { 
-  HealthCheckResult, 
-  ComponentStatus, 
-  SystemHealth, 
-  SystemMetrics 
-} from '../integration/types.js';
-import { getErrorMessage } from '../utils/error-handler.js';
+import { EventBus } from "../core/event-bus.js";
+import { Logger } from "../core/logger.js";
+import { SystemIntegration } from "../integration/system-integration.js";
+import type {
+  HealthCheckResult,
+  ComponentStatus,
+  SystemHealth,
+  SystemMetrics,
+} from "../integration/types.js";
+import { getErrorMessage } from "../utils/error-handler.js";
 
 export interface HealthCheckConfig {
   interval?: number; // Health check interval in ms (default: 30000)
@@ -46,13 +46,13 @@ export class HealthCheckManager {
     this.eventBus = eventBus;
     this.logger = logger;
     this.systemIntegration = SystemIntegration.getInstance();
-    
+
     this.config = {
       interval: config.interval || 30000, // 30 seconds
       timeout: config.timeout || 5000, // 5 seconds
       retries: config.retries || 3,
       enableMetrics: config.enableMetrics !== false,
-      enableAlerts: config.enableAlerts !== false
+      enableAlerts: config.enableAlerts !== false,
     };
 
     this.setupEventHandlers();
@@ -63,11 +63,11 @@ export class HealthCheckManager {
    */
   start(): void {
     if (this.isRunning) {
-      this.logger.warn('Health check manager already running');
+      this.logger.warn("Health check manager already running");
       return;
     }
 
-    this.logger.info('Starting health check monitoring');
+    this.logger.info("Starting health check monitoring");
     this.isRunning = true;
 
     // Perform initial health check
@@ -78,9 +78,9 @@ export class HealthCheckManager {
       this.performHealthCheck();
     }, this.config.interval);
 
-    this.eventBus.emit('health:monitor:started', {
+    this.eventBus.emit("health:monitor:started", {
       interval: this.config.interval,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
   }
 
@@ -92,7 +92,7 @@ export class HealthCheckManager {
       return;
     }
 
-    this.logger.info('Stopping health check monitoring');
+    this.logger.info("Stopping health check monitoring");
     this.isRunning = false;
 
     if (this.intervalId) {
@@ -100,8 +100,8 @@ export class HealthCheckManager {
       this.intervalId = null;
     }
 
-    this.eventBus.emit('health:monitor:stopped', {
-      timestamp: Date.now()
+    this.eventBus.emit("health:monitor:stopped", {
+      timestamp: Date.now(),
     });
   }
 
@@ -110,16 +110,16 @@ export class HealthCheckManager {
    */
   async performHealthCheck(): Promise<SystemHealth> {
     const startTime = Date.now();
-    
+
     try {
-      this.logger.debug('Performing system health check');
+      this.logger.debug("Performing system health check");
 
       // Get system health from integration manager
       const systemHealth = await this.systemIntegration.getSystemHealth();
 
       // Perform individual component checks
       const componentChecks = await this.checkAllComponents();
-      
+
       // Collect system metrics if enabled
       if (this.config.enableMetrics) {
         this.lastMetrics = await this.collectSystemMetrics();
@@ -137,23 +137,22 @@ export class HealthCheckManager {
       this.logger.debug(`Health check completed in ${duration}ms`);
 
       // Emit health check event
-      this.eventBus.emit('health:check:completed', {
+      this.eventBus.emit("health:check:completed", {
         health: systemHealth,
         metrics: this.lastMetrics,
         duration,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
 
       return systemHealth;
-
     } catch (error) {
       const duration = Date.now() - startTime;
-      this.logger.error('Health check failed:', getErrorMessage(error));
-      
-      this.eventBus.emit('health:check:failed', {
+      this.logger.error("Health check failed:", getErrorMessage(error));
+
+      this.eventBus.emit("health:check:failed", {
         error: getErrorMessage(error),
         duration,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
 
       throw error;
@@ -165,29 +164,29 @@ export class HealthCheckManager {
    */
   private async checkAllComponents(): Promise<HealthCheckResult[]> {
     const components = [
-      'orchestrator',
-      'configManager',
-      'memoryManager',
-      'agentManager',
-      'swarmCoordinator',
-      'taskEngine',
-      'monitor',
-      'mcpServer'
+      "orchestrator",
+      "configManager",
+      "memoryManager",
+      "agentManager",
+      "swarmCoordinator",
+      "taskEngine",
+      "monitor",
+      "mcpServer",
     ];
 
     const checks = await Promise.allSettled(
-      components.map(component => this.checkComponent(component))
+      components.map((component) => this.checkComponent(component))
     );
 
     return checks.map((result, index) => {
-      if (result.status === 'fulfilled') {
+      if (result.status === "fulfilled") {
         return result.value;
       } else {
         return {
           component: components[index],
           healthy: false,
           message: getErrorMessage(result.reason),
-          timestamp: Date.now()
+          timestamp: Date.now(),
         };
       }
     });
@@ -196,28 +195,33 @@ export class HealthCheckManager {
   /**
    * Check individual component health
    */
-  private async checkComponent(componentName: string): Promise<HealthCheckResult> {
+  private async checkComponent(
+    componentName: string
+  ): Promise<HealthCheckResult> {
     const startTime = Date.now();
-    
+
     try {
       const component = this.systemIntegration.getComponent(componentName);
-      
+
       if (!component) {
         return {
           component: componentName,
           healthy: false,
-          message: 'Component not found',
-          timestamp: Date.now()
+          message: "Component not found",
+          timestamp: Date.now(),
         };
       }
 
       // Try to call health check method if available
-      if (typeof component.healthCheck === 'function') {
+      if (typeof (component as any).healthCheck === "function") {
         const result = await Promise.race([
-          component.healthCheck(),
-          new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Health check timeout')), this.config.timeout)
-          )
+          (component as any).healthCheck(),
+          new Promise((_, reject) =>
+            setTimeout(
+              () => reject(new Error("Health check timeout")),
+              this.config.timeout
+            )
+          ),
         ]);
         return result as HealthCheckResult;
       }
@@ -227,17 +231,16 @@ export class HealthCheckManager {
       return {
         component: componentName,
         healthy: true,
-        message: 'Component available',
+        message: "Component available",
         metrics: { responseTime: duration },
-        timestamp: Date.now()
+        timestamp: Date.now(),
       };
-
     } catch (error) {
       return {
         component: componentName,
         healthy: false,
         message: getErrorMessage(error),
-        timestamp: Date.now()
+        timestamp: Date.now(),
       };
     }
   }
@@ -247,27 +250,30 @@ export class HealthCheckManager {
    */
   private async collectSystemMetrics(): Promise<SystemMetrics> {
     const startTime = Date.now();
-    
+
     try {
       // Get system resource usage
       const memoryUsage = process.memoryUsage();
       const cpuUsage = process.cpuUsage();
-      
+
       // Get component-specific metrics
-      const agentManager = this.systemIntegration.getComponent('agentManager');
-      const taskEngine = this.systemIntegration.getComponent('taskEngine');
-      
+      const agentManager = this.systemIntegration.getComponent("agentManager");
+      const taskEngine = this.systemIntegration.getComponent("taskEngine");
+
       let activeAgents = 0;
       let activeTasks = 0;
       let queuedTasks = 0;
       let completedTasks = 0;
 
-      if (agentManager && typeof (agentManager as any).getMetrics === 'function') {
+      if (
+        agentManager &&
+        typeof (agentManager as any).getMetrics === "function"
+      ) {
         const agentMetrics = await (agentManager as any).getMetrics();
         activeAgents = (agentMetrics as any)?.activeAgents || 0;
       }
 
-      if (taskEngine && typeof (taskEngine as any).getMetrics === 'function') {
+      if (taskEngine && typeof (taskEngine as any).getMetrics === "function") {
         const taskMetrics = await (taskEngine as any).getMetrics();
         activeTasks = (taskMetrics as any)?.activeTasks || 0;
         queuedTasks = taskMetrics.queuedTasks || 0;
@@ -285,11 +291,13 @@ export class HealthCheckManager {
         completedTasks,
         errorCount: this.getErrorCount(),
         uptime: process.uptime() * 1000,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       };
-
     } catch (error) {
-      this.logger.error('Failed to collect system metrics:', getErrorMessage(error));
+      this.logger.error(
+        "Failed to collect system metrics:",
+        getErrorMessage(error)
+      );
       return {
         cpu: 0,
         memory: 0,
@@ -301,7 +309,7 @@ export class HealthCheckManager {
         completedTasks: 0,
         errorCount: 0,
         uptime: process.uptime() * 1000,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       };
     }
   }
@@ -312,7 +320,7 @@ export class HealthCheckManager {
   private storeHealthHistory(results: HealthCheckResult[]): void {
     const maxHistorySize = 100; // Keep last 100 health checks per component
 
-    results.forEach(result => {
+    results.forEach((result) => {
       if (!this.healthHistory.has(result.component)) {
         this.healthHistory.set(result.component, []);
       }
@@ -331,20 +339,21 @@ export class HealthCheckManager {
    * Check for alerts and send notifications
    */
   private async checkForAlerts(health: SystemHealth): Promise<void> {
-    const unhealthyComponents = Object.values(health.components)
-      .filter(component => component.status === 'unhealthy');
+    const unhealthyComponents = Object.values(health.components).filter(
+      (component) => component.status === "unhealthy"
+    );
 
     if (unhealthyComponents.length > 0) {
       const alert = {
-        type: 'component_failure',
-        severity: 'high',
+        type: "component_failure",
+        severity: "high",
         message: `${unhealthyComponents.length} component(s) are unhealthy`,
-        components: unhealthyComponents.map(c => c.component),
-        timestamp: Date.now()
+        components: unhealthyComponents.map((c) => c.component),
+        timestamp: Date.now(),
       };
 
-      this.eventBus.emit('health:alert', alert);
-      this.logger.warn('Health alert triggered:', alert.message);
+      this.eventBus.emit("health:alert", alert);
+      this.logger.warn("Health alert triggered:", alert.message);
     }
 
     // Check system metrics for anomalies
@@ -353,35 +362,35 @@ export class HealthCheckManager {
 
       if (this.lastMetrics.cpu > 90) {
         alerts.push({
-          type: 'high_cpu',
-          severity: 'medium',
+          type: "high_cpu",
+          severity: "medium",
           message: `High CPU usage: ${this.lastMetrics.cpu.toFixed(1)}%`,
-          value: this.lastMetrics.cpu
+          value: this.lastMetrics.cpu,
         });
       }
 
       if (this.lastMetrics.memory > 90) {
         alerts.push({
-          type: 'high_memory',
-          severity: 'medium',
+          type: "high_memory",
+          severity: "medium",
           message: `High memory usage: ${this.lastMetrics.memory.toFixed(1)}%`,
-          value: this.lastMetrics.memory
+          value: this.lastMetrics.memory,
         });
       }
 
       if (this.lastMetrics.errorCount > 10) {
         alerts.push({
-          type: 'high_errors',
-          severity: 'high',
+          type: "high_errors",
+          severity: "high",
           message: `High error count: ${this.lastMetrics.errorCount}`,
-          value: this.lastMetrics.errorCount
+          value: this.lastMetrics.errorCount,
         });
       }
 
-      alerts.forEach(alert => {
-        this.eventBus.emit('health:alert', {
+      alerts.forEach((alert) => {
+        this.eventBus.emit("health:alert", {
           ...alert,
-          timestamp: Date.now()
+          timestamp: Date.now(),
         });
       });
     }
@@ -426,8 +435,8 @@ export class HealthCheckManager {
     let errorCount = 0;
 
     for (const history of this.healthHistory.values()) {
-      errorCount += history.filter(check => 
-        check.timestamp > recentTime && !check.healthy
+      errorCount += history.filter(
+        (check) => check.timestamp > recentTime && !check.healthy
       ).length;
     }
 
@@ -439,16 +448,29 @@ export class HealthCheckManager {
    */
   private setupEventHandlers(): void {
     // Listen for component status changes
-    this.eventBus.on('component:status:updated', (status: ComponentStatus) => {
-      if (status.status === 'unhealthy') {
-        this.logger.warn(`Component ${status.component} became unhealthy: ${status.message}`);
+    this.eventBus.on("component:status:updated", (data: unknown) => {
+      if (this.isComponentStatus(data) && data.status === "unhealthy") {
+        this.logger.warn(
+          `Component ${data.component} became unhealthy: ${data.message}`
+        );
       }
     });
 
     // Listen for system errors
-    this.eventBus.on('system:error', (error) => {
-      this.logger.error('System error detected:', error);
+    this.eventBus.on("system:error", (error) => {
+      this.logger.error("System error detected:", error);
     });
+  }
+
+  private isComponentStatus(data: unknown): data is ComponentStatus {
+    return (
+      typeof data === "object" &&
+      data !== null &&
+      "component" in data &&
+      "status" in data &&
+      typeof (data as any).component === "string" &&
+      typeof (data as any).status === "string"
+    );
   }
 
   /**

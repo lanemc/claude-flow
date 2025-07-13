@@ -21,7 +21,7 @@ class EnhancedMemory extends FallbackMemoryStore {
     super(options);
   }
 
-  async initialize(): Promise<void> {
+  override async initialize(): Promise<void> {
     await super.initialize();
     
     // If using SQLite, try to apply enhanced schema

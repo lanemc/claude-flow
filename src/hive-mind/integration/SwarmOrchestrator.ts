@@ -20,8 +20,8 @@ import {
 
 export class SwarmOrchestrator extends EventEmitter {
   private hiveMind: HiveMind;
-  private db: DatabaseManager;
-  private mcpWrapper: MCPToolWrapper;
+  private db: DatabaseManager | null = null;
+  private mcpWrapper: MCPToolWrapper | null = null;
   private executionPlans: Map<string, ExecutionPlan>;
   private taskAssignments: Map<string, TaskAssignment[]>;
   private activeExecutions: Map<string, any>;
@@ -41,6 +41,15 @@ export class SwarmOrchestrator extends EventEmitter {
   async initialize(): Promise<void> {
     this.db = await DatabaseManager.getInstance();
     this.mcpWrapper = new MCPToolWrapper();
+    
+    if (!this.db) {
+      throw new Error('Failed to initialize database manager');
+    }
+    
+    if (!this.mcpWrapper) {
+      throw new Error('Failed to initialize MCP wrapper');
+    }
+    
     await this.mcpWrapper.initialize();
     
     // Start orchestration loops
@@ -61,6 +70,7 @@ export class SwarmOrchestrator extends EventEmitter {
     this.executionPlans.set(task.id, plan);
     
     // Orchestrate task using MCP tools
+    if (!this.mcpWrapper) throw new Error('MCP wrapper not initialized');
     const orchestrationResult = await this.mcpWrapper.orchestrateTask({
       task: task.description,
       priority: task.priority,
@@ -90,7 +100,7 @@ export class SwarmOrchestrator extends EventEmitter {
     
     // Create assignments for each phase
     const phaseAssignments = await Promise.all(
-      phases.map(phase => this.createPhaseAssignments(task, phase, analysis))
+      phases.map((phase: string) => this.createPhaseAssignments(task, phase, analysis))
     );
     
     return {
@@ -135,7 +145,7 @@ export class SwarmOrchestrator extends EventEmitter {
       
     } catch (error) {
       execution.status = 'failed';
-      execution.error = error;
+      (execution as any).error = error;
       await this.handleTaskFailure(task, execution, error);
     } finally {
       this.activeExecutions.delete(task.id);
@@ -260,22 +270,28 @@ export class SwarmOrchestrator extends EventEmitter {
    */
   async assignTaskToAgent(taskId: string, agentId: string): Promise<void> {
     // Update database
+    if (!this.db) throw new Error('Database not initialized');
     const task = await this.db.getTask(taskId);
+    if (!task) throw new Error(`Task ${taskId} not found`);
     const assignedAgents = JSON.parse(task.assigned_agents || '[]');
     
     if (!assignedAgents.includes(agentId)) {
       assignedAgents.push(agentId);
-      await this.db.updateTask(taskId, {
-        assigned_agents: JSON.stringify(assignedAgents),
-        status: 'assigned'
-      });
+      if (this.db) {
+        await this.db.updateTask(taskId, {
+          assigned_agents: JSON.stringify(assignedAgents),
+          status: 'assigned'
+        });
+      }
     }
     
     // Update agent
-    await this.db.updateAgent(agentId, {
-      current_task_id: taskId,
-      status: 'busy'
-    });
+    if (this.db) {
+      await this.db.updateAgent(agentId, {
+        current_task_id: taskId,
+        status: 'busy'
+      });
+    }
     
     this.emit('taskAssigned', { taskId, agentId });
   }
@@ -290,7 +306,9 @@ export class SwarmOrchestrator extends EventEmitter {
       execution.status = 'cancelled';
       
       // Notify assigned agents
+      if (!this.db) return;
       const task = await this.db.getTask(taskId);
+      if (!task) return;
       const assignedAgents = JSON.parse(task.assigned_agents || '[]');
       
       for (const agentId of assignedAgents) {
@@ -312,6 +330,7 @@ export class SwarmOrchestrator extends EventEmitter {
     const loadDistribution = await this.analyzeLoadDistribution();
     
     // Use MCP tool for load balancing
+    if (!this.mcpWrapper) throw new Error('MCP wrapper not initialized');
     const balanceResult = await this.mcpWrapper.loadBalance({
       tasks: loadDistribution.unassignedTasks
     });
@@ -362,6 +381,7 @@ export class SwarmOrchestrator extends EventEmitter {
    * Analyze task complexity
    */
   private async analyzeTaskComplexity(task: Task): Promise<any> {
+    if (!this.mcpWrapper) throw new Error('MCP wrapper not initialized');
     const analysis = await this.mcpWrapper.analyzePattern({
       action: 'analyze',
       operation: 'task_complexity',
@@ -510,7 +530,7 @@ export class SwarmOrchestrator extends EventEmitter {
     // Filter available agents with required capabilities
     const suitableAgents = agents.filter(agent => 
       agent.status === 'idle' &&
-      requiredCapabilities.every(cap => agent.capabilities.includes(cap))
+      requiredCapabilities.every((cap: string) => agent.capabilities.includes(cap as any))
     );
     
     if (suitableAgents.length === 0) {
@@ -526,9 +546,10 @@ export class SwarmOrchestrator extends EventEmitter {
    */
   private async selectBestAgent(agents: Agent[], capabilities: string[]): Promise<Agent> {
     // Simple selection - in production would use performance metrics
+    if (!this.db) throw new Error('Database not initialized');
     const scores = await Promise.all(
       agents.map(async agent => {
-        const performance = await this.db.getAgentPerformance(agent.id);
+        const performance = await this.db!.getAgentPerformance(agent.id);
         return {
           agent,
           score: performance?.successRate || 0.5
@@ -554,15 +575,19 @@ export class SwarmOrchestrator extends EventEmitter {
       }, timeout);
       
       const checkCompletion = async () => {
+        if (!this.db) return;
         const agentState = await this.db.getAgent(agent.id);
+        if (!agentState) return;
         
         if (agentState.current_task_id !== taskId) {
           clearTimeout(timer);
           clearInterval(interval);
           
           // Get task result
+          if (!this.db) return;
           const task = await this.db.getTask(taskId);
-          resolve(task.result ? JSON.parse(task.result) : {});
+          if (!task) resolve({});
+          else resolve(task.result ? JSON.parse(task.result) : {});
         }
       };
       
@@ -586,7 +611,7 @@ export class SwarmOrchestrator extends EventEmitter {
    * Summarize phase results
    */
   private summarizeResults(results: any[]): any {
-    const successful = results.filter(r => r.success).length;
+    const successful = results.filter((r: any) => r.success).length;
     const total = results.length;
     
     return {
@@ -651,12 +676,14 @@ export class SwarmOrchestrator extends EventEmitter {
       summary: this.createExecutionSummary(execution)
     };
     
-    await this.db.updateTask(task.id, {
-      status: 'completed',
-      result: JSON.stringify(finalResult),
-      progress: 100,
-      completed_at: new Date()
-    });
+    if (this.db) {
+      await this.db.updateTask(task.id, {
+        status: 'completed',
+        result: JSON.stringify(finalResult),
+        progress: 100,
+        completed_at: new Date()
+      });
+    }
     
     this.emit('taskCompleted', { task, result: finalResult });
   }
@@ -665,11 +692,13 @@ export class SwarmOrchestrator extends EventEmitter {
    * Handle task failure
    */
   private async handleTaskFailure(task: Task, execution: any, error: any): Promise<void> {
-    await this.db.updateTask(task.id, {
-      status: 'failed',
-      error: error.message,
-      completed_at: new Date()
-    });
+    if (this.db) {
+      await this.db.updateTask(task.id, {
+        status: 'failed',
+        error: error.message,
+        completed_at: new Date()
+      });
+    }
     
     this.emit('taskFailed', { task, error });
   }
@@ -679,7 +708,7 @@ export class SwarmOrchestrator extends EventEmitter {
    */
   private createExecutionSummary(execution: any): any {
     const phaseCount = execution.phaseResults.length;
-    const successfulPhases = execution.phaseResults.filter(r => r.summary?.successRate > 0.5).length;
+    const successfulPhases = execution.phaseResults.filter((r: any) => r.summary?.successRate > 0.5).length;
     
     return {
       totalPhases: phaseCount,
@@ -694,10 +723,11 @@ export class SwarmOrchestrator extends EventEmitter {
    */
   private async notifyAgentTaskCancelled(agentId: string, taskId: string): Promise<void> {
     // Send cancellation message to agent
+    if (!this.db) return;
     await this.db.createCommunication({
       from_agent_id: 'orchestrator',
       to_agent_id: agentId,
-      swarm_id: this.hiveMind.id,
+      swarm_id: this.hiveMind.swarmId,
       message_type: 'task_cancellation',
       content: JSON.stringify({ taskId, reason: 'User cancelled' }),
       priority: 'urgent'
@@ -708,8 +738,9 @@ export class SwarmOrchestrator extends EventEmitter {
    * Analyze load distribution
    */
   private async analyzeLoadDistribution(): Promise<any> {
+    if (!this.db) throw new Error('Database not initialized');
     const agents = await this.hiveMind.getAgents();
-    const tasks = await this.db.getActiveTasks(this.hiveMind.id);
+    const tasks = await this.db.getActiveTasks(this.hiveMind.swarmId);
     
     const busyAgents = agents.filter(a => a.status === 'busy');
     const idleAgents = agents.filter(a => a.status === 'idle');
@@ -743,18 +774,23 @@ export class SwarmOrchestrator extends EventEmitter {
    */
   private async reassignTask(taskId: string, fromAgentId: string, toAgentId: string): Promise<void> {
     // Update task assignment
+    if (!this.db) throw new Error('Database not initialized');
     await this.db.reassignTask(taskId, toAgentId);
     
     // Update agent states
-    await this.db.updateAgent(fromAgentId, {
-      current_task_id: null,
-      status: 'idle'
-    });
+    if (this.db) {
+      await this.db.updateAgent(fromAgentId, {
+        current_task_id: null,
+        status: 'idle'
+      });
+    }
     
-    await this.db.updateAgent(toAgentId, {
-      current_task_id: taskId,
-      status: 'busy'
-    });
+    if (this.db) {
+      await this.db.updateAgent(toAgentId, {
+        current_task_id: taskId,
+        status: 'busy'
+      });
+    }
     
     // Notify agents
     await this.notifyAgentReassignment(fromAgentId, toAgentId, taskId);
@@ -765,31 +801,36 @@ export class SwarmOrchestrator extends EventEmitter {
    */
   private async notifyAgentReassignment(fromAgentId: string, toAgentId: string, taskId: string): Promise<void> {
     // Notify source agent
+    if (!this.db) return;
     await this.db.createCommunication({
       from_agent_id: 'orchestrator',
       to_agent_id: fromAgentId,
-      swarm_id: this.hiveMind.id,
+      swarm_id: this.hiveMind.swarmId,
       message_type: 'task_reassignment',
       content: JSON.stringify({ taskId, reassignedTo: toAgentId }),
       priority: 'high'
     });
     
     // Notify target agent
+    if (!this.db) return;
     const task = await this.db.getTask(taskId);
+    if (!task) return;
     const plan = this.executionPlans.get(taskId);
     
-    await this.db.createCommunication({
-      from_agent_id: 'orchestrator',
-      to_agent_id: toAgentId,
-      swarm_id: this.hiveMind.id,
-      message_type: 'task_assignment',
-      content: JSON.stringify({ 
-        taskId, 
-        task: task.description,
-        executionPlan: plan 
-      }),
-      priority: 'high'
-    });
+    if (this.db) {
+      await this.db.createCommunication({
+        from_agent_id: 'orchestrator',
+        to_agent_id: toAgentId,
+        swarm_id: this.hiveMind.swarmId,
+        message_type: 'task_assignment',
+        content: JSON.stringify({ 
+          taskId, 
+          task: task.description,
+          executionPlan: plan 
+        }),
+        priority: 'high'
+      });
+    }
   }
 
   /**
@@ -807,7 +848,7 @@ export class SwarmOrchestrator extends EventEmitter {
             if (agent) {
               await this.assignTaskToAgent(taskId, agent.id);
               // Remove from queue
-              const remaining = assignments.filter(a => a !== assignment);
+              const remaining = assignments.filter((a: any) => a !== assignment);
               if (remaining.length === 0) {
                 this.taskAssignments.delete(taskId);
               } else {
@@ -832,12 +873,15 @@ export class SwarmOrchestrator extends EventEmitter {
       try {
         // Monitor active executions
         for (const [taskId, execution] of this.activeExecutions) {
+          if (!this.db) continue;
           const task = await this.db.getTask(taskId);
+          if (!task) continue;
           
           if (task.status === 'in_progress') {
             const progress = this.calculateProgress(execution);
             
             if (progress !== task.progress) {
+              if (!this.db) continue;
               await this.db.updateTask(taskId, { progress });
               this.emit('progressUpdate', { taskId, progress });
             }

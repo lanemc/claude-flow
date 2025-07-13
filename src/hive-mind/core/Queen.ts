@@ -14,6 +14,7 @@ import {
   SwarmTopology,
   Task,
   AgentType,
+  AgentCapability,
   QueenMode,
   ConsensusProposal,
   QueenDecision,
@@ -32,8 +33,8 @@ export class Queen extends EventEmitter {
   private agents: Map<string, Agent>;
   private taskQueue: Map<string, Task>;
   private strategies: Map<string, CoordinationStrategy>;
-  private db: DatabaseManager;
-  private mcpWrapper: MCPToolWrapper;
+  private db: DatabaseManager | null = null;
+  private mcpWrapper: MCPToolWrapper | null = null;
   private isActive: boolean = false;
 
   constructor(config: QueenConfig) {
@@ -52,6 +53,14 @@ export class Queen extends EventEmitter {
   async initialize(): Promise<void> {
     this.db = await DatabaseManager.getInstance();
     this.mcpWrapper = new MCPToolWrapper();
+    
+    if (!this.db) {
+      throw new Error('Failed to initialize database manager');
+    }
+    
+    if (!this.mcpWrapper) {
+      throw new Error('Failed to initialize MCP wrapper');
+    }
     
     // Create Queen as a special coordinator agent
     await this.db.createAgent({
@@ -126,6 +135,7 @@ export class Queen extends EventEmitter {
    */
   private async makeStrategicDecision(task: Task, analysis: any): Promise<QueenDecision> {
     // Use MCP neural capabilities for decision making
+    if (!this.mcpWrapper) throw new Error('MCP wrapper not initialized');
     const neuralAnalysis = await this.mcpWrapper.analyzePattern({
       action: 'analyze',
       operation: 'task_strategy',
@@ -213,7 +223,7 @@ export class Queen extends EventEmitter {
   /**
    * Score an agent for a specific task
    */
-  private async scoreAgentForTask(agent: Agent, task: Task, requiredCapabilities: string[]): Promise<number> {
+  private async scoreAgentForTask(agent: Agent, task: Task, requiredCapabilities: AgentCapability[]): Promise<number> {
     let score = 0;
     
     // Capability match
@@ -231,6 +241,7 @@ export class Queen extends EventEmitter {
     else if (agent.status === 'active') score += 4;
     
     // Historical performance (from database)
+    if (!this.db) throw new Error('Database not initialized');
     const performance = await this.db.getAgentPerformance(agent.id);
     if (performance) {
       score += performance.successRate * 10;
@@ -320,6 +331,7 @@ export class Queen extends EventEmitter {
       deadline: new Date(Date.now() + 5 * 60 * 1000) // 5 minutes
     };
     
+    if (!this.db) throw new Error('Database not initialized');
     await this.db.createConsensusProposal(proposal);
     
     // Notify all agents to vote
@@ -331,6 +343,7 @@ export class Queen extends EventEmitter {
    */
   private async applyDecision(decision: QueenDecision): Promise<void> {
     // Update task with assignments
+    if (!this.db) throw new Error('Database not initialized');
     await this.db.updateTask(decision.taskId, {
       assigned_agents: JSON.stringify(decision.selectedAgents),
       status: 'assigned',
@@ -346,6 +359,7 @@ export class Queen extends EventEmitter {
     }
     
     // Store decision in memory for learning
+    if (!this.mcpWrapper) throw new Error('MCP wrapper not initialized');
     await this.mcpWrapper.storeMemory({
       action: 'store',
       key: `decision/${decision.taskId}`,
@@ -458,6 +472,7 @@ export class Queen extends EventEmitter {
 
   private async analyzeTask(task: Task): Promise<any> {
     // Use MCP tools to analyze task complexity and requirements
+    if (!this.mcpWrapper) throw new Error('MCP wrapper not initialized');
     return this.mcpWrapper.analyzePattern({
       action: 'analyze',
       operation: 'task_analysis',
@@ -471,6 +486,7 @@ export class Queen extends EventEmitter {
 
   private async analyzeAgentCapabilities(agent: Agent): Promise<void> {
     // Analyze and store agent capability patterns
+    if (!this.mcpWrapper) throw new Error('MCP wrapper not initialized');
     await this.mcpWrapper.storeMemory({
       action: 'store',
       key: `agent-capabilities/${agent.id}`,
@@ -485,6 +501,7 @@ export class Queen extends EventEmitter {
 
   private async broadcastAgentRegistration(agent: Agent): Promise<void> {
     // In distributed mode, notify other Queens/coordinators
+    if (!this.db) throw new Error('Database not initialized');
     await this.db.createCommunication({
       from_agent_id: this.id,
       to_agent_id: null, // broadcast
@@ -503,6 +520,7 @@ export class Queen extends EventEmitter {
   }
 
   private async broadcastConsensusRequest(proposal: ConsensusProposal): Promise<void> {
+    if (!this.db) throw new Error('Database not initialized');
     await this.db.createCommunication({
       from_agent_id: this.id,
       to_agent_id: null, // broadcast
@@ -582,6 +600,7 @@ export class Queen extends EventEmitter {
   }
 
   private async checkTaskProgress(): Promise<void> {
+    if (!this.db) throw new Error('Database not initialized');
     const activeTasks = await this.db.getActiveTasks(this.config.swarmId);
     
     for (const task of activeTasks) {
@@ -592,6 +611,7 @@ export class Queen extends EventEmitter {
   }
 
   private async checkRebalancing(): Promise<void> {
+    if (!this.db) throw new Error('Database not initialized');
     const stats = await this.db.getSwarmStats(this.config.swarmId);
     
     if (stats.agentUtilization > 0.9 || stats.taskBacklog > stats.agentCount * 2) {
@@ -600,6 +620,7 @@ export class Queen extends EventEmitter {
   }
 
   private async analyzePerformancePatterns(): Promise<void> {
+    if (!this.mcpWrapper) throw new Error('MCP wrapper not initialized');
     const patterns = await this.mcpWrapper.analyzePattern({
       action: 'analyze',
       operation: 'performance_patterns',
@@ -616,6 +637,7 @@ export class Queen extends EventEmitter {
 
   private async optimizeStrategies(): Promise<void> {
     // Analyze strategy effectiveness and adjust
+    if (!this.db) throw new Error('Database not initialized');
     const strategyPerformance = await this.db.getStrategyPerformance(this.config.swarmId);
     
     for (const [strategyName, performance] of Object.entries(strategyPerformance)) {
@@ -627,9 +649,11 @@ export class Queen extends EventEmitter {
 
   private async trainNeuralPatterns(): Promise<void> {
     // Train neural network on successful patterns
+    if (!this.db) throw new Error('Database not initialized');
     const successfulDecisions = await this.db.getSuccessfulDecisions(this.config.swarmId);
     
     if (successfulDecisions.length > 10) {
+      if (!this.mcpWrapper) throw new Error('MCP wrapper not initialized');
       await this.mcpWrapper.trainNeural({
         pattern_type: 'coordination',
         training_data: JSON.stringify(successfulDecisions),
@@ -645,6 +669,7 @@ export class Queen extends EventEmitter {
     }
     
     // Mark agent as offline
+    if (!this.db) throw new Error('Database not initialized');
     await this.db.updateAgentStatus(agent.id, 'offline');
     
     this.emit('agentFailed', { agent });
@@ -667,6 +692,7 @@ export class Queen extends EventEmitter {
     
     if (availableAgents.length > 0) {
       const newAgent = availableAgents[0]; // Simple selection, could be more sophisticated
+      if (!this.db) throw new Error('Database not initialized');
       await this.db.reassignTask(taskId, newAgent.id);
       await newAgent.assignTask(taskId, {});
     }

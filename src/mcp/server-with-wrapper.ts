@@ -14,11 +14,9 @@ async function main() {
   if (useLegacy) {
     console.error('Starting Claude-Flow MCP in legacy mode...');
     // Dynamically import the old server to avoid circular dependencies
-    const module = await import('./server.js');
-    if (module.runMCPServer) {
-      await module.runMCPServer();
-    } else if (module.default) {
-      await module.default();
+    const { runMCPServer } = await import('./server.js');
+    if (runMCPServer) {
+      await runMCPServer();
     } else {
       console.error('Could not find runMCPServer function in legacy server');
       process.exit(1);

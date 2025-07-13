@@ -5,7 +5,7 @@ import { jest } from '@jest/globals';
  * Test Suite for Batch Initialization Features
  */
 
-import { describe, it, beforeEach, afterEach, expect } from "../test.utils.ts";
+import { describe, it, beforeEach, afterEach, expect } from './test.utils';
 import { 
   batchInitCommand, 
   validateBatchOptions,

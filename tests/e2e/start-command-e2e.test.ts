@@ -2,8 +2,8 @@
  * End-to-end tests for the start command
  */
 
-import { describe, it, beforeEach, afterEach, expect } from "../test.utils.ts";
-import { describe, it, beforeEach, afterEach, expect } from "../test.utils.ts";
+import { describe, it, beforeEach, afterEach, expect } from '../test.utils';
+import { describe, it, beforeEach, afterEach, expect } from '../test.utils';
 
 describe('Start Command E2E', () => {
   describe('JavaScript CLI', () => {

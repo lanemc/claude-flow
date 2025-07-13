@@ -92,11 +92,15 @@ export class MemoryIndexer {
 
     // Update indexes
     this.agentIndex.add(entry.agentId, entry.id);
-    this.sessionIndex.add(entry.sessionId, entry.id);
+    if (entry.sessionId) {
+      this.sessionIndex.add(entry.sessionId, entry.id);
+    }
     this.typeIndex.add(entry.type, entry.id);
     
-    for (const tag of entry.tags) {
-      this.tagIndex.add(tag, entry.id);
+    if (entry.tags) {
+      for (const tag of entry.tags) {
+        this.tagIndex.add(tag, entry.id);
+      }
     }
 
     this.timeIndex.set(entry.id, entry.timestamp.getTime());
@@ -124,11 +128,15 @@ export class MemoryIndexer {
 
     // Remove from indexes
     this.agentIndex.remove(entry.agentId, id);
-    this.sessionIndex.remove(entry.sessionId, id);
+    if (entry.sessionId) {
+      this.sessionIndex.remove(entry.sessionId, id);
+    }
     this.typeIndex.remove(entry.type, id);
     
-    for (const tag of entry.tags) {
-      this.tagIndex.remove(tag, id);
+    if (entry.tags) {
+      for (const tag of entry.tags) {
+        this.tagIndex.remove(tag, id);
+      }
     }
 
     this.timeIndex.delete(id);

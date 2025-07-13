@@ -226,6 +226,7 @@ export type TaskType =
   | 'validation'     // Validation and verification
   | 'integration'    // System integration
   | 'custom'         // Custom task type
+  | 'generic'        // Generic task type
   // Analyst-specific task types
   | 'data-analysis'
   | 'performance-analysis'
@@ -303,7 +304,24 @@ export interface TaskConstraints {
   requiresHuman?: boolean;
 }
 
+export interface TaskContext {
+  // Previous execution context
+  previousResults?: TaskResult[];
+  relatedTasks?: TaskDefinition[];
+  
+  // Custom context data
+  [key: string]: any;
+}
+
 export interface TaskResult {
+  // Identification
+  taskId: string;
+  agentId: string;
+  
+  // Result status
+  success: boolean;
+  error?: TaskError;
+  
   // Result data
   output: any;
   artifacts: Record<string, any>;
@@ -317,6 +335,13 @@ export interface TaskResult {
   // Performance metrics
   executionTime: number;
   resourcesUsed: Record<string, number>;
+  tokensUsed?: {
+    inputTokens: number;
+    outputTokens: number;
+  };
+  
+  // Timestamp
+  timestamp: Date;
   
   // Validation
   validated: boolean;
@@ -332,6 +357,7 @@ export interface TaskDefinition {
   type: TaskType;
   name: string;
   description: string;
+  objective: string;
   
   // Task specification
   requirements: TaskRequirements;
@@ -344,7 +370,7 @@ export interface TaskDefinition {
   
   // Execution details
   instructions: string;
-  context: Record<string, any>;
+  context: TaskContext;
   parameters?: Record<string, any>;
   examples?: any[];
   metadata?: Record<string, any>;
@@ -405,7 +431,8 @@ export type SwarmMode =
   | 'distributed'    // Multiple coordinators
   | 'hierarchical'   // Tree structure of coordinators
   | 'mesh'           // Peer-to-peer coordination
-  | 'hybrid';        // Mixed coordination strategies
+  | 'hybrid'         // Mixed coordination strategies
+  | 'parallel';      // Parallel execution mode
 
 export type SwarmStrategy = 
   | 'auto'           // Automatically determine approach
@@ -732,7 +759,7 @@ export interface MemoryEntry {
   value: any;
   
   // Metadata
-  type: string;
+  type: MemoryType;
   tags: string[];
   
   // Ownership
@@ -908,6 +935,7 @@ export type EventType =
   
   // Task events
   | 'task.created'
+  | 'task.queued'
   | 'task.assigned'
   | 'task.started'
   | 'task.paused'
@@ -916,6 +944,10 @@ export type EventType =
   | 'task.failed'
   | 'task.cancelled'
   | 'task.retried'
+  
+  // Objective events
+  | 'objective.completed'
+  | 'objective.failed'
   
   // Coordination events
   | 'coordination.load_balanced'
@@ -986,6 +1018,18 @@ export interface SwarmConfig {
   
   // Performance settings
   performance: PerformanceConfig;
+  
+  // Logging settings
+  logging: LoggingConfig;
+}
+
+export interface LoggingConfig {
+  level: 'debug' | 'info' | 'warn' | 'error';
+  format: 'text' | 'json';
+  destination: 'console' | 'file' | 'both';
+  file?: string;
+  maxSize?: number;
+  maxFiles?: number;
 }
 
 export interface SecurityConfig {

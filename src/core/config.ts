@@ -1004,7 +1004,7 @@ export class ConfigManager {
     const warnings: string[] = [];
     
     // Validate all paths with rules
-    for (const [path, rule] of this.validationRules.entries()) {
+    for (const [path, rule] of Array.from(this.validationRules.entries())) {
       const value = this.getValueByPath(config, path);
       
       try {

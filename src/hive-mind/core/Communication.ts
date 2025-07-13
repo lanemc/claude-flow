@@ -18,7 +18,7 @@ import {
 
 export class Communication extends EventEmitter {
   private swarmId: string;
-  private db: DatabaseManager;
+  private db: DatabaseManager | null = null;
   private agents: Map<string, Agent>;
   private channels: Map<string, CommunicationChannel>;
   private messageQueue: Map<MessagePriority, Message[]>;
@@ -41,7 +41,19 @@ export class Communication extends EventEmitter {
       totalMessages: 0,
       avgLatency: 0,
       activeChannels: 0,
-      messagesByType: {},
+      messagesByType: {
+        direct: 0,
+        broadcast: 0,
+        consensus: 0,
+        query: 0,
+        response: 0,
+        notification: 0,
+        task_assignment: 0,
+        task_failed: 0,
+        progress_update: 0,
+        coordination: 0,
+        channel: 0
+      },
       throughput: 0
     };
   }
@@ -51,6 +63,10 @@ export class Communication extends EventEmitter {
    */
   async initialize(): Promise<void> {
     this.db = await DatabaseManager.getInstance();
+    
+    if (!this.db) {
+      throw new Error('Failed to initialize database manager');
+    }
     
     // Set up default channels
     this.setupDefaultChannels();
@@ -98,6 +114,7 @@ export class Communication extends EventEmitter {
    */
   async sendMessage(message: Message): Promise<void> {
     // Store in database
+    if (!this.db) throw new Error('Database not initialized');
     await this.db.createCommunication({
       from_agent_id: message.fromAgentId,
       to_agent_id: message.toAgentId,
@@ -276,6 +293,7 @@ export class Communication extends EventEmitter {
    */
   async getStats(): Promise<CommunicationStats> {
     // Calculate throughput
+    if (!this.db) throw new Error('Database not initialized');
     const recentMessages = await this.db.getRecentMessages(this.swarmId, 60000); // Last minute
     this.stats.throughput = recentMessages.length;
     
@@ -286,18 +304,19 @@ export class Communication extends EventEmitter {
    * Get pending messages for an agent
    */
   async getPendingMessages(agentId: string): Promise<Message[]> {
+    if (!this.db) throw new Error('Database not initialized');
     const messages = await this.db.getPendingMessages(agentId);
     
     return messages.map(msg => ({
       id: msg.id.toString(),
       fromAgentId: msg.from_agent_id,
-      toAgentId: msg.to_agent_id,
+      toAgentId: msg.to_agent_id || null,
       swarmId: msg.swarm_id,
       type: msg.message_type as MessageType,
       content: JSON.parse(msg.content),
       priority: msg.priority as MessagePriority,
       timestamp: new Date(msg.timestamp),
-      requiresResponse: msg.requires_response
+      requiresResponse: Boolean(msg.requires_response)
     }));
   }
 
@@ -305,6 +324,7 @@ export class Communication extends EventEmitter {
    * Mark message as delivered
    */
   async markDelivered(messageId: string): Promise<void> {
+    if (!this.db) throw new Error('Database not initialized');
     await this.db.markMessageDelivered(messageId);
   }
 
@@ -312,6 +332,7 @@ export class Communication extends EventEmitter {
    * Mark message as read
    */
   async markRead(messageId: string): Promise<void> {
+    if (!this.db) throw new Error('Database not initialized');
     await this.db.markMessageRead(messageId);
   }
 
@@ -457,17 +478,20 @@ export class Communication extends EventEmitter {
       if (!this.isActive) return;
       
       // Store stats in database
+      if (!this.db) return;
       await this.db.storePerformanceMetric({
         swarm_id: this.swarmId,
         metric_type: 'communication_throughput',
         metric_value: this.stats.throughput
       });
       
-      await this.db.storePerformanceMetric({
-        swarm_id: this.swarmId,
-        metric_type: 'communication_latency',
-        metric_value: this.stats.avgLatency
-      });
+      if (this.db) {
+        await this.db.storePerformanceMetric({
+          swarm_id: this.swarmId,
+          metric_type: 'communication_latency',
+          metric_value: this.stats.avgLatency
+        });
+      }
       
     }, 60000); // Every minute
   }

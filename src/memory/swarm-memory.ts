@@ -62,7 +62,7 @@ class SwarmMemory extends SharedMemory {
   /**
    * Initialize with swarm-specific setup
    */
-  async initialize(): Promise<void> {
+  override async initialize(): Promise<void> {
     await super.initialize();
     
     // Initialize swarm-specific namespaces
@@ -171,7 +171,7 @@ class SwarmMemory extends SharedMemory {
     
     await this.store(key, enrichedData, {
       namespace: SWARM_NAMESPACES.TASKS,
-      tags: ['task', enrichedData.status, enrichedData.priority],
+      tags: ['task', enrichedData.status, enrichedData.priority || 'normal'],
       metadata: {
         swarmId: this.swarmId,
         assignedAgents: enrichedData.assignedAgents
@@ -576,6 +576,22 @@ class SwarmMemory extends SharedMemory {
     this.emit('swarm:imported', imported);
     
     return imported;
+  }
+
+  /**
+   * Shutdown the swarm memory system
+   */
+  async shutdown(): Promise<void> {
+    // Clear all caches
+    this.agentCache.clear();
+    this.taskCache.clear();
+    this.patternCache.clear();
+    
+    // Emit shutdown event
+    this.emit('swarm:shutdown', { swarmId: this.swarmId });
+    
+    // Call parent close method
+    await this.close();
   }
 
   /**

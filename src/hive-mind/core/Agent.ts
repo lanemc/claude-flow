@@ -15,6 +15,7 @@ import {
   AgentCapability,
   Task,
   Message,
+  MessageType,
   AgentConfig,
   ExecutionResult
 } from '../types.js';
@@ -31,8 +32,8 @@ export class Agent extends EventEmitter {
   public currentTask: string | null = null;
   public messageCount: number = 0;
   
-  private db!: DatabaseManager;
-  private mcpWrapper!: MCPToolWrapper;
+  private db: DatabaseManager | null = null;
+  private mcpWrapper: MCPToolWrapper | null = null;
   private memory: Map<string, any>;
   private communicationBuffer: Message[];
   private lastHeartbeat: number;
@@ -59,11 +60,15 @@ export class Agent extends EventEmitter {
     this.db = await DatabaseManager.getInstance();
     this.mcpWrapper = new MCPToolWrapper();
     
+    if (!this.db) {
+      throw new Error('Failed to initialize database manager');
+    }
+    
     // Load agent state from database if exists
     const existingAgent = await this.db.getAgent(this.id);
     if (existingAgent) {
       this.status = existingAgent.status as AgentStatus;
-      this.currentTask = existingAgent.current_task_id;
+      this.currentTask = existingAgent.current_task_id || null;
       this.messageCount = existingAgent.message_count;
     }
     
@@ -88,6 +93,7 @@ export class Agent extends EventEmitter {
     this.status = 'busy';
     
     // Update database
+    if (!this.db) throw new Error('Database not initialized');
     await this.db.updateAgent(this.id, {
       status: 'busy',
       current_task_id: taskId
@@ -110,18 +116,21 @@ export class Agent extends EventEmitter {
   private async executeTask(taskId: string, executionPlan: any): Promise<void> {
     try {
       // Load task details
+      if (!this.db) throw new Error('Database not initialized');
       const task = await this.db.getTask(taskId);
       if (!task) {
         throw new Error('Task not found');
       }
       
       // Update task status
+      if (!this.db) throw new Error('Database not initialized');
       await this.db.updateTaskStatus(taskId, 'in_progress');
       
       // Execute based on agent type
       const result = await this.executeByType(task, executionPlan);
       
       // Store result
+      if (!this.db) throw new Error('Database not initialized');
       await this.db.updateTask(taskId, {
         status: 'completed',
         result: JSON.stringify(result),
@@ -136,6 +145,7 @@ export class Agent extends EventEmitter {
       this.currentTask = null;
       this.status = 'idle';
       
+      if (!this.db) throw new Error('Database not initialized');
       await this.db.updateAgent(this.id, {
         status: 'idle',
         current_task_id: null,
@@ -210,6 +220,7 @@ export class Agent extends EventEmitter {
    */
   protected async performAnalysis(task: any): Promise<any> {
     // Use neural analysis for task understanding
+    if (!this.mcpWrapper) throw new Error('MCP wrapper not initialized');
     const analysis = await this.mcpWrapper.analyzePattern({
       action: 'analyze',
       operation: `${this.type}_analysis`,
@@ -256,14 +267,18 @@ export class Agent extends EventEmitter {
    */
   protected async performValidation(task: any): Promise<any> {
     // Validate execution results
-    const validation = {
+    const validation: {
+      phase: string;
+      checks: Array<{ name: string; passed: boolean }>;
+      passed: boolean;
+    } = {
       phase: 'validation',
       checks: [],
       passed: true
     };
     
     // Basic validation checks
-    const checks = [
+    const checks: Array<{ name: string; passed: boolean }> = [
       { name: 'completeness', passed: true },
       { name: 'quality', passed: true },
       { name: 'performance', passed: true }
@@ -290,7 +305,7 @@ export class Agent extends EventEmitter {
   /**
    * Send a message to another agent or broadcast
    */
-  async sendMessage(toAgentId: string | null, messageType: string, content: any): Promise<void> {
+  async sendMessage(toAgentId: string | null, messageType: MessageType, content: any): Promise<void> {
     const message: Message = {
       id: uuidv4(),
       fromAgentId: this.id,
@@ -303,6 +318,7 @@ export class Agent extends EventEmitter {
     };
     
     // Store in database
+    if (!this.db) throw new Error('Database not initialized');
     await this.db.createCommunication({
       from_agent_id: this.id,
       to_agent_id: toAgentId,
@@ -328,6 +344,7 @@ export class Agent extends EventEmitter {
    * Vote on a consensus proposal
    */
   async voteOnProposal(proposalId: string, vote: boolean, reason?: string): Promise<void> {
+    if (!this.db) throw new Error('Database not initialized');
     await this.db.submitConsensusVote(proposalId, this.id, vote, reason);
     this.emit('voteCast', { proposalId, vote, reason });
   }
@@ -336,6 +353,7 @@ export class Agent extends EventEmitter {
    * Update task progress
    */
   protected async updateTaskProgress(taskId: string, progress: number): Promise<void> {
+    if (!this.db) throw new Error('Database not initialized');
     await this.db.updateTask(taskId, {
       progress,
       last_progress_update: new Date()
@@ -362,6 +380,7 @@ export class Agent extends EventEmitter {
     this.memory.set(key, value);
     
     // Also store in persistent memory
+    if (!this.mcpWrapper) throw new Error('MCP wrapper not initialized');
     await this.mcpWrapper.storeMemory({
       action: 'store',
       key: `agent/${this.id}/${key}`,
@@ -381,6 +400,7 @@ export class Agent extends EventEmitter {
     }
     
     // Check persistent memory
+    if (!this.mcpWrapper) throw new Error('MCP wrapper not initialized');
     const result = await this.mcpWrapper.retrieveMemory({
       action: 'retrieve',
       key: `agent/${this.id}/${key}`,
@@ -403,6 +423,7 @@ export class Agent extends EventEmitter {
     };
     
     // Train neural patterns
+    if (!this.mcpWrapper) throw new Error('MCP wrapper not initialized');
     await this.mcpWrapper.trainNeural({
       pattern_type: 'optimization',
       training_data: JSON.stringify(learningData),
@@ -415,6 +436,7 @@ export class Agent extends EventEmitter {
    */
   protected async handleTaskFailure(taskId: string, error: any): Promise<void> {
     // Update task status
+    if (!this.db) throw new Error('Database not initialized');
     await this.db.updateTask(taskId, {
       status: 'failed',
       error: error.message,
@@ -422,6 +444,7 @@ export class Agent extends EventEmitter {
     });
     
     // Update agent stats
+    if (!this.db) throw new Error('Database not initialized');
     await this.db.updateAgent(this.id, {
       status: 'idle',
       current_task_id: null,
@@ -453,6 +476,7 @@ export class Agent extends EventEmitter {
       this.lastHeartbeat = Date.now();
       
       // Update last active timestamp
+      if (!this.db) return;
       await this.db.updateAgent(this.id, {
         last_active_at: new Date()
       });
@@ -556,9 +580,11 @@ export class Agent extends EventEmitter {
     this.isActive = false;
     
     // Update status in database
-    await this.db.updateAgent(this.id, {
-      status: 'offline'
-    });
+    if (this.db) {
+      await this.db.updateAgent(this.id, {
+        status: 'offline'
+      });
+    }
     
     // Clear memory
     this.memory.clear();
@@ -591,6 +617,7 @@ export class Agent extends EventEmitter {
   }
 
   private async analyzeRecentPatterns(): Promise<any> {
+    if (!this.mcpWrapper) throw new Error('MCP wrapper not initialized');
     return this.mcpWrapper.analyzePattern({
       action: 'analyze',
       operation: 'agent_patterns',
@@ -606,12 +633,13 @@ export class Agent extends EventEmitter {
     if (patterns.suggestedCapabilities) {
       // Update capabilities based on learning
       const newCapabilities = patterns.suggestedCapabilities.filter(
-        (cap: string) => !this.capabilities.includes(cap)
+        (cap: AgentCapability) => !this.capabilities.includes(cap)
       );
       
       if (newCapabilities.length > 0) {
         this.capabilities.push(...newCapabilities);
         
+        if (!this.db) throw new Error('Database not initialized');
         await this.db.updateAgent(this.id, {
           capabilities: JSON.stringify(this.capabilities)
         });

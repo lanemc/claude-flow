@@ -11,11 +11,11 @@ import {
   assertExists,
   assertThrows,
   assertRejects,
-} from '../../test.utils.ts';
+} from '../../test.utils';
 import { ConfigManager, loadConfig } from '../../../src/core/config.ts';
 import { Config } from '../../../src/utils/types.ts';
 import { ConfigError, ValidationError } from '../../../src/utils/errors.ts';
-import { createTestFile } from '../../test.utils.ts';
+import { createTestFile } from '../../test.utils';
 import { cleanupTestEnv, setupTestEnv } from '../../test.config.ts';
 
 describe('ConfigManager', () => {

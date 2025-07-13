@@ -329,7 +329,7 @@ export class CircuitBreakerManager {
   getAllMetrics(): Record<string, CircuitBreakerMetrics> {
     const metrics: Record<string, CircuitBreakerMetrics> = {};
     
-    for (const [name, breaker] of this.breakers) {
+    for (const [name, breaker] of Array.from(this.breakers)) {
       metrics[name] = breaker.getMetrics();
     }
     
@@ -350,7 +350,7 @@ export class CircuitBreakerManager {
    * Reset all breakers
    */
   resetAll(): void {
-    for (const breaker of this.breakers.values()) {
+    for (const breaker of Array.from(this.breakers.values())) {
       breaker.reset();
     }
   }

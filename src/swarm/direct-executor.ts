@@ -36,7 +36,7 @@ export class DirectTaskExecutor {
     targetDir?: string
   ): Promise<TaskResult> {
     this.logger.info('Executing task directly', {
-      taskId: task.id.id,
+      taskId: task.id?.id ?? 'unknown',
       taskName: task.name,
       agentType: agent.type,
       targetDir
@@ -57,10 +57,14 @@ export class DirectTaskExecutor {
       const executionTime = endTime - startTime;
 
       return {
+        taskId: task.id.id,
+        agentId: agent.id.id,
+        success: true,
+        timestamp: new Date(),
         output: result,
         artifacts: {},
         metadata: {
-          agentId: agent.id.id,
+          agentId: agent.id?.id ?? 'unknown',
           agentType: agent.type,
           executionTime,
           targetDir
@@ -80,7 +84,7 @@ export class DirectTaskExecutor {
       };
     } catch (error) {
       this.logger.error('Task execution failed', {
-        taskId: task.id.id,
+        taskId: task.id?.id ?? 'unknown',
         error: (error instanceof Error ? error.message : String(error))
       });
       throw error;
@@ -110,13 +114,13 @@ export class DirectTaskExecutor {
         return this.executeAnalyzerTask(task, targetDir);
       
       case 'coder':
-        if (isRestAPI) return this.createRestAPI(targetDir, task);
-        if (isTodo) return this.createTodoApp(targetDir, task);
-        if (isChat) return this.createChatApp(targetDir, task);
-        if (isAuth) return this.createAuthService(targetDir, task);
-        if (isHelloWorld) return this.createHelloWorld(targetDir, task);
-        if (isCalculator) return this.createCalculator(targetDir, task);
-        return this.createGenericApp(targetDir, task);
+        if (isRestAPI) return this.createRestAPI(targetDir ?? './temp', task);
+        if (isTodo) return this.createTodoApp(targetDir ?? './temp', task);
+        if (isChat) return this.createChatApp(targetDir ?? './temp', task);
+        if (isAuth) return this.createAuthService(targetDir ?? './temp', task);
+        if (isHelloWorld) return this.createHelloWorld(targetDir ?? './temp', task);
+        if (isCalculator) return this.createCalculator(targetDir ?? './temp', task);
+        return this.createGenericApp(targetDir ?? './temp', task);
       
       case 'tester':
         return this.executeTestingTask(task, targetDir);
@@ -1149,7 +1153,7 @@ npm run dev
 \`\`\`
 
 ## Task Details
-- Task ID: ${task.id.id}
+- Task ID: ${task.id?.id ?? 'unknown'}
 - Task Type: ${task.type}
 - Created: ${new Date().toISOString()}
 `;

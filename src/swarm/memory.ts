@@ -578,21 +578,23 @@ export class SwarmMemoryManager extends EventEmitter {
     await this.index.addEntry(sharedEntry);
 
     // Add to target agent's partition
-    const targetPartition = await this.getOrCreatePartition(`agent_${targetAgent.id}`);
-    targetPartition.entries.push(sharedEntry);
+    if (targetAgent?.id) {
+      const targetPartition = await this.getOrCreatePartition(`agent_${targetAgent.id}`);
+      targetPartition.entries.push(sharedEntry);
+    }
 
     this.emit('memory:shared', {
       originalId: entry.id,
       sharedId: sharedEntryId,
       key,
       sharer: options.sharer?.id,
-      target: targetAgent.id
+      target: targetAgent?.id ?? 'unknown'
     });
 
     this.logger.info('Shared memory entry', {
       key,
       from: options.sharer?.id,
-      to: targetAgent.id,
+      to: targetAgent?.id ?? 'unknown',
       sharedId: sharedEntryId
     });
 
@@ -622,7 +624,7 @@ export class SwarmMemoryManager extends EventEmitter {
       } catch (error) {
         this.logger.warn('Failed to share memory with agent', {
           key,
-          targetAgent: targetAgent.id,
+          targetAgent: targetAgent?.id ?? 'unknown',
           error: (error instanceof Error ? error.message : String(error))
         });
       }
@@ -1329,7 +1331,9 @@ class MemoryCache {
     // Evict if at capacity
     if (this.cache.size >= this.maxSize) {
       const oldestKey = this.cache.keys().next().value;
-      this.cache.delete(oldestKey);
+      if (oldestKey !== undefined) {
+        this.cache.delete(oldestKey);
+      }
     }
     
     this.cache.set(key, {

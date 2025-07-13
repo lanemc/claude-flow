@@ -49,7 +49,7 @@ class TypedEventBus extends TypedEventEmitter<EventMap> {
   getEventStats(): { event: string; count: number; lastEmitted: Date | null }[] {
     const stats: { event: string; count: number; lastEmitted: Date | null }[] = [];
     
-    for (const [event, count] of this.eventCounts.entries()) {
+    for (const [event, count] of Array.from(this.eventCounts.entries())) {
       const lastTime = this.lastEventTimes.get(event);
       stats.push({
         event: String(event),

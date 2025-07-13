@@ -114,7 +114,7 @@ export class VotingResolutionStrategy implements ConflictResolutionStrategy {
     const voteCounts = new Map<string, number>();
     
     // Count votes
-    for (const [agentId, voters] of context.votes) {
+    for (const [agentId, voters] of Array.from(context.votes)) {
       voteCounts.set(agentId, voters.length);
     }
 
@@ -123,7 +123,7 @@ export class VotingResolutionStrategy implements ConflictResolutionStrategy {
     let winner = '';
     const losers: string[] = [];
 
-    for (const [agentId, votes] of voteCounts) {
+    for (const [agentId, votes] of Array.from(voteCounts)) {
       if (votes > maxVotes) {
         if (winner) {
           losers.push(winner);
@@ -322,7 +322,7 @@ export class ConflictResolver {
     const now = Date.now();
     let removed = 0;
 
-    for (const [id, conflict] of this.conflicts) {
+    for (const [id, conflict] of Array.from(this.conflicts)) {
       if (conflict.resolved && now - conflict.timestamp.getTime() > maxAgeMs) {
         this.conflicts.delete(id);
         removed++;
@@ -353,7 +353,7 @@ export class ConflictResolver {
       },
     };
 
-    for (const conflict of this.conflicts.values()) {
+    for (const conflict of Array.from(this.conflicts.values())) {
       if (conflict.resolved) {
         stats.resolvedConflicts++;
         
@@ -473,7 +473,7 @@ export class OptimisticLockManager {
     const now = Date.now();
     let removed = 0;
 
-    for (const [resourceId, lock] of this.locks) {
+    for (const [resourceId, lock] of Array.from(this.locks)) {
       if (now - lock.timestamp.getTime() > maxAgeMs) {
         this.locks.delete(resourceId);
         removed++;

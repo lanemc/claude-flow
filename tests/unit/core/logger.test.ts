@@ -12,11 +12,11 @@ import {
   spy,
   stub,
   assertSpyCalls,
-} from '../../test.utils.ts';
+} from '../../test.utils';
 import { Logger, LogLevel } from '../../../src/core/logger.ts';
 import { LoggingConfig } from '../../../src/utils/types.ts';
 import { cleanupTestEnv, setupTestEnv } from '../../test.config.ts';
-import { captureConsole, createTestFile } from '../../test.utils.ts';
+import { captureConsole, createTestFile } from '../../test.utils';
 
 describe('Logger', () => {
   let logger: Logger;

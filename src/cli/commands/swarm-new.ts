@@ -6,7 +6,7 @@ import { promises as fs } from 'node:fs';
 
 import { SwarmCoordinator } from '../../swarm/coordinator.js';
 import { TaskExecutor } from '../../swarm/executor.js';
-import { SwarmMemoryManager } from '../../swarm/memory.js';
+import { SwarmMemory } from '../../memory/swarm-memory.js';
 import { generateId } from '../../utils/helpers.js';
 import { success, error, warning, info } from "../cli-core.js";
 import type { CommandContext } from "../cli-core.js";
@@ -584,7 +584,7 @@ export async function swarmAction(ctx: CommandContext) {
     await executor.initialize();
     
     // Initialize Memory Manager with enhanced configuration
-    const memory = new SwarmMemoryManager({
+    const memory = new SwarmMemory({
       namespace: options.memoryNamespace,
       persistencePath: options.persistence ? './swarm-memory' : ':memory:',
       maxMemorySize: 100 * 1024 * 1024, // 100MB
@@ -1194,7 +1194,7 @@ ${tasks.slice(-5).map(t => `- [${t.status}] ${t.name || t.description}`).join('\
 function setupSwarmMonitoring(
   coordinator: SwarmCoordinator,
   executor: TaskExecutor,
-  memory: SwarmMemoryManager,
+  memory: SwarmMemory,
   swarmDir: string
 ): void {
   console.log('\n📊 Monitoring enabled - collecting metrics...');
@@ -1298,7 +1298,7 @@ async function waitForSwarmCompletion(
 async function showSwarmResults(
   coordinator: SwarmCoordinator,
   executor: TaskExecutor,
-  memory: SwarmMemoryManager,
+  memory: SwarmMemory,
   swarmDir: string
 ): Promise<void> {
   const swarmStatus = coordinator.getSwarmStatus();

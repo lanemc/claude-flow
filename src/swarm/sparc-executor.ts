@@ -22,12 +22,76 @@ export interface SparcExecutorConfig {
   enableMemory?: boolean;
 }
 
+export interface SparcExecutionResult {
+  output: string;
+  success: boolean;
+  executionTime: number;
+  artifacts?: string[];
+  errors?: string[];
+}
+
+export interface SparcContext {
+  memoryKey?: string;
+  parallel?: boolean;
+  timeout?: number;
+  workingDirectory?: string;
+}
+
+/**
+ * Execute a SPARC mode with given parameters
+ * @param mode The SPARC mode to execute
+ * @param task The task description
+ * @param tools Available tools for the execution
+ * @param context Execution context and options
+ * @returns Promise resolving to execution result
+ */
+export async function executeSparcMode(
+  mode: string,
+  task: string,
+  tools: string[],
+  context: SparcContext = {}
+): Promise<SparcExecutionResult> {
+  const startTime = Date.now();
+  
+  try {
+    // For now, return a placeholder implementation
+    // This should be replaced with actual SPARC mode execution logic
+    const output = `SPARC ${mode} mode executed successfully.
+Task: ${task}
+Available tools: ${tools.join(', ')}
+Context: ${JSON.stringify(context, null, 2)}
+
+This is a placeholder implementation. The actual SPARC execution engine
+would coordinate agent behavior, tool usage, and methodology adherence here.`;
+
+    const executionTime = Date.now() - startTime;
+
+    return {
+      output,
+      success: true,
+      executionTime,
+      artifacts: [],
+      errors: []
+    };
+  } catch (error) {
+    const executionTime = Date.now() - startTime;
+    
+    return {
+      output: `SPARC ${mode} mode execution failed: ${error instanceof Error ? error.message : String(error)}`,
+      success: false,
+      executionTime,
+      artifacts: [],
+      errors: [error instanceof Error ? error.message : String(error)]
+    };
+  }
+}
+
 export class SparcTaskExecutor {
   private logger: Logger;
   private enableTDD: boolean;
   private qualityThreshold: number;
   private enableMemory: boolean;
-  private phases: Map<string, SparcPhase>;
+  private phases: Map<string, SparcPhase> = new Map();
 
   constructor(config: SparcExecutorConfig = {}) {
     this.logger = config.logger || new Logger(
@@ -97,6 +161,9 @@ export class SparcTaskExecutor {
       const executionTime = endTime - startTime;
 
       return {
+        taskId: task.id.id,
+        agentId: agent.id.id,
+        success: true,
         output: result,
         artifacts: result.artifacts || {},
         metadata: {
@@ -118,6 +185,7 @@ export class SparcTaskExecutor {
           networkIO: 0,
           fileHandles: 0
         },
+        timestamp: new Date(),
         validated: true
       };
     } catch (error) {
@@ -439,7 +507,7 @@ export class SparcTaskExecutor {
   }
 
   private generateUserStories(appType: string): any[] {
-    const stories = {
+    const stories: Record<string, any[]> = {
       'rest-api': [
         { id: 'US001', story: 'As a developer, I want to create resources via POST endpoints', priority: 'high' },
         { id: 'US002', story: 'As a developer, I want to retrieve resources via GET endpoints', priority: 'high' },
@@ -465,7 +533,7 @@ export class SparcTaskExecutor {
   }
 
   private generateAcceptanceCriteria(appType: string): any {
-    const criteria = {
+    const criteria: Record<string, any> = {
       'rest-api': {
         endpoints: ['All CRUD operations return appropriate status codes', 'API responses follow consistent format'],
         performance: ['Response time < 200ms for simple queries', 'Can handle 100 concurrent requests'],
@@ -557,7 +625,7 @@ export class SparcTaskExecutor {
   // Utility methods for language-specific details
 
   private getTestFramework(language: string): string {
-    const frameworks = {
+    const frameworks: Record<string, string> = {
       python: 'pytest',
       javascript: 'jest',
       typescript: 'jest',
@@ -567,7 +635,7 @@ export class SparcTaskExecutor {
   }
 
   private getProjectStructure(appType: string, language: string): any {
-    const structures = {
+    const structures: { [key: string]: any } = {
       'python-rest-api': {
         directories: ['src', 'tests', 'docs', 'config', 'migrations', 'scripts'],
         files: ['requirements.txt', 'setup.py', 'pytest.ini', '.gitignore', 'Dockerfile']
@@ -598,7 +666,7 @@ export class SparcTaskExecutor {
   }
 
   private getSourceFileName(name: string, language: string): string {
-    const extensions = {
+    const extensions: Record<string, string> = {
       python: 'py',
       javascript: 'js',
       typescript: 'ts',
@@ -610,7 +678,7 @@ export class SparcTaskExecutor {
   // Content generation methods
 
   private getFunctionalRequirements(appType: string): string[] {
-    const requirements = {
+    const requirements: Record<string, string[]> = {
       'rest-api': [
         'Implement RESTful endpoints for all resources',
         'Support JSON request/response format',
@@ -648,7 +716,7 @@ export class SparcTaskExecutor {
   }
 
   private getTechnicalRequirements(appType: string): string[] {
-    const tech = {
+    const tech: Record<string, string[]> = {
       'rest-api': [
         'Use appropriate web framework (Express, Flask, FastAPI)',
         'Implement database ORM/ODM',

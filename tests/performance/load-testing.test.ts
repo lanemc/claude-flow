@@ -2,8 +2,8 @@
  * Comprehensive performance and load testing suite
  */
 
-import { describe, it, beforeEach, afterEach  } from "../test.utils.ts";
-import { assertEquals, assertExists  } from "../test.utils.ts";
+import { describe, it, beforeEach, afterEach  } from '../test.utils';
+import { assertEquals, assertExists  } from '../test.utils';
 
 import { 
   PerformanceTestUtils, 

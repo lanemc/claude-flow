@@ -1,4 +1,9 @@
 import { getErrorMessage } from '../utils/error-handler.js';
+import type { 
+  MCPOrchestrationConfig, 
+  OrchestrationComponents,
+  MCPOrchestrationIntegration as MCPOrchestrationIntegrationType
+} from './types/index.js';
 /**
  * MCP (Model Context Protocol) Module
  * Export all MCP components for easy integration
@@ -7,6 +12,7 @@ import { getErrorMessage } from '../utils/error-handler.js';
 // Core MCP Server
 export { MCPServer } from './server.js';
 export type { IMCPServer } from './server.js';
+export type { MCPServer as MCPServerInterface } from './types/index.js';
 
 // Lifecycle Management
 export { 
@@ -18,6 +24,7 @@ export type {
   HealthCheckResult,
   LifecycleManagerConfig 
 } from './lifecycle-manager.js';
+export type { MCPLifecycleManager as MCPLifecycleManagerInterface } from './types/index.js';
 
 // Tool Registry and Management
 export { 
@@ -38,6 +45,7 @@ export type {
   CompatibilityResult,
   NegotiationResult 
 } from './protocol-manager.js';
+export type { MCPProtocolManager as MCPProtocolManagerInterface } from './types/index.js';
 
 // Authentication and Authorization
 export { 
@@ -62,6 +70,7 @@ export type {
   Alert,
   OptimizationSuggestion 
 } from './performance-monitor.js';
+export type { MCPPerformanceMonitor as MCPPerformanceMonitorInterface } from './types/index.js';
 
 // Orchestration Integration
 export { 
@@ -72,6 +81,11 @@ export type {
   MCPOrchestrationConfig,
   IntegrationStatus 
 } from './orchestration-integration.js';
+export type { 
+  MCPOrchestrationIntegration as MCPOrchestrationIntegrationInterface,
+  OrchestrationComponents as OrchestrationComponentsInterface,
+  MCPOrchestrationConfig as MCPOrchestrationConfigInterface 
+} from './types/index.js';
 
 // Transport Implementations
 export { type ITransport } from './transports/base.js';
@@ -108,10 +122,11 @@ export class MCPIntegrationFactory {
     orchestrationConfig?: Partial<MCPOrchestrationConfig>;
     components?: Partial<OrchestrationComponents>;
     logger: import('../core/logger.js').ILogger;
-  }): Promise<MCPOrchestrationIntegration> {
+  }): Promise<import('./orchestration-integration.js').MCPOrchestrationIntegration> {
     const { mcpConfig, orchestrationConfig = {}, components = {}, logger } = config;
 
-    const integration = new MCPOrchestrationIntegration(
+    const { MCPOrchestrationIntegration: MCPOrchestrationIntegrationClass } = await import('./orchestration-integration.js');
+    const integration = new MCPOrchestrationIntegrationClass(
       mcpConfig,
       {
         enabledIntegrations: {
@@ -147,9 +162,9 @@ export class MCPIntegrationFactory {
     enableLifecycleManagement?: boolean;
     enablePerformanceMonitoring?: boolean;
   }): Promise<{
-    server: MCPServer;
-    lifecycleManager?: MCPLifecycleManager;
-    performanceMonitor?: MCPPerformanceMonitor;
+    server: import('./server.js').MCPServer;
+    lifecycleManager?: import('./lifecycle-manager.js').MCPLifecycleManager;
+    performanceMonitor?: import('./performance-monitor.js').MCPPerformanceMonitor;
   }> {
     const { 
       mcpConfig, 
@@ -159,13 +174,15 @@ export class MCPIntegrationFactory {
     } = config;
 
     const eventBus = new (await import('node:events')).EventEmitter();
-    const server = new MCPServer(mcpConfig, eventBus, logger);
+    const { MCPServer: MCPServerClass } = await import('./server.js');
+    const server = new MCPServerClass(mcpConfig, eventBus, logger);
 
-    let lifecycleManager: MCPLifecycleManager | undefined;
-    let performanceMonitor: MCPPerformanceMonitor | undefined;
+    let lifecycleManager: import('./lifecycle-manager.js').MCPLifecycleManager | undefined;
+    let performanceMonitor: import('./performance-monitor.js').MCPPerformanceMonitor | undefined;
 
     if (enableLifecycleManagement) {
-      lifecycleManager = new MCPLifecycleManager(
+      const { MCPLifecycleManager: MCPLifecycleManagerClass } = await import('./lifecycle-manager.js');
+      lifecycleManager = new MCPLifecycleManagerClass(
         mcpConfig,
         logger,
         () => server,
@@ -173,7 +190,8 @@ export class MCPIntegrationFactory {
     }
 
     if (enablePerformanceMonitoring) {
-      performanceMonitor = new MCPPerformanceMonitor(logger);
+      const { MCPPerformanceMonitor: MCPPerformanceMonitorClass } = await import('./performance-monitor.js');
+      performanceMonitor = new MCPPerformanceMonitorClass(logger);
     }
 
     return {
@@ -187,10 +205,10 @@ export class MCPIntegrationFactory {
    * Create a development/testing MCP setup
    */
   static async createDevelopmentSetup(logger: import('../core/logger.js').ILogger): Promise<{
-    server: MCPServer;
-    lifecycleManager: MCPLifecycleManager;
-    performanceMonitor: MCPPerformanceMonitor;
-    protocolManager: MCPProtocolManager;
+    server: import('./server.js').MCPServer;
+    lifecycleManager: import('./lifecycle-manager.js').MCPLifecycleManager;
+    performanceMonitor: import('./performance-monitor.js').MCPPerformanceMonitor;
+    protocolManager: import('./protocol-manager.js').MCPProtocolManager;
   }> {
     const mcpConfig: import('../utils/types.js').MCPConfig = {
       transport: 'stdio',
@@ -208,7 +226,8 @@ export class MCPIntegrationFactory {
       enablePerformanceMonitoring: true,
     });
 
-    const protocolManager = new MCPProtocolManager(logger);
+    const { MCPProtocolManager: MCPProtocolManagerClass } = await import('./protocol-manager.js');
+    const protocolManager = new MCPProtocolManagerClass(logger);
 
     return {
       server,

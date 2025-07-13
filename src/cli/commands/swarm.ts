@@ -144,7 +144,7 @@ export async function swarmAction(ctx: CommandContext) {
     });
 
     // Initialize swarm memory
-    const memory = new SwarmMemoryManager({
+    const memory = new SwarmMemory({
       namespace: options.memoryNamespace,
       enableDistribution: options.distributed,
       enableKnowledgeBase: true,

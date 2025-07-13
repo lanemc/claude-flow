@@ -2,7 +2,7 @@
  * Integration tests for terminal functionality
  */
 
-import { assertEquals, assertExists, assertRejects  } from "../test.utils.ts";
+import { assertEquals, assertExists, assertRejects  } from '../test.utils';
 import { TerminalManager } from '../../src/terminal/manager.ts';
 import { NativeAdapter } from '../../src/terminal/adapters/native.ts';
 import { VSCodeAdapter } from '../../src/terminal/adapters/vscode.ts';

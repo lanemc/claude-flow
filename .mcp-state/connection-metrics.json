@@ -1,0 +1,73 @@
+{
+  "totalConnections": 2,
+  "totalDisconnections": 2,
+  "totalReconnections": 1,
+  "averageSessionDuration": 0,
+  "averageReconnectionTime": 0,
+  "connectionHistory": [
+    {
+      "type": "connect",
+      "sessionId": "recovery-1752417478198-cli7dezl8m4",
+      "details": {
+        "health": {
+          "healthy": true,
+          "lastHeartbeat": "2025-07-13T14:37:58.198Z",
+          "missedHeartbeats": 0,
+          "latency": 0,
+          "connectionState": "connected"
+        }
+      },
+      "timestamp": "2025-07-13T14:37:58.198Z"
+    },
+    {
+      "type": "disconnect",
+      "sessionId": "recovery-1752417478198-jqt0wwkknb",
+      "details": {
+        "health": {
+          "healthy": false,
+          "lastHeartbeat": "2025-07-13T14:37:58.198Z",
+          "missedHeartbeats": 0,
+          "latency": 0,
+          "connectionState": "disconnected"
+        }
+      },
+      "timestamp": "2025-07-13T14:37:58.198Z"
+    },
+    {
+      "type": "connect",
+      "sessionId": "recovery-1752417478506-jld0p43sb08",
+      "details": {
+        "health": {
+          "healthy": true,
+          "lastHeartbeat": "2025-07-13T14:37:58.506Z",
+          "missedHeartbeats": 0,
+          "latency": 0,
+          "connectionState": "connected"
+        }
+      },
+      "timestamp": "2025-07-13T14:37:58.506Z"
+    },
+    {
+      "type": "reconnect",
+      "sessionId": "recovery-1752417478506-41r53rurkku",
+      "details": {
+        "duration": 308
+      },
+      "timestamp": "2025-07-13T14:37:58.506Z"
+    },
+    {
+      "type": "disconnect",
+      "sessionId": "recovery-1752417478701-8zfhhyb49lm",
+      "details": {
+        "health": {
+          "healthy": false,
+          "lastHeartbeat": "2025-07-13T14:37:58.506Z",
+          "missedHeartbeats": 0,
+          "latency": 0,
+          "connectionState": "disconnected"
+        }
+      },
+      "timestamp": "2025-07-13T14:37:58.701Z"
+    }
+  ]
+}

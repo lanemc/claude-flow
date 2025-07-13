@@ -2,10 +2,10 @@
  * Enhanced comprehensive unit tests for EventBus
  */
 
-import { describe, it, beforeEach, afterEach  } from "../test.utils.ts";
-import { assertEquals, assertExists, assertThrows  } from "../test.utils.ts";
+import { describe, it, beforeEach, afterEach  } from '../../test.utils';
+import { assertEquals, assertExists, assertThrows  } from '../../test.utils';
 // FakeTime equivalent available in test.utils.ts
-import { spy  } from "../test.utils.ts";
+import { spy  } from '../../test.utils';
 
 import { EventBus } from '../../../src/core/event-bus.ts';
 import { 

@@ -389,6 +389,10 @@ export class AdvancedTaskExecutor extends EventEmitter {
       try {
         const output = JSON.parse(stdout);
         taskResult = {
+          taskId: task.id.id,
+          agentId: agent.id.id,
+          success: true,
+          timestamp: new Date(),
           output: output.result || output,
           artifacts: output.artifacts || {},
           metadata: output.metadata || {},
@@ -406,6 +410,10 @@ export class AdvancedTaskExecutor extends EventEmitter {
         };
       } catch (error) {
         taskResult = {
+          taskId: task.id.id,
+          agentId: agent.id.id,
+          success: false,
+          timestamp: new Date(),
           output: stdout,
           artifacts: {},
           metadata: { stderr },
@@ -504,7 +512,7 @@ export class AdvancedTaskExecutor extends EventEmitter {
   }
 
   private async updateResourceUsage(): Promise<void> {
-    for (const [taskId, context] of this.runningTasks) {
+    for (const [taskId, context] of Array.from(this.runningTasks)) {
       if (context.process) {
         try {
           const usage = await this.getProcessResourceUsage(context.process.pid);

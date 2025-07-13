@@ -3,7 +3,7 @@ import { getErrorMessage } from '../utils/error-handler.js';
 
 import { Command } from 'commander';
 import * as path from 'path';
-import { copyPrompts } from './prompt-copier.js';
+import { copyPrompts, CopyProgress, CopyOptions } from './prompt-copier.js';
 import { copyPromptsEnhanced } from './prompt-copier-enhanced.js';
 import { 
   PromptConfigManager, 
@@ -42,7 +42,7 @@ program
       const configManager = new PromptConfigManager();
       const config = await configManager.loadConfig();
       
-      let copyOptions;
+      let copyOptions: CopyOptions;
       
       if (options.profile) {
         const profileOptions = configManager.getProfile(options.profile);
@@ -50,7 +50,7 @@ program
           source: options.source || config.sourceDirectories[0],
           destination: options.destination || config.destinationDirectory,
           ...profileOptions
-        };
+        } as CopyOptions;
       } else {
         copyOptions = {
           source: options.source || config.sourceDirectories[0],
@@ -63,13 +63,13 @@ program
           includePatterns: options.include ? options.include.split(',') : config.defaultOptions.includePatterns,
           excludePatterns: options.exclude ? options.exclude.split(',') : config.defaultOptions.excludePatterns,
           dryRun: options.dryRun
-        };
+        } as CopyOptions;
       }
 
       // Create progress bar
       let progressBar: ReturnType<typeof createProgressBar> | null = null;
       
-      copyOptions.progressCallback = (progress) => {
+      copyOptions.progressCallback = (progress: CopyProgress) => {
         if (!progressBar) {
           progressBar = createProgressBar(progress.total);
         }

@@ -11,7 +11,7 @@ import {
   assertExists,
   assertRejects,
   spy,
-} from '../test.utils.ts';
+} from '../test.utils';
 import { EventBus } from '../../src/core/event-bus.ts';
 import { Logger } from '../../src/core/logger.ts';
 import { MockMCPServer, MockMCPTransport } from '../mocks/index.ts';

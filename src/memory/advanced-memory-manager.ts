@@ -1646,7 +1646,7 @@ export class AdvancedMemoryManager extends EventEmitter {
     // This is a simplified implementation
   }
 
-  private async applyRetentionPolicy(policy: CleanupOptions['retentionPolicies'][0], dryRun?: boolean): Promise<{ removed: number; spaceSaved: number }> {
+  private async applyRetentionPolicy(policy: NonNullable<CleanupOptions['retentionPolicies']>[0], dryRun?: boolean): Promise<{ removed: number; spaceSaved: number }> {
     const matchingEntries = Array.from(this.entries.values()).filter(entry => {
       if (policy.namespace && entry.namespace !== policy.namespace) return false;
       return true;

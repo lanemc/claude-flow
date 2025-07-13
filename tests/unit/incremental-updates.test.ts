@@ -2,8 +2,8 @@
  * Comprehensive unit tests for Incremental Updates across the system
  */
 
-import { describe, it, beforeEach, afterEach  } from "../test.utils.ts";
-import { assertEquals, assertExists, assert  } from "../test.utils.ts";
+import { describe, it, beforeEach, afterEach  } from '../test.utils';
+import { assertEquals, assertExists, assert  } from '../test.utils';
 // FakeTime equivalent available in test.utils.ts
 
 import { MemoryManager } from '../../src/memory/manager.ts';

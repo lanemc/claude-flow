@@ -69,6 +69,10 @@ export class ClaudeFlowExecutor {
       const executionTime = endTime - startTime;
 
       return {
+        taskId: task.id.id,
+        agentId: agent.id.id,
+        success: result.exitCode === 0,
+        timestamp: new Date(),
         output: result.output,
         artifacts: result.artifacts || {},
         metadata: {
@@ -79,7 +83,20 @@ export class ClaudeFlowExecutor {
           quality: 0.95,
           completeness: 0.9
         },
-        error: result.error
+        quality: 0.95,
+        completeness: 0.9,
+        accuracy: 0.9,
+        executionTime,
+        resourcesUsed: {},
+        validated: false,
+        error: result.error ? {
+          type: 'ExecutionError',
+          message: result.error,
+          code: String(result.exitCode),
+          context: { command: command.join(' ') },
+          recoverable: true,
+          retryable: true
+        } : undefined
       };
     } catch (error) {
       this.logger.error('Failed to execute Claude Flow SPARC command', { 
@@ -88,6 +105,10 @@ export class ClaudeFlowExecutor {
       });
       
       return {
+        taskId: task.id.id,
+        agentId: agent.id.id,
+        success: false,
+        timestamp: new Date(),
         output: '',
         artifacts: {},
         metadata: {
@@ -95,14 +116,28 @@ export class ClaudeFlowExecutor {
           quality: 0,
           completeness: 0
         },
-        error: (error instanceof Error ? error.message : String(error))
+        quality: 0,
+        completeness: 0,
+        accuracy: 0,
+        executionTime: Date.now() - startTime,
+        resourcesUsed: {},
+        validated: false,
+        error: {
+          type: error instanceof Error ? error.constructor.name : 'UnknownError',
+          message: error instanceof Error ? error.message : String(error),
+          code: (error as any).code || 'UNKNOWN',
+          stack: error instanceof Error ? error.stack : undefined,
+          context: { taskId: task.id.id, agentId: agent.id.id },
+          recoverable: true,
+          retryable: true
+        }
       };
     }
   }
 
   private determineSparcMode(task: TaskDefinition, agent: AgentState): string {
     // Map task types and agent types to SPARC modes
-    const modeMap = {
+    const modeMap: Record<string, string> = {
       // Task type mappings
       'coding': 'code',
       'testing': 'tdd',
@@ -217,7 +252,7 @@ export class ClaudeFlowExecutor {
         // Parse artifacts from output
         const artifactMatch = chunk.match(/Created file: (.+)/g);
         if (artifactMatch) {
-          artifactMatch.forEach(match => {
+          artifactMatch.forEach((match: string) => {
             const filePath = match.replace('Created file: ', '').trim();
             artifacts[filePath] = true;
           });

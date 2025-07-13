@@ -11,7 +11,7 @@ import { Logger } from '../../core/logger.js';
 import { generateId } from '../../utils/helpers.js';
 import {
   SwarmObjective, TaskDefinition, TaskId, TaskType, TaskPriority,
-  SwarmConfig, SWARM_CONSTANTS
+  SwarmConfig, LoggingConfig, SWARM_CONSTANTS
 } from '../types.js';
 
 // Research-specific interfaces
@@ -185,6 +185,11 @@ export class ResearchStrategy extends BaseStrategy {
         resourcePooling: true,
         connectionPooling: true,
         memoryPooling: false
+      },
+      logging: {
+        level: 'info',
+        format: 'text',
+        destination: 'console'
       }
     };
     
@@ -841,6 +846,7 @@ Ensure the report is well-structured and actionable.`,
       type,
       name,
       description: instructions,
+      objective: `Conduct ${type} research task: ${name} to gather and analyze information`,
       instructions,
       requirements: {
         capabilities: options.requiredCapabilities || ['research'],

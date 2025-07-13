@@ -141,10 +141,10 @@ export class OptimizedExecutor extends EventEmitter {
     }
     
     // Add to active executions
-    this.activeExecutions.add(task.id);
+    this.activeExecutions.add(task.id.id);
     
     // Queue the execution
-    const result = await this.executionQueue.add(async () => {
+    const result = await this.executionQueue.add(async (): Promise<TaskResult> => {
       try {
         // Execute with connection pool
         const executionResult = await this.connectionPool.execute(async (api) => {
@@ -178,14 +178,25 @@ export class OptimizedExecutor extends EventEmitter {
         
         // Create task result
         const taskResult: TaskResult = {
-          taskId: task.id,
+          taskId: task.id.id,
           agentId: agentId.id,
           success: executionResult.success,
           output: executionResult.output,
           error: undefined,
+          artifacts: {},
+          metadata: {},
+          quality: 1.0,
+          completeness: 1.0,
+          accuracy: 1.0,
           executionTime: Date.now() - startTime,
+          resourcesUsed: {
+            tokens: (executionResult.usage?.inputTokens || 0) + (executionResult.usage?.outputTokens || 0),
+            memory: 0,
+            cpu: Date.now() - startTime
+          },
           tokensUsed: executionResult.usage,
-          timestamp: new Date()
+          timestamp: new Date(),
+          validated: true
         };
         
         // Cache result if enabled
@@ -200,7 +211,7 @@ export class OptimizedExecutor extends EventEmitter {
         
         // Record in history
         this.executionHistory.push({
-          taskId: task.id,
+          taskId: task.id.id,
           duration: taskResult.executionTime,
           status: 'success',
           timestamp: new Date()
@@ -224,7 +235,7 @@ export class OptimizedExecutor extends EventEmitter {
         this.metrics.totalFailed++;
         
         const errorResult: TaskResult = {
-          taskId: task.id,
+          taskId: task.id.id,
           agentId: agentId.id,
           success: false,
           output: '',
@@ -233,28 +244,62 @@ export class OptimizedExecutor extends EventEmitter {
             message: error instanceof Error ? error.message : 'Unknown error',
             code: (error as any).code,
             stack: error instanceof Error ? error.stack : undefined,
-            context: { taskId: task.id, agentId: agentId.id },
+            context: { taskId: task.id.id, agentId: agentId.id },
             recoverable: this.isRecoverableError(error),
             retryable: this.isRetryableError(error)
           },
+          artifacts: {},
+          metadata: {},
+          quality: 0,
+          completeness: 0,
+          accuracy: 0,
           executionTime: Date.now() - startTime,
-          timestamp: new Date()
+          resourcesUsed: {},
+          timestamp: new Date(),
+          validated: false
         };
         
         // Record in history
         this.executionHistory.push({
-          taskId: task.id,
+          taskId: task.id.id,
           duration: errorResult.executionTime,
           status: 'failed',
           timestamp: new Date()
         });
         
         this.emit('task:failed', errorResult);
-        throw error;
+        return errorResult;
       } finally {
-        this.activeExecutions.delete(task.id);
+        this.activeExecutions.delete(task.id.id);
       }
     });
+    
+    if (!result) {
+      return {
+        taskId: task.id.id,
+        agentId: agentId.id,
+        success: false,
+        output: '',
+        error: {
+          type: 'QueueError',
+          message: 'Queue operation was cancelled or returned void',
+          code: 'QUEUE_CANCELLED',
+          stack: undefined,
+          context: { taskId: task.id.id, agentId: agentId.id },
+          recoverable: false,
+          retryable: true
+        },
+        artifacts: {},
+        metadata: {},
+        quality: 0,
+        completeness: 0,
+        accuracy: 0,
+        executionTime: Date.now() - startTime,
+        resourcesUsed: {},
+        timestamp: new Date(),
+        validated: false
+      };
+    }
     
     return result;
   }

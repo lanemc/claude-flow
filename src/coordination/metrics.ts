@@ -478,7 +478,7 @@ export class CoordinationMetricsCollector {
     }
     
     const result: Record<string, number> = {};
-    for (const type of types) {
+    for (const type of Array.from(types)) {
       result[type] = this.samples.filter(s => 
         s.metric === 'task.created' && s.tags?.type === type
       ).length;
@@ -500,7 +500,7 @@ export class CoordinationMetricsCollector {
     }
     
     const result: Record<string, number> = {};
-    for (const type of types) {
+    for (const type of Array.from(types)) {
       result[type] = this.samples.filter(s => 
         s.metric === 'agent.spawned' && s.tags?.type === type
       ).length;

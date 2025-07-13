@@ -19,7 +19,7 @@ export function createCliFeatureAdapter(configManager: ConfigManager): CliFeatur
       const features = [
         { name: 'ruv-swarm', enabled: config.ruvSwarm?.enabled || false },
         { name: 'mcp', enabled: config.mcp?.transport ? true : false },
-        { name: 'neural-features', enabled: config.ruvSwarm?.neuralEnabled || false },
+        { name: 'neural-features', enabled: config.ruvSwarm?.enableNeuralTraining || false },
         { name: 'memory-backend', value: config.memory?.backend || 'sqlite' }
       ];
       
@@ -43,7 +43,7 @@ export function createCliFeatureAdapter(configManager: ConfigManager): CliFeatur
           configManager.set('ruvSwarm.enabled', true);
           break;
         case 'neural-features':
-          configManager.set('ruvSwarm.neuralEnabled', true);
+          configManager.set('ruvSwarm.enableNeuralTraining', true);
           break;
         default:
           console.error(chalk.red(`Unknown feature: ${featureName}`));
@@ -66,7 +66,7 @@ export function createCliFeatureAdapter(configManager: ConfigManager): CliFeatur
           configManager.set('ruvSwarm.enabled', false);
           break;
         case 'neural-features':
-          configManager.set('ruvSwarm.neuralEnabled', false);
+          configManager.set('ruvSwarm.enableNeuralTraining', false);
           break;
         default:
           console.error(chalk.red(`Unknown feature: ${featureName}`));
@@ -93,8 +93,8 @@ export function createCliFeatureAdapter(configManager: ConfigManager): CliFeatur
           configManager.set('ruvSwarm.enabled', newStatus);
           break;
         case 'neural-features':
-          newStatus = !config.ruvSwarm.neuralEnabled;
-          configManager.set('ruvSwarm.neuralEnabled', newStatus);
+          newStatus = !config.ruvSwarm.enableNeuralTraining;
+          configManager.set('ruvSwarm.enableNeuralTraining', newStatus);
           break;
         default:
           console.error(chalk.red(`Unknown feature: ${featureName}`));
@@ -135,7 +135,7 @@ export function createCliFeatureAdapter(configManager: ConfigManager): CliFeatur
           console.log(`  Enabled: ${config.ruvSwarm.enabled ? chalk.green('yes') : chalk.red('no')}`);
           console.log(`  Topology: ${chalk.yellow(config.ruvSwarm.defaultTopology)}`);
           console.log(`  Max Agents: ${chalk.yellow(config.ruvSwarm.maxAgents)}`);
-          console.log(`  Neural Enabled: ${config.ruvSwarm.neuralEnabled ? chalk.green('yes') : chalk.red('no')}`);
+          console.log(`  Neural Enabled: ${config.ruvSwarm.enableNeuralTraining ? chalk.green('yes') : chalk.red('no')}`);
           break;
         case 'mcp':
           console.log(chalk.blue(`Feature '${featureName}':`));

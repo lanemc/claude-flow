@@ -66,7 +66,10 @@ export function injectClaudeCodeClient(wrapper: ClaudeCodeMCPWrapper, client: Cl
   // Override the forwardToClaudeCode method
   (wrapper as any).forwardToClaudeCode = async function(toolName: string, args: any) {
     try {
-      const result = await client.callTool(toolName, args);
+      const result = await client.callTool({
+        name: toolName,
+        arguments: args || {}
+      });
       return result;
     } catch (error) {
       return {

@@ -2,7 +2,7 @@
  * End-to-end workflow tests
  */
 
-import { describe, it, beforeEach, afterEach, expect } from "../test.utils.ts";
+import { describe, it, beforeEach, afterEach, expect } from '../test.utils';
 import { delay } from '../../src/utils/helpers.ts';
 
 Deno.test('E2E - CLI should show help', async () => {

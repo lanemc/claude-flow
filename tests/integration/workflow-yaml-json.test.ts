@@ -2,8 +2,8 @@
  * Integration tests for YAML and JSON workflow format support
  */
 
-import { describe, it, beforeEach, afterEach, expect } from "../test.utils.ts";
-import { describe, it, beforeEach, afterEach, expect } from "../test.utils.ts";
+import { describe, it, beforeEach, afterEach, expect } from '../test.utils';
+import { describe, it, beforeEach, afterEach, expect } from '../test.utils';
 import { WorkflowEngine } from '../../package/src/workflow/engine.ts';
 
 describe('Workflow Format Integration Tests', () => {
