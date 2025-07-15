@@ -1,4 +1,3 @@
-import { getErrorMessage } from '../utils/error-handler.js';
 /**
  * Node.js Interactive REPL for Claude-Flow
  * Compatible implementation using Node.js readline and inquirer
@@ -12,6 +11,7 @@ import chalk from 'chalk';
 import colors from 'chalk';
 import Table from 'cli-table3';
 import inquirer from 'inquirer';
+import { getErrorMessage } from '../utils/error-handler.js';
 
 interface REPLCommand {
   name: string;
@@ -463,326 +463,327 @@ export async function startNodeREPL(options: any = {}): Promise<void> {
     showPrompt();
   });
 
-  // Start the REPL
-  showPrompt();
-}
-
-function displayBanner(): void {
-  const banner = `
+  // Helper functions
+  function displayBanner(): void {
+    const banner = `
 ${chalk.cyan.bold('╔══════════════════════════════════════════════════════════════╗')}
 ${chalk.cyan.bold('║')}             ${chalk.white.bold('🧠 Claude-Flow REPL')}                        ${chalk.cyan.bold('║')}
 ${chalk.cyan.bold('║')}          ${chalk.gray('Interactive AI Agent Orchestration')}             ${chalk.cyan.bold('║')}
 ${chalk.cyan.bold('╚══════════════════════════════════════════════════════════════╝')}
 `;
-  console.log(banner);
-}
-
-function createPrompt(context: REPLContext): string {
-  const statusIcon = getConnectionStatusIcon(context.connectionStatus);
-  const dir = path.basename(context.workingDirectory) || '/';
-  
-  return `${statusIcon} ${chalk.cyan('claude-flow')}:${chalk.yellow(dir)}${chalk.white('> ')}`;
-}
-
-function getConnectionStatusIcon(status: string): string {
-  switch (status) {
-    case 'connected': return chalk.green('●');
-    case 'connecting': return chalk.yellow('◐');
-    case 'disconnected': return chalk.red('○');
-    default: return chalk.gray('?');
+    console.log(banner);
   }
-}
 
-function parseCommand(input: string): string[] {
-  // Simple command parsing - handle quoted strings
-  const args: string[] = [];
-  let current = '';
-  let inQuotes = false;
-  let quoteChar = '';
-  
-  for (let i = 0; i < input.length; i++) {
-    const char = input[i];
+  function createPrompt(context: REPLContext): string {
+    const statusIcon = getConnectionStatusIcon(context.connectionStatus);
+    const dir = path.basename(context.workingDirectory) || '/';
     
-    if (inQuotes) {
-      if (char === quoteChar) {
-        inQuotes = false;
-        quoteChar = '';
-      } else {
-        current += char;
-      }
-    } else {
-      if (char === '"' || char === "'") {
-        inQuotes = true;
-        quoteChar = char;
-      } else if (char === ' ' || char === '\t') {
-        if (current.trim()) {
-          args.push(current.trim());
-          current = '';
+    return `${statusIcon} ${chalk.cyan('claude-flow')}:${chalk.yellow(dir)}${chalk.white('> ')}`;
+  }
+
+  function getConnectionStatusIcon(status: string): string {
+    switch (status) {
+      case 'connected': return chalk.green('●');
+      case 'connecting': return chalk.yellow('◐');
+      case 'disconnected': return chalk.red('○');
+      default: return chalk.gray('?');
+    }
+  }
+
+  function parseCommand(input: string): string[] {
+    // Simple command parsing - handle quoted strings
+    const args: string[] = [];
+    let current = '';
+    let inQuotes = false;
+    let quoteChar = '';
+    
+    for (let i = 0; i < input.length; i++) {
+      const char = input[i];
+      
+      if (inQuotes) {
+        if (char === quoteChar) {
+          inQuotes = false;
+          quoteChar = '';
+        } else {
+          current += char;
         }
       } else {
-        current += char;
+        if (char === '"' || char === "'") {
+          inQuotes = true;
+          quoteChar = char;
+        } else if (char === ' ' || char === '\t') {
+          if (current.trim()) {
+            args.push(current.trim());
+            current = '';
+          }
+        } else {
+          current += char;
+        }
+      }
+    }
+    
+    if (current.trim()) {
+      args.push(current.trim());
+    }
+    
+    return args;
+  }
+
+  function showHelp(commands: REPLCommand[]): void {
+    console.log(chalk.cyan.bold('Claude-Flow Interactive REPL'));
+    console.log('─'.repeat(50));
+    console.log();
+    
+    console.log(chalk.white.bold('Available Commands:'));
+    console.log();
+    
+    const table = new Table({
+      head: ['Command', 'Aliases', 'Description'],
+      style: { head: ['cyan'] }
+    });
+
+    for (const cmd of commands) {
+      table.push([
+        chalk.cyan(cmd.name),
+        cmd.aliases ? chalk.gray(cmd.aliases.join(', ')) : '',
+        cmd.description
+      ]);
+    }
+    
+    console.log(table.toString());
+    console.log();
+    
+    console.log(chalk.gray('Tips:'));
+    console.log(chalk.gray('• Use TAB for command completion'));
+    console.log(chalk.gray('• Use "help <command>" for detailed help'));
+    console.log(chalk.gray('• Use UP/DOWN arrows for command history'));
+    console.log(chalk.gray('• Use Ctrl+C or "exit" to quit'));
+  }
+
+  function showCommandHelp(commands: REPLCommand[], commandName: string): void {
+    const command = commands.find(c => 
+      c.name === commandName || 
+      (c.aliases && c.aliases.includes(commandName))
+    );
+    
+    if (!command) {
+      console.log(chalk.red(`Unknown command: ${commandName}`));
+      return;
+    }
+    
+    console.log(chalk.cyan.bold(`Command: ${command.name}`));
+    console.log('─'.repeat(30));
+    console.log(`${chalk.white('Description:')} ${command.description}`);
+    
+    if (command.aliases) {
+      console.log(`${chalk.white('Aliases:')} ${command.aliases.join(', ')}`);
+    }
+    
+    if (command.usage) {
+      console.log(`${chalk.white('Usage:')} ${command.usage}`);
+    }
+    
+    if (command.examples) {
+      console.log();
+      console.log(chalk.white.bold('Examples:'));
+      for (const example of command.examples) {
+        console.log(`  ${chalk.gray('$')} ${chalk.cyan(example)}`);
       }
     }
   }
-  
-  if (current.trim()) {
-    args.push(current.trim());
-  }
-  
-  return args;
-}
 
-function showHelp(commands: REPLCommand[]): void {
-  console.log(chalk.cyan.bold('Claude-Flow Interactive REPL'));
-  console.log('─'.repeat(50));
-  console.log();
-  
-  console.log(chalk.white.bold('Available Commands:'));
-  console.log();
-  
-  const table = new Table({
-    head: ['Command', 'Aliases', 'Description'],
-    style: { head: ['cyan'] }
-  });
-
-  for (const cmd of commands) {
-    table.push([
-      chalk.cyan(cmd.name),
-      cmd.aliases ? chalk.gray(cmd.aliases.join(', ')) : '',
-      cmd.description
-    ]);
-  }
-  
-  console.log(table.toString());
-  console.log();
-  
-  console.log(chalk.gray('Tips:'));
-  console.log(chalk.gray('• Use TAB for command completion'));
-  console.log(chalk.gray('• Use "help <command>" for detailed help'));
-  console.log(chalk.gray('• Use UP/DOWN arrows for command history'));
-  console.log(chalk.gray('• Use Ctrl+C or "exit" to quit'));
-}
-
-function showCommandHelp(commands: REPLCommand[], commandName: string): void {
-  const command = commands.find(c => 
-    c.name === commandName || 
-    (c.aliases && c.aliases.includes(commandName))
-  );
-  
-  if (!command) {
-    console.log(chalk.red(`Unknown command: ${commandName}`));
-    return;
-  }
-  
-  console.log(chalk.cyan.bold(`Command: ${command.name}`));
-  console.log('─'.repeat(30));
-  console.log(`${chalk.white('Description:')} ${command.description}`);
-  
-  if (command.aliases) {
-    console.log(`${chalk.white('Aliases:')} ${command.aliases.join(', ')}`);
-  }
-  
-  if (command.usage) {
-    console.log(`${chalk.white('Usage:')} ${command.usage}`);
-  }
-  
-  if (command.examples) {
-    console.log();
-    console.log(chalk.white.bold('Examples:'));
-    for (const example of command.examples) {
-      console.log(`  ${chalk.gray('$')} ${chalk.cyan(example)}`);
+  async function showSystemStatus(context: REPLContext, component?: string): Promise<void> {
+    console.log(chalk.cyan.bold('System Status'));
+    console.log('─'.repeat(30));
+    
+    const statusIcon = context.connectionStatus === 'connected' ? chalk.green('✓') : chalk.red('✗');
+    console.log(`${statusIcon} Connection: ${context.connectionStatus}`);
+    console.log(`${chalk.white('Working Directory:')} ${context.workingDirectory}`);
+    console.log(`${chalk.white('Last Activity:')} ${context.lastActivity.toLocaleTimeString()}`);
+    
+    if (context.currentSession) {
+      console.log(`${chalk.white('Current Session:')} ${context.currentSession}`);
+    }
+    
+    console.log(`${chalk.white('Commands in History:')} ${context.history.length}`);
+    
+    if (context.connectionStatus === 'disconnected') {
+      console.log();
+      console.log(chalk.yellow('⚠ Not connected to orchestrator'));
+      console.log(chalk.gray('Use "connect" command to establish connection'));
     }
   }
-}
 
-async function showSystemStatus(context: REPLContext, component?: string): Promise<void> {
-  console.log(chalk.cyan.bold('System Status'));
-  console.log('─'.repeat(30));
-  
-  const statusIcon = context.connectionStatus === 'connected' ? chalk.green('✓') : chalk.red('✗');
-  console.log(`${statusIcon} Connection: ${context.connectionStatus}`);
-  console.log(`${chalk.white('Working Directory:')} ${context.workingDirectory}`);
-  console.log(`${chalk.white('Last Activity:')} ${context.lastActivity.toLocaleTimeString()}`);
-  
-  if (context.currentSession) {
-    console.log(`${chalk.white('Current Session:')} ${context.currentSession}`);
-  }
-  
-  console.log(`${chalk.white('Commands in History:')} ${context.history.length}`);
-  
-  if (context.connectionStatus === 'disconnected') {
-    console.log();
-    console.log(chalk.yellow('⚠ Not connected to orchestrator'));
-    console.log(chalk.gray('Use "connect" command to establish connection'));
-  }
-}
-
-async function connectToOrchestrator(context: REPLContext, target?: string): Promise<void> {
-  const host = target || 'localhost:3000';
-  
-  console.log(chalk.yellow(`Connecting to ${host}...`));
-  context.connectionStatus = 'connecting';
-  
-  // Mock connection attempt
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  
-  // Check if orchestrator is actually running by trying to execute status command
-  try {
-    const result = await executeCliCommand(['status']);
-    if (result.success) {
-      context.connectionStatus = 'connected';
-      console.log(chalk.green('✓ Connected successfully'));
-    } else {
+  async function connectToOrchestrator(context: REPLContext, target?: string): Promise<void> {
+    const host = target || 'localhost:3000';
+    
+    console.log(chalk.yellow(`Connecting to ${host}...`));
+    context.connectionStatus = 'connecting';
+    
+    // Mock connection attempt
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Check if orchestrator is actually running by trying to execute status command
+    try {
+      const result = await executeCliCommand(['status']);
+      if (result.success) {
+        context.connectionStatus = 'connected';
+        console.log(chalk.green('✓ Connected successfully'));
+      } else {
+        context.connectionStatus = 'disconnected';
+        console.log(chalk.red('✗ Connection failed'));
+        console.log(chalk.gray('Make sure Claude-Flow is running with: npx claude-flow start'));
+      }
+    } catch (error) {
       context.connectionStatus = 'disconnected';
       console.log(chalk.red('✗ Connection failed'));
       console.log(chalk.gray('Make sure Claude-Flow is running with: npx claude-flow start'));
     }
-  } catch (error) {
-    context.connectionStatus = 'disconnected';
-    console.log(chalk.red('✗ Connection failed'));
-    console.log(chalk.gray('Make sure Claude-Flow is running with: npx claude-flow start'));
   }
-}
 
-async function executeCliCommand(args: string[]): Promise<{ success: boolean; output: string }> {
-  return new Promise((resolve) => {
-    const child = spawn('npx', ['tsx', 'src/cli/simple-cli.ts', ...args], {
-      stdio: 'pipe',
-      cwd: process.cwd(),
-    });
+  async function executeCliCommand(args: string[]): Promise<{ success: boolean; output: string }> {
+    return new Promise((resolve) => {
+      const child = spawn('npx', ['tsx', 'src/cli/simple-cli.ts', ...args], {
+        stdio: 'pipe',
+        cwd: process.cwd(),
+      });
 
-    let output = '';
-    let error = '';
+      let output = '';
+      let error = '';
 
-    child.stdout?.on('data', (data) => {
-      output += data.toString();
-    });
+      child.stdout?.on('data', (data) => {
+        output += data.toString();
+      });
 
-    child.stderr?.on('data', (data) => {
-      error += data.toString();
-    });
+      child.stderr?.on('data', (data) => {
+        error += data.toString();
+      });
 
-    child.on('close', (code) => {
-      resolve({
-        success: code === 0,
-        output: output || error,
+      child.on('close', (code) => {
+        resolve({
+          success: code === 0,
+          output: output || error,
+        });
+      });
+
+      child.on('error', (err) => {
+        resolve({
+          success: false,
+          output: err.message,
+        });
       });
     });
-
-    child.on('error', (err) => {
-      resolve({
-        success: false,
-        output: err.message,
-      });
-    });
-  });
-}
-
-async function handleAgentCommand(args: string[], context: REPLContext): Promise<void> {
-  if (context.connectionStatus !== 'connected') {
-    console.log(chalk.yellow('⚠ Not connected to orchestrator'));
-    console.log(chalk.gray('Use "connect" to establish connection first'));
-    return;
   }
 
-  if (args.length === 0) {
-    console.log(chalk.gray('Usage: agent <spawn|list|terminate|info> [options]'));
-    return;
-  }
-  
-  const subcommand = args[0];
-  const cliArgs = ['agent', ...args];
-  
-  try {
-    const result = await executeCliCommand(cliArgs);
-    console.log(result.output);
-  } catch (error) {
-    console.error(chalk.red('Error executing agent command:'), error instanceof Error ? error.message : String(error));
-  }
-}
+  async function handleAgentCommand(args: string[], context: REPLContext): Promise<void> {
+    if (context.connectionStatus !== 'connected') {
+      console.log(chalk.yellow('⚠ Not connected to orchestrator'));
+      console.log(chalk.gray('Use "connect" to establish connection first'));
+      return;
+    }
 
-async function handleTaskCommand(args: string[], context: REPLContext): Promise<void> {
-  if (context.connectionStatus !== 'connected') {
-    console.log(chalk.yellow('⚠ Not connected to orchestrator'));
-    return;
-  }
-
-  if (args.length === 0) {
-    console.log(chalk.gray('Usage: task <create|list|status|cancel> [options]'));
-    return;
-  }
-  
-  const cliArgs = ['task', ...args];
-  
-  try {
-    const result = await executeCliCommand(cliArgs);
-    console.log(result.output);
-  } catch (error) {
-    console.error(chalk.red('Error executing task command:'), error instanceof Error ? error.message : String(error));
-  }
-}
-
-async function handleMemoryCommand(args: string[], context: REPLContext): Promise<void> {
-  if (args.length === 0) {
-    console.log(chalk.gray('Usage: memory <query|stats|export> [options]'));
-    return;
-  }
-  
-  const cliArgs = ['memory', ...args];
-  
-  try {
-    const result = await executeCliCommand(cliArgs);
-    console.log(result.output);
-  } catch (error) {
-    console.error(chalk.red('Error executing memory command:'), error instanceof Error ? error.message : String(error));
-  }
-}
-
-async function handleSessionCommand(args: string[], context: REPLContext): Promise<void> {
-  if (args.length === 0) {
-    console.log(chalk.gray('Usage: session <list|save|restore> [options]'));
-    return;
-  }
-  
-  const cliArgs = ['session', ...args];
-  
-  try {
-    const result = await executeCliCommand(cliArgs);
-    console.log(result.output);
-  } catch (error) {
-    console.error(chalk.red('Error executing session command:'), error instanceof Error ? error.message : String(error));
-  }
-}
-
-async function handleWorkflowCommand(args: string[], context: REPLContext): Promise<void> {
-  if (context.connectionStatus !== 'connected') {
-    console.log(chalk.yellow('⚠ Not connected to orchestrator'));
-    return;
+    if (args.length === 0) {
+      console.log(chalk.gray('Usage: agent <spawn|list|terminate|info> [options]'));
+      return;
+    }
+    
+    const subcommand = args[0];
+    const cliArgs = ['agent', ...args];
+    
+    try {
+      const result = await executeCliCommand(cliArgs);
+      console.log(result.output);
+    } catch (error) {
+      console.error(chalk.red('Error executing agent command:'), error instanceof Error ? error.message : String(error));
+    }
   }
 
-  if (args.length === 0) {
-    console.log(chalk.gray('Usage: workflow <list|run|status> [options]'));
-    return;
-  }
-  
-  const cliArgs = ['workflow', ...args];
-  
-  try {
-    const result = await executeCliCommand(cliArgs);
-    console.log(result.output);
-  } catch (error) {
-    console.error(chalk.red('Error executing workflow command:'), error instanceof Error ? error.message : String(error));
-  }
-}
+  async function handleTaskCommand(args: string[], context: REPLContext): Promise<void> {
+    if (context.connectionStatus !== 'connected') {
+      console.log(chalk.yellow('⚠ Not connected to orchestrator'));
+      return;
+    }
 
-function findSimilarCommands(input: string, commands: REPLCommand[]): string[] {
-  const allNames = commands.flatMap(c => [c.name, ...(c.aliases || [])]);
-  
-  return allNames
-    .filter(name => {
-      // Simple similarity check - could use Levenshtein distance
-      const commonChars = input.split('').filter(char => name.includes(char)).length;
-      return commonChars >= Math.min(2, input.length / 2);
-    })
-    .slice(0, 3); // Top 3 suggestions
+    if (args.length === 0) {
+      console.log(chalk.gray('Usage: task <create|list|status|cancel> [options]'));
+      return;
+    }
+    
+    const cliArgs = ['task', ...args];
+    
+    try {
+      const result = await executeCliCommand(cliArgs);
+      console.log(result.output);
+    } catch (error) {
+      console.error(chalk.red('Error executing task command:'), error instanceof Error ? error.message : String(error));
+    }
+  }
+
+  async function handleMemoryCommand(args: string[], context: REPLContext): Promise<void> {
+    if (args.length === 0) {
+      console.log(chalk.gray('Usage: memory <query|stats|export> [options]'));
+      return;
+    }
+    
+    const cliArgs = ['memory', ...args];
+    
+    try {
+      const result = await executeCliCommand(cliArgs);
+      console.log(result.output);
+    } catch (error) {
+      console.error(chalk.red('Error executing memory command:'), error instanceof Error ? error.message : String(error));
+    }
+  }
+
+  async function handleSessionCommand(args: string[], context: REPLContext): Promise<void> {
+    if (args.length === 0) {
+      console.log(chalk.gray('Usage: session <list|save|restore> [options]'));
+      return;
+    }
+    
+    const cliArgs = ['session', ...args];
+    
+    try {
+      const result = await executeCliCommand(cliArgs);
+      console.log(result.output);
+    } catch (error) {
+      console.error(chalk.red('Error executing session command:'), error instanceof Error ? error.message : String(error));
+    }
+  }
+
+  async function handleWorkflowCommand(args: string[], context: REPLContext): Promise<void> {
+    if (context.connectionStatus !== 'connected') {
+      console.log(chalk.yellow('⚠ Not connected to orchestrator'));
+      return;
+    }
+
+    if (args.length === 0) {
+      console.log(chalk.gray('Usage: workflow <list|run|status> [options]'));
+      return;
+    }
+    
+    const cliArgs = ['workflow', ...args];
+    
+    try {
+      const result = await executeCliCommand(cliArgs);
+      console.log(result.output);
+    } catch (error) {
+      console.error(chalk.red('Error executing workflow command:'), error instanceof Error ? error.message : String(error));
+    }
+  }
+
+  function findSimilarCommands(input: string, commands: REPLCommand[]): string[] {
+    const allNames = commands.flatMap(c => [c.name, ...(c.aliases || [])]);
+    
+    return allNames
+      .filter(name => {
+        // Simple similarity check - could use Levenshtein distance
+        const commonChars = input.split('').filter(char => name.includes(char)).length;
+        return commonChars >= Math.min(2, input.length / 2);
+      })
+      .slice(0, 3); // Top 3 suggestions
+  }
+
+  // Start the REPL
+  showPrompt();
 }

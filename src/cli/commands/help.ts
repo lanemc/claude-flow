@@ -654,7 +654,7 @@ function showAllTopics(): void {
   console.log(chalk.cyan.bold('All Help Topics'));
   console.log('─'.repeat(50));
   
-  const table = new Table.default({
+  const table = new Table({
     head: ['Topic', 'Category', 'Description'],
     style: { head: ['cyan'] }
   });
@@ -820,9 +820,7 @@ async function startInteractiveHelp(): Promise<void> {
     console.log();
     console.log(chalk.gray('Press Enter to continue...'));
     await new Promise(resolve => {
-      const stdin = Deno.stdin;
-      const buffer = new Uint8Array(1);
-      stdin.read(buffer).then(() => resolve(undefined));
+      process.stdin.once('data', () => resolve(undefined));
     });
     
     console.clear();

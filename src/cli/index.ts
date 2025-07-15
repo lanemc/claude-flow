@@ -181,12 +181,12 @@ function setupSignalHandlers(): void {
     process.exit(0);
   };
   
-  Deno.addSignalListener('SIGINT', gracefulShutdown);
-  Deno.addSignalListener('SIGTERM', gracefulShutdown);
+  process.on('SIGINT', gracefulShutdown);
+  process.on('SIGTERM', gracefulShutdown);
 }
 
 // Main entry point
-if (false // import.meta.main not available) {
+if (false) { // import.meta.main not available
   let globalOptions: any = {};
   
   try {
@@ -194,7 +194,7 @@ if (false // import.meta.main not available) {
     setupSignalHandlers();
     
     // Pre-parse global options for error handling
-    const args = Deno.args;
+    const args = process.argv.slice(2);
     globalOptions = {
       verbose: args.includes('-v') || args.includes('--verbose'),
       quiet: args.includes('-q') || args.includes('--quiet'),

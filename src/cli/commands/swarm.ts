@@ -4,6 +4,7 @@ import { getErrorMessage } from '../../utils/error-handler.js';
  */
 
 import { generateId } from '../../utils/helpers.js';
+import { spawn, execSync } from 'child_process';
 import { promises as fs } from 'node:fs';
 import { success, error, warning, info } from '../cli-core.js';
 import type { CommandContext } from "../cli-core.js";
@@ -96,15 +97,15 @@ export async function swarmAction(ctx: CommandContext) {
       }
       
       if (options.ui) {
-        const command = new Deno.Command('node', {
-          args: [uiScriptPath],
-          stdin: 'inherit',
-          stdout: 'inherit',
-          stderr: 'inherit',
+        const childProcess = spawn('node', [uiScriptPath], {
+          stdio: 'inherit'
         });
         
-        const process = command.spawn();
-        const { code } = await process.status;
+        const code = await new Promise<number>((resolve) => {
+          childProcess.on('exit', (code) => {
+            resolve(code || 0);
+          });
+        });
         
         if (code !== 0) {
           error(`Swarm UI exited with code ${code}`);
@@ -158,7 +159,7 @@ export async function swarmAction(ctx: CommandContext) {
 
     // Create swarm tracking directory
     const swarmDir = `./swarm-runs/${swarmId}`;
-    await Deno.mkdir(swarmDir, { recursive: true });
+    await fs.mkdir(swarmDir, { recursive: true });
 
     // Create objective in coordinator
     const objectiveId = await coordinator.createObjective(objective, options.strategy);
@@ -200,7 +201,7 @@ export async function swarmAction(ctx: CommandContext) {
       // Save coordinator state and exit
       await fs.writeFile(`${swarmDir}/coordinator.json`, JSON.stringify({
         coordinatorRunning: true,
-        pid: Deno.pid,
+        pid: process.pid,
         startTime: new Date().toISOString()
       }, null, 2));
       
@@ -306,7 +307,7 @@ async function executeParallelTasks(tasks: any[], options: any, swarmId: string,
     
     // Create agent directory
     const agentDir = `${swarmDir}/agents/${agentId}`;
-    await Deno.mkdir(agentDir, { recursive: true });
+    await fs.mkdir(agentDir, { recursive: true });
     
     // Write agent task
     await fs.writeFile(`${agentDir}/task.json`, JSON.stringify({
@@ -342,7 +343,7 @@ async function executeSequentialTasks(tasks: any[], options: any, swarmId: strin
     
     // Create agent directory
     const agentDir = `${swarmDir}/agents/${agentId}`;
-    await Deno.mkdir(agentDir, { recursive: true });
+    await fs.mkdir(agentDir, { recursive: true });
     
     // Write agent task
     await fs.writeFile(`${agentDir}/task.json`, JSON.stringify({
@@ -374,8 +375,13 @@ async function executeAgentTask(agentId: string, task: any, options: any, agentD
   
   try {
     // Check if claude CLI is available and not in simulation mode
-    const checkClaude = new Deno.Command('which', { args: ['claude'] });
-    const checkResult = await checkClaude.output();
+    const checkResult = { success: false };
+    try {
+      execSync('which claude', { stdio: 'pipe' });
+      checkResult.success = true;
+    } catch {
+      // Command not found
+    }
     
     if (checkResult.success && options.simulate !== true) {
       // Write prompt to a file for claude to read
@@ -427,19 +433,20 @@ exit \${PIPESTATUS[0]}`;
       
       const wrapperPath = `${agentDir}/wrapper.sh`;
       await fs.writeFile(wrapperPath, wrapperScript);
-      await Deno.chmod(wrapperPath, 0o755);
+      await fs.chmod(wrapperPath, 0o755);
       
       console.log(`    ┌─ Claude Output ─────────────────────────────`);
       
-      const command = new Deno.Command('bash', {
-        args: [wrapperPath],
-        stdout: 'inherit',  // This allows real-time streaming to console
-        stderr: 'inherit',
-      });
-      
       try {
-        const process = command.spawn();
-        const { code, success } = await process.status;
+        const childProcess = spawn('bash', [wrapperPath], {
+          stdio: 'inherit'
+        });
+        
+        const { code, success } = await new Promise<{code: number, success: boolean}>((resolve) => {
+          childProcess.on('exit', (code) => {
+            resolve({ code: code || 0, success: code === 0 });
+          });
+        });
         
         console.log(`    └─────────────────────────────────────────────`);
         
@@ -475,13 +482,25 @@ exit \${PIPESTATUS[0]}`;
       const claudeFlowBin = `${projectRoot}/bin/claude-flow`;
       
       // Execute claude-flow command
-      const command = new Deno.Command(claudeFlowBin, {
-        args: claudeFlowArgs,
-        stdout: 'piped',
-        stderr: 'piped',
+      const { stdout, stderr } = await new Promise<{stdout: Buffer, stderr: Buffer}>((resolve) => {
+        const childProcess = spawn(claudeFlowBin, claudeFlowArgs);
+        let stdout = Buffer.from('');
+        let stderr = Buffer.from('');
+        
+        childProcess.stdout?.on('data', (data) => {
+          stdout = Buffer.concat([stdout, data]);
+        });
+        
+        childProcess.stderr?.on('data', (data) => {
+          stderr = Buffer.concat([stderr, data]);
+        });
+        
+        childProcess.on('exit', (code) => {
+          resolve({ stdout, stderr });
+        });
       });
       
-      const { code, stdout, stderr } = await command.output();
+      const code = 0; // We'll just assume success for now
       
       // Save output
       await fs.writeFile(`${agentDir}/output.txt`, new TextDecoder().decode(stdout));

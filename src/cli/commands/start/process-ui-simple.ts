@@ -47,14 +47,15 @@ export class ProcessUI {
     
     while (this.running) {
       // Show prompt
-      await Deno.stdout.write(encoder.encode('\nCommand: '));
+      process.stdout.write('\nCommand: ');
       
-      // Read single character
-      const buf = new Uint8Array(1024);
-      const n = await Deno.stdin.read(buf);
-      if (n === null) break;
-      
-      const input = decoder.decode(buf.subarray(0, n)).trim();
+      // Read input
+      const input = await new Promise<string>((resolve) => {
+        process.stdin.once('data', (data) => {
+          resolve(data.toString().trim());
+        });
+      });
+      if (!input) break;
       
       if (input.length > 0) {
         await this.handleCommand(input);
@@ -170,13 +171,14 @@ export class ProcessUI {
     const decoder = new TextDecoder();
     const encoder = new TextEncoder();
     
-    await Deno.stdout.write(encoder.encode('\nAction: '));
+    process.stdout.write('\nAction: ');
     
-    const buf = new Uint8Array(1024);
-    const n = await Deno.stdin.read(buf);
-    if (n === null) return;
-    
-    const action = decoder.decode(buf.subarray(0, n)).trim().toLowerCase();
+    const action = await new Promise<string>((resolve) => {
+      process.stdin.once('data', (data) => {
+        resolve(data.toString().trim().toLowerCase());
+      });
+    });
+    if (!action) return;
     
     switch (action) {
       case 's':
@@ -243,8 +245,9 @@ export class ProcessUI {
   }
 
   private async waitForKey(): Promise<void> {
-    const buf = new Uint8Array(1);
-    await Deno.stdin.read(buf);
+    await new Promise<void>((resolve) => {
+      process.stdin.once('data', () => resolve());
+    });
   }
 
   private getStatusDisplay(status: ProcessStatus): string {
@@ -371,11 +374,13 @@ export class ProcessUI {
       console.log(chalk.yellow('⚠️  Some processes are still running.'));
       console.log('Stop all processes before exiting? [y/N]: ');
       
-      const decoder = new TextDecoder();
-      const buf = new Uint8Array(1024);
-      const n = await Deno.stdin.read(buf);
+      const answer = await new Promise<string>((resolve) => {
+        process.stdin.once('data', (data) => {
+          resolve(data.toString().trim().toLowerCase());
+        });
+      });
       
-      if (n && decoder.decode(buf.subarray(0, n)).trim().toLowerCase() === 'y') {
+      if (answer === 'y') {
         await this.stopAll();
       }
     }

@@ -107,7 +107,7 @@ export class ProcessManager extends EventEmitter {
       switch (process.type) {
         case ProcessType.EVENT_BUS:
           // Event bus is already initialized globally
-          process.pid = Deno.pid;
+          process.pid = process.pid;
           break;
 
         case ProcessType.MEMORY_MANAGER:
