@@ -22,6 +22,8 @@ import { hookSafetyCommand } from './simple-commands/hook-safety.js';
 import { hiveMindCommand } from './simple-commands/hive-mind.js';
 import hiveMindOptimizeCommand from './simple-commands/hive-mind-optimize.js';
 import { showUnifiedMetrics, fixTaskAttribution } from './simple-commands/swarm-metrics-integration.js';
+import { migrateHooksCommand, migrateHooksCommandConfig } from './simple-commands/migrate-hooks.js';
+import { fixHookVariablesCommand, fixHookVariablesCommandConfig } from './simple-commands/fix-hook-variables.js';
 // Note: TypeScript imports commented out for Node.js compatibility
 // import { ruvSwarmAction } from './commands/ruv-swarm.ts';
 // import { configIntegrationAction } from './commands/config-integration.ts';
@@ -466,6 +468,13 @@ SAFE ALTERNATIVES:
   • Create conditional execution scripts
 
 For more information: https://github.com/ruvnet/claude-flow/issues/166`
+  });
+
+  commandRegistry.set('migrate-hooks', migrateHooksCommandConfig);
+
+  commandRegistry.set('fix-hook-variables', {
+    handler: fixHookVariablesCommand,
+    ...fixHookVariablesCommandConfig
   });
 
   commandRegistry.set('hive', {

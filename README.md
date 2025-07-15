@@ -2,12 +2,12 @@
 
 <div align="center">
 
-[![🌟 Star on GitHub](https://img.shields.io/github/stars/ruvnet/claude-code-flow?style=for-the-badge&logo=github&color=gold)](https://github.com/ruvnet/claude-code-flow)
-[![📦 Alpha Release](https://img.shields.io/npm/v/claude-flow/alpha?style=for-the-badge&logo=npm&color=orange&label=v2.0.0-alpha)](https://www.npmjs.com/package/claude-flow/v/alpha)
-[![⚡ Claude Code](https://img.shields.io/badge/Claude%20Code-Optimized-green?style=for-the-badge&logo=anthropic)](https://github.com/ruvnet/claude-code-flow)
+[![🌟 Star on GitHub](https://img.shields.io/github/stars/ruvnet/claude-flow?style=for-the-badge&logo=github&color=gold)](https://github.com/ruvnet/claude-flow)
+[![📦 Alpha Release](https://img.shields.io/npm/v/claude-flow/alpha?style=for-the-badge&logo=npm&color=orange&label=v2.0.0-alpha.53)](https://www.npmjs.com/package/claude-flow/v/alpha)
+[![⚡ Claude Code](https://img.shields.io/badge/Claude%20Code-Optimized-green?style=for-the-badge&logo=anthropic)](https://github.com/ruvnet/claude-flow)
 [![🏛️ Agentics Foundation](https://img.shields.io/badge/Agentics-Foundation-crimson?style=for-the-badge&logo=openai)](https://discord.agentics.org)
-[![🐝 Hive-Mind](https://img.shields.io/badge/Hive--Mind-AI%20Coordination-purple?style=for-the-badge&logo=swarm)](https://github.com/ruvnet/claude-code-flow)
-[![🧠 Neural](https://img.shields.io/badge/Neural-87%20MCP%20Tools-blue?style=for-the-badge&logo=tensorflow)](https://github.com/ruvnet/claude-code-flow)
+[![🐝 Hive-Mind](https://img.shields.io/badge/Hive--Mind-AI%20Coordination-purple?style=for-the-badge&logo=swarm)](https://github.com/ruvnet/claude-flow)
+[![🧠 Neural](https://img.shields.io/badge/Neural-87%20MCP%20Tools-blue?style=for-the-badge&logo=tensorflow)](https://github.com/ruvnet/claude-flow)
 [![🛡️ MIT License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge&logo=opensourceinitiative)](https://opensource.org/licenses/MIT)
 
 </div>
@@ -49,16 +49,113 @@ claude --dangerously-skip-permissions
 
 ```bash
 # 1. Initialize Claude Flow with enhanced MCP setup (auto-configures permissions!)
-npx --y claude-flow@alpha init --force
+npx claude-flow@alpha init --force
 
 # 2. Explore all revolutionary capabilities  
-npx --y claude-flow@alpha --help
+npx claude-flow@alpha --help
 
-# 3. Launch the interactive hive-mind wizard
-npx --y claude-flow@alpha hive-mind wizard
+# 3a. Quick AI coordination (recommended for most tasks)
+npx claude-flow@alpha swarm "build me a REST API" --claude
 
-# 4. Build something amazing with AI coordination
-npx claude-flow@alpha hive-mind spawn "build me something amazing" --claude
+# 3b. OR launch the full hive-mind system (for complex projects)
+npx claude-flow@alpha hive-mind wizard
+npx claude-flow@alpha hive-mind spawn "build enterprise system" --claude
+```
+
+### 🤔 **Swarm vs Hive-Mind: Which to Use?**
+
+| Feature | `swarm` Command | `hive-mind` Command |
+|---------|----------------|-------------------|
+| **Best For** | Quick tasks, single objectives | Complex projects, persistent sessions |
+| **Setup** | Instant - no configuration needed | Interactive wizard setup |
+| **Session** | Temporary coordination | Persistent with resume capability |
+| **Memory** | Task-scoped | Project-wide with SQLite storage |
+| **Agents** | Auto-spawned for task | Manual control with specializations |
+| **Use When** | "Build X", "Fix Y", "Analyze Z" | Multi-feature projects, team coordination |
+
+**Quick Rule:** Start with `swarm` for most tasks. Use `hive-mind` when you need persistent sessions or complex multi-agent coordination.
+
+## 🎯 **Typical Workflows - Your "Happy Path" Guide**
+
+### **New to Claude-Flow? Start Here!**
+
+Confused about `.hive-mind` and `.swarm` directories? Not sure when to create new hives? Here are the most common workflow patterns:
+
+#### **🚀 Pattern 1: Single Feature Development**
+```bash
+# Initialize once per feature/task
+npx claude-flow@alpha init --force
+npx claude-flow@alpha hive-mind spawn "Implement user authentication" --claude
+
+# Continue working on SAME feature (reuse existing hive)
+npx claude-flow@alpha hive-mind status
+npx claude-flow@alpha memory query "authentication" --recent
+npx claude-flow@alpha swarm "Add password reset functionality" --continue-session
+```
+
+#### **🏗️ Pattern 2: Multi-Feature Project**
+```bash
+# Project-level initialization (once per project)
+npx claude-flow@alpha init --force --project-name "my-app"
+
+# Feature 1: Authentication (new hive)
+npx claude-flow@alpha hive-mind spawn "auth-system" --namespace auth --claude
+
+# Feature 2: User management (separate hive)  
+npx claude-flow@alpha hive-mind spawn "user-management" --namespace users --claude
+
+# Resume Feature 1 later (use session ID from spawn output)
+npx claude-flow@alpha hive-mind resume session-xxxxx-xxxxx
+```
+
+#### **🔍 Pattern 3: Research & Analysis**
+```bash
+# Start research session
+npx claude-flow@alpha hive-mind spawn "Research microservices patterns" --agents researcher,analyst --claude
+
+# Continue research in SAME session
+npx claude-flow@alpha memory stats  # See what's been learned
+npx claude-flow@alpha swarm "Deep dive into API gateway patterns" --continue-session
+```
+
+### **🤔 When Should I Create a New Hive?**
+
+| Situation | Action | Command |
+|-----------|--------|---------|
+| **Same objective/feature** | Continue existing hive | `npx claude-flow@alpha hive-mind resume <session-id>` |
+| **New feature in same project** | Create new hive with namespace | `npx claude-flow@alpha hive-mind spawn "new-feature" --namespace feature-name` |
+| **Completely different project** | New directory + init | `mkdir new-project && cd new-project && npx claude-flow@alpha init` |
+| **Experimenting/testing** | Temporary hive | `npx claude-flow@alpha hive-mind spawn "experiment" --temp` |
+
+### **📁 Understanding "Empty" Directories**
+
+**Don't panic if directories seem empty!** Claude-Flow uses SQLite databases that may not show files in directory listings:
+
+```bash
+# Check what's actually stored (even if directories look empty)
+npx claude-flow@alpha memory stats        # See memory data
+npx claude-flow@alpha memory list         # List all namespaces  
+npx claude-flow@alpha hive-mind status    # See active hives
+
+# Your project structure after initialization:
+# .hive-mind/     <- Contains config.json + SQLite session data
+# .swarm/         <- Contains memory.db (SQLite database)
+# memory/         <- Agent-specific memories (created when agents spawn)
+# coordination/   <- Active workflow files (created during tasks)
+```
+
+### **🔄 Continuing Previous Work**
+
+```bash
+# See what you were working on
+npx claude-flow@alpha hive-mind status
+npx claude-flow@alpha memory query --recent --limit 5
+
+# List all sessions to find the one you want
+npx claude-flow@alpha hive-mind sessions
+
+# Resume specific session by ID
+npx claude-flow@alpha hive-mind resume session-xxxxx-xxxxx
 ```
 
 ---
@@ -137,6 +234,26 @@ npx claude-flow hooks post-edit --file "src/api.js" --format --train-neural
 # Session management
 npx claude-flow hooks session-end --generate-summary --persist-state
 ```
+
+### **Fixing Hook Variable Interpolation**
+
+If you're experiencing issues with `${file}` or `${command}` variables not working in your hooks (common with Claude Code 1.0.51+), use the `fix-hook-variables` command:
+
+```bash
+# Fix all found settings.json files
+npx claude-flow@alpha fix-hook-variables
+
+# Fix specific file
+npx claude-flow@alpha fix-hook-variables .claude/settings.json
+
+# Create test configuration
+npx claude-flow@alpha fix-hook-variables --test
+```
+
+This command automatically transforms legacy variable syntax to working environment variables:
+- `${file}` → `$CLAUDE_EDITED_FILE`
+- `${command}` → `$CLAUDE_COMMAND`
+- `${tool}` → `$CLAUDE_TOOL`
 
 ---
 ## 🐝 **Revolutionary Hive-Mind Intelligence**
@@ -281,60 +398,6 @@ npx claude-flow@alpha daa lifecycle-manage --agentId "agent-123" --action "scale
 #### **🛡️ System & Security** (8 tools)
 - `security_scan`, `backup_create`, `restore_system`
 - `config_manage`, `features_detect`, `log_analysis`
-
-## 🐝 **Revolutionary Hive-Mind Intelligence**
-
-### **Queen-Led AI Coordination**
-Claude-Flow v2.0.0 introduces groundbreaking hive-mind architecture where a **Queen AI** coordinates specialized worker agents in perfect harmony.
-
-```bash
-# Deploy intelligent swarm coordination
-npx claude-flow@alpha swarm "Build a full-stack application" --strategy development --claude
-
-# Launch hive-mind with specific specializations
-npx claude-flow@alpha hive-mind spawn "Create microservices architecture" --agents 8 --claude
-```
-
-### **🤖 Intelligent Agent Types**
-- **👑 Queen Agent**: Master coordinator and decision maker
-- **🏗️ Architect Agents**: System design and technical architecture
-- **💻 Coder Agents**: Implementation and development
-- **🧪 Tester Agents**: Quality assurance and validation
-- **📊 Analyst Agents**: Data analysis and insights
-- **🔍 Researcher Agents**: Information gathering and analysis
-- **🛡️ Security Agents**: Security auditing and compliance
-- **🚀 DevOps Agents**: Deployment and infrastructure
-
----
-
-## ⚡ **87 Advanced MCP Tools**
-
-### **🧠 Neural & Cognitive Tools**
-```bash
-# Neural pattern recognition and training
-npx claude-flow@alpha neural train --pattern coordination --epochs 50
-npx claude-flow@alpha neural predict --model cognitive-analysis
-npx claude-flow@alpha cognitive analyze --behavior "development workflow"
-```
-
-### **💾 SQLite Memory Systems**
-```bash
-# Cross-session memory management with SQLite persistence
-npx claude-flow@alpha memory store "project-context" "Full-stack app requirements"
-npx claude-flow@alpha memory query "authentication" --namespace sparc
-npx claude-flow@alpha memory stats  # Shows 12 specialized tables
-npx claude-flow@alpha memory export backup.json --namespace default
-npx claude-flow@alpha memory import project-memory.json
-```
-
-### **🔄 Workflow Orchestration**
-```bash
-# Advanced workflow automation
-npx claude-flow@alpha workflow create --name "CI/CD Pipeline" --parallel
-npx claude-flow@alpha batch process --items "test,build,deploy" --concurrent
-npx claude-flow@alpha pipeline create --config advanced-deployment.json
-
-```
 
 ### **📊 GitHub Integration**
 ```bash
@@ -500,7 +563,7 @@ npm install -g claude-flow@alpha
 npx claude-flow@alpha init --force
 
 # Verify installation
-claude-flow --version  # Should show 2.0.0-alpha.x
+claude-flow --version  # Should show 2.0.0-alpha.53
 ```
 
 ### **🔧 Enhanced Configuration**
@@ -519,36 +582,18 @@ npx claude-flow@alpha hive-mind test --agents 5 --coordination-test
 
 ## 📋 **Alpha Command Reference**
 
-### **🐝 Hive-Mind Commands**
-| Command | Description | Example |
-|---------|-------------|---------|
-| `hive-mind wizard` | Interactive hive setup | `npx claude-flow@alpha hive-mind wizard` |
-| `hive-mind spawn` | Deploy intelligent swarm | `npx claude-flow@alpha hive-mind spawn "task" --claude` |
-| `hive-mind status` | Monitor coordination | `npx claude-flow@alpha hive-mind status --real-time` |
+For complete command documentation, run:
+```bash
+npx claude-flow@alpha --help          # Main help
+npx claude-flow@alpha help <command>  # Detailed command help
+```
 
-### **🧠 Neural Commands**
-| Command | Description | Example |
-|---------|-------------|---------|
-| `neural train` | Train coordination patterns | `npx claude-flow@alpha neural train --pattern optimization` |
-| `neural predict` | AI-powered predictions | `npx claude-flow@alpha neural predict --model performance` |
-| `cognitive analyze` | Behavior analysis | `npx claude-flow@alpha cognitive analyze --workflow dev` |
-
-### **💾 Memory Commands**
-| Command | Description | Example |
-|---------|-------------|---------|
-| `memory store` | Store key-value pair | `npx claude-flow@alpha memory store "context" "data"` |
-| `memory query` | Search memory entries | `npx claude-flow@alpha memory query "auth" --namespace sparc` |
-| `memory stats` | Show memory statistics | `npx claude-flow@alpha memory stats` |
-| `memory export` | Export memory to file | `npx claude-flow@alpha memory export backup.json` |
-| `memory import` | Import memory from file | `npx claude-flow@alpha memory import project.json` |
-| `memory list` | List all namespaces | `npx claude-flow@alpha memory list` |
-
-### **📊 Monitoring Commands**
-| Command | Description | Example |
-|---------|-------------|---------|
-| `memory stats` | Memory usage statistics | `npx claude-flow@alpha memory stats` |
-| `workflow create` | Create workflow pipelines | `npx claude-flow@alpha workflow create --name "CI/CD"` |
-| `github <mode>` | GitHub coordination modes | `npx claude-flow@alpha github gh-coordinator` |
+**Key Commands:**
+- **Hive-Mind**: `hive-mind wizard`, `hive-mind spawn`, `hive-mind status`
+- **Neural**: `neural train`, `neural predict`, `cognitive analyze`
+- **Memory**: `memory store`, `memory query`, `memory stats`, `memory export/import`
+- **GitHub**: `github <mode>` (6 specialized modes available)
+- **Workflows**: `workflow create`, `batch process`, `pipeline create`
 
 ---
 
@@ -557,9 +602,9 @@ npx claude-flow@alpha hive-mind test --agents 5 --coordination-test
 ### **🐛 Bug Reports & Feedback**
 Found issues with the alpha? We want to hear from you!
 
-- **🐛 Report Bugs**: [GitHub Issues](https://github.com/ruvnet/claude-code-flow/issues)
+- **🐛 Report Bugs**: [GitHub Issues](https://github.com/ruvnet/claude-flow/issues)
 - **💡 Feature Requests**: Use the "Alpha Feedback" label
-- **🛠️ Development**: Check the [`claude-flow-v2.0.0`](https://github.com/ruvnet/claude-code-flow/tree/claude-flow-v2.0.0) branch
+- **🛠️ Development**: Check the [`claude-flow-v2.0.0`](https://github.com/ruvnet/claude-flow/tree/claude-flow-v2.0.0) branch
 - **📋 Alpha Testing**: Join our alpha testing program
 
 ### **🔬 Testing the Alpha**
@@ -625,8 +670,8 @@ npx claude-flow@alpha workflow --help
 ### **🛠️ Alpha Development Setup**
 ```bash
 # Clone the alpha development branch
-git clone https://github.com/ruvnet/claude-code-flow.git
-cd claude-code-flow
+git clone https://github.com/ruvnet/claude-flow.git
+cd claude-flow
 git checkout claude-flow-v2.0.0
 
 # Install alpha dependencies
@@ -746,23 +791,13 @@ npx claude-flow security metrics --last-24h
 npx claude-flow security alerts --configure
 ```
 
-#### **🔧 Configurable Security Policies**
-```json
-// .claude/security.json
-{
-  "policies": {
-    "agent_isolation": true,
-    "memory_encryption": true,
-    "audit_logging": "verbose",
-    "threat_detection": "neural",
-    "max_agent_resources": {
-      "cpu": "50%",
-      "memory": "2GB",
-      "disk": "10GB"
-    }
-  }
-}
-```
+#### **🔧 Auto-Configured Security**
+Claude-Flow v2.0.0 Alpha automatically configures secure defaults:
+- Agent isolation and resource limits
+- Encrypted memory storage with AES-256
+- Complete audit logging for all operations
+- Neural threat detection and prevention
+- Auto-approved MCP permissions for trusted tools
 
 #### **🛡️ Defense-in-Depth Architecture**
 ```
@@ -810,12 +845,12 @@ MIT License - see [LICENSE](./LICENSE) for details.
 ### **🚀 Ready to experience the future of AI development?**
 
 ```bash
-npx --y claude-flow@alpha init --force
+npx claude-flow@alpha init --force
 ```
 
 **Join the alpha testing revolution!**
 
-[![GitHub](https://img.shields.io/badge/GitHub-Alpha%20Branch-blue?style=for-the-badge&logo=github)](https://github.com/ruvnet/claude-code-flow/tree/claude-flow-v2.0.0)
+[![GitHub](https://img.shields.io/badge/GitHub-Alpha%20Branch-blue?style=for-the-badge&logo=github)](https://github.com/ruvnet/claude-flow/tree/claude-flow-v2.0.0)
 [![NPM Alpha](https://img.shields.io/badge/NPM-Alpha%20Release-orange?style=for-the-badge&logo=npm)](https://www.npmjs.com/package/claude-flow/v/alpha)
 [![Discord](https://img.shields.io/badge/Discord-Agentics%20Community-purple?style=for-the-badge&logo=discord)](https://discord.agentics.org)
 

@@ -49,6 +49,8 @@ import {
   createHelperScript,
   COMMAND_STRUCTURE
 } from './templates/enhanced-templates.js';
+import { getIsolatedNpxEnv } from '../../../utils/npx-isolated-cache.js';
+import { updateGitignore, needsGitignoreUpdate } from './gitignore-updater.js';
 
 /**
  * Check if Claude Code CLI is installed
@@ -378,15 +380,15 @@ export async function initCommand(subArgs, flags) {
         // Check if create-sparc exists and run it
         let sparcInitialized = false;
         try {
+          // Use isolated NPX cache to prevent concurrent conflicts
           const createSparcCommand = new Deno.Command('npx', {
             args: ['-y', 'create-sparc', 'init', '--force'],
             cwd: workingDir, // Use the original working directory
             stdout: 'inherit',
             stderr: 'inherit',
-            env: {
-              ...Deno.env.toObject(),
+            env: getIsolatedNpxEnv({
               PWD: workingDir, // Ensure PWD is set correctly
-            },
+            }),
           });
           
           console.log('  🔄 Running: npx -y create-sparc init --force');
@@ -482,6 +484,18 @@ export async function initCommand(subArgs, flags) {
           console.log('9. Enable parallel processing with --parallel flags');
           console.log('10. Monitor performance with \'./claude-flow performance monitor\'');
         }
+      }
+      
+      // Update .gitignore
+      const gitignoreResult = await updateGitignore(workingDir, initForce, initDryRun);
+      if (gitignoreResult.success) {
+        if (!initDryRun) {
+          console.log(`  ✅ ${gitignoreResult.message}`);
+        } else {
+          console.log(`  ${gitignoreResult.message}`);
+        }
+      } else {
+        console.log(`  ⚠️  ${gitignoreResult.message}`);
       }
       
       console.log('\n💡 Tips:');
@@ -974,7 +988,7 @@ async function enhancedClaudeFlowInit(flags, subArgs = []) {
   try {
     // Check existing files
     const existingFiles = [];
-    const filesToCheck = ['CLAUDE.md', '.claude/settings.json'];
+    const filesToCheck = ['CLAUDE.md', '.claude/settings.json', '.mcp.json', 'claude-flow.config.json'];
     
     for (const file of filesToCheck) {
       if (existsSync(`${workingDir}/${file}`)) {
@@ -1031,6 +1045,58 @@ async function enhancedClaudeFlowInit(flags, subArgs = []) {
       printSuccess('✓ Created .claude/settings.local.json with default MCP permissions');
     } else {
       console.log('[DRY RUN] Would create .claude/settings.local.json with default MCP permissions');
+    }
+    
+    // Create .mcp.json at project root for MCP server configuration
+    const mcpConfig = {
+      "mcpServers": {
+        "claude-flow": {
+          "command": "npx",
+          "args": ["claude-flow@alpha", "mcp", "start"],
+          "type": "stdio"
+        },
+        "ruv-swarm": {
+          "command": "npx",
+          "args": ["ruv-swarm@latest", "mcp", "start"],
+          "type": "stdio"
+        }
+      }
+    };
+    
+    if (!dryRun) {
+      await Deno.writeTextFile(`${workingDir}/.mcp.json`, JSON.stringify(mcpConfig, null, 2));
+      printSuccess('✓ Created .mcp.json at project root for MCP server configuration');
+    } else {
+      console.log('[DRY RUN] Would create .mcp.json at project root for MCP server configuration');
+    }
+    
+    // Create claude-flow.config.json for Claude Flow specific settings
+    const claudeFlowConfig = {
+      "features": {
+        "autoTopologySelection": true,
+        "parallelExecution": true,
+        "neuralTraining": true,
+        "bottleneckAnalysis": true,
+        "smartAutoSpawning": true,
+        "selfHealingWorkflows": true,
+        "crossSessionMemory": true,
+        "githubIntegration": true
+      },
+      "performance": {
+        "maxAgents": 10,
+        "defaultTopology": "hierarchical",
+        "executionStrategy": "parallel",
+        "tokenOptimization": true,
+        "cacheEnabled": true,
+        "telemetryLevel": "detailed"
+      }
+    };
+    
+    if (!dryRun) {
+      await Deno.writeTextFile(`${workingDir}/claude-flow.config.json`, JSON.stringify(claudeFlowConfig, null, 2));
+      printSuccess('✓ Created claude-flow.config.json for Claude Flow settings');
+    } else {
+      console.log('[DRY RUN] Would create claude-flow.config.json for Claude Flow settings');
     }
     
     // Create command documentation
@@ -1132,18 +1198,37 @@ ${commands.map(cmd => `- [${cmd}](./${cmd}.md)`).join('\n')}
       
       printSuccess('✓ Initialized memory system');
       
-      // Initialize memory database
+      // Initialize memory database with fallback support
       try {
-        // Import and initialize SqliteMemoryStore to create the database
-        const { SqliteMemoryStore } = await import('../../../memory/sqlite-store.js');
-        const memoryStore = new SqliteMemoryStore();
+        // Import and initialize FallbackMemoryStore to create the database
+        const { FallbackMemoryStore } = await import('../../../memory/fallback-store.js');
+        const memoryStore = new FallbackMemoryStore();
         await memoryStore.initialize();
+        
+        if (memoryStore.isUsingFallback()) {
+          printSuccess('✓ Initialized memory system (in-memory fallback for npx compatibility)');
+          console.log('  💡 For persistent storage, install locally: npm install claude-flow@alpha');
+        } else {
+          printSuccess('✓ Initialized memory database (.swarm/memory.db)');
+        }
+        
         memoryStore.close();
-        printSuccess('✓ Initialized memory database (.swarm/memory.db)');
       } catch (err) {
-        console.log(`  ⚠️  Could not initialize memory database: ${err.message}`);
-        console.log('     The database will be created on first use');
+        console.log(`  ⚠️  Could not initialize memory system: ${err.message}`);
+        console.log('     Memory will be initialized on first use');
       }
+    }
+    
+    // Update .gitignore with Claude Flow entries
+    const gitignoreResult = await updateGitignore(workingDir, force, dryRun);
+    if (gitignoreResult.success) {
+      if (!dryRun) {
+        printSuccess(`✓ ${gitignoreResult.message}`);
+      } else {
+        console.log(gitignoreResult.message);
+      }
+    } else {
+      console.log(`  ⚠️  ${gitignoreResult.message}`);
     }
     
     // Check for Claude Code and set up MCP servers (always enabled by default)
@@ -1156,16 +1241,18 @@ ${commands.map(cmd => `- [${cmd}](./${cmd}.md)`).join('\n')}
       } else {
         console.log('  ℹ️  Skipping MCP setup (--skip-mcp flag used)');
         console.log('\n  📋 To add MCP servers manually:');
-        console.log('     claude mcp add claude-flow claude-flow mcp start');
-        console.log('     claude mcp add ruv-swarm npx ruv-swarm mcp start');
+        console.log('     claude mcp add claude-flow npx claude-flow@alpha mcp start');
+        console.log('     claude mcp add ruv-swarm npx ruv-swarm@latest mcp start');
+        console.log('\n  💡 MCP servers are defined in .mcp.json (project scope)');
       }
     } else if (!dryRun && !isClaudeCodeInstalled()) {
       console.log('\n⚠️  Claude Code CLI not detected!');
       console.log('\n  📥 To install Claude Code:');
       console.log('     npm install -g @anthropic-ai/claude-code');
       console.log('\n  📋 After installing, add MCP servers:');
-      console.log('     claude mcp add claude-flow claude-flow mcp start');
-      console.log('     claude mcp add ruv-swarm npx ruv-swarm mcp start');
+      console.log('     claude mcp add claude-flow npx claude-flow@alpha mcp start');
+      console.log('     claude mcp add ruv-swarm npx ruv-swarm@latest mcp start');
+      console.log('\n  💡 MCP servers are defined in .mcp.json (project scope)');
     }
     
     // Final instructions
