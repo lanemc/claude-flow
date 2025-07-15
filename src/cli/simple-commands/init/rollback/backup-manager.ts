@@ -1,19 +1,36 @@
-// backup-manager.js - Backup creation and management
+// backup-manager.ts - Backup creation and management
 
 // Node.js compatible import
-import fs from 'fs';
+import * as fs from 'fs';
+import * as path from 'path';
+import type {
+  BackupMetadata,
+  BackupManifest,
+  BackupResult,
+  RestoreResult,
+  BackupListItem,
+  DiskSpaceResult,
+  FileInfo,
+  DirectoryInfo,
+  FileOperationResult,
+  GenericResult,
+  CleanupResult
+} from './types.js';
 
 // Polyfill for Deno's ensureDirSync
-function ensureDirSync(dirPath) {
+function ensureDirSync(dirPath: string): void {
   try {
     fs.mkdirSync(dirPath, { recursive: true });
-  } catch (error) {
+  } catch (error: any) {
     if (error.code !== 'EEXIST') throw error;
   }
 }
 
 export class BackupManager {
-  constructor(workingDir) {
+  private workingDir: string;
+  private backupDir: string;
+
+  constructor(workingDir: string) {
     this.workingDir = workingDir;
     this.backupDir = `${workingDir}/.claude-flow-backups`;
   }
@@ -21,8 +38,8 @@ export class BackupManager {
   /**
    * Create a backup of the current state
    */
-  async createBackup(type = 'manual', description = '') {
-    const result = {
+  async createBackup(type: string = 'manual', description: string = ''): Promise<BackupResult> {
+    const result: BackupResult = {
       success: true,
       id: null,
       location: null,
@@ -42,10 +59,10 @@ export class BackupManager {
       result.location = backupPath;
 
       await this.ensureBackupDir();
-      await Deno.mkdir(backupPath, { recursive: true });
+      fs.mkdirSync(backupPath, { recursive: true });
 
       // Create backup manifest
-      const manifest = {
+      const manifest: BackupManifest = {
         id: backupId,
         type,
         description,
@@ -59,7 +76,7 @@ export class BackupManager {
       const criticalFiles = await this.getCriticalFiles();
       for (const file of criticalFiles) {
         const backupResult = await this.backupFile(file, backupPath);
-        if (backupResult.success) {
+        if (backupResult.success && backupResult.fileInfo) {
           manifest.files.push(backupResult.fileInfo);
           result.files.push(file);
         } else {
@@ -71,7 +88,7 @@ export class BackupManager {
       const criticalDirs = await this.getCriticalDirectories();
       for (const dir of criticalDirs) {
         const backupResult = await this.backupDirectory(dir, backupPath);
-        if (backupResult.success) {
+        if (backupResult.success && backupResult.dirInfo) {
           manifest.directories.push(backupResult.dirInfo);
         } else {
           result.warnings.push(`Failed to backup directory: ${dir}`);
@@ -79,20 +96,20 @@ export class BackupManager {
       }
 
       // Save manifest
-      await Deno.writeTextFile(
+      fs.writeFileSync(
         `${backupPath}/manifest.json`,
         JSON.stringify(manifest, null, 2)
       );
 
       // Create backup metadata
-      const metadata = {
+      const metadata: BackupMetadata = {
         created: Date.now(),
         size: await this.calculateBackupSize(backupPath),
         fileCount: manifest.files.length,
         dirCount: manifest.directories.length
       };
 
-      await Deno.writeTextFile(
+      fs.writeFileSync(
         `${backupPath}/metadata.json`,
         JSON.stringify(metadata, null, 2)
       );
@@ -100,7 +117,7 @@ export class BackupManager {
       console.log(`  ✓ Backup created: ${backupId}`);
       console.log(`  📁 Files backed up: ${result.files.length}`);
 
-    } catch (error) {
+    } catch (error: any) {
       result.success = false;
       result.errors.push(`Backup creation failed: ${error.message}`);
     }
@@ -111,8 +128,8 @@ export class BackupManager {
   /**
    * Restore from backup
    */
-  async restoreBackup(backupId) {
-    const result = {
+  async restoreBackup(backupId: string): Promise<RestoreResult> {
+    const result: RestoreResult = {
       success: true,
       errors: [],
       warnings: [],
@@ -123,9 +140,7 @@ export class BackupManager {
       const backupPath = `${this.backupDir}/${backupId}`;
       
       // Check if backup exists
-      try {
-        await Deno.stat(backupPath);
-      } catch {
+      if (!fs.existsSync(backupPath)) {
         result.success = false;
         result.errors.push(`Backup not found: ${backupId}`);
         return result;
@@ -133,8 +148,8 @@ export class BackupManager {
 
       // Read manifest
       const manifestPath = `${backupPath}/manifest.json`;
-      const manifestContent = await Deno.readTextFile(manifestPath);
-      const manifest = JSON.parse(manifestContent);
+      const manifestContent = fs.readFileSync(manifestPath, 'utf-8');
+      const manifest: BackupManifest = JSON.parse(manifestContent);
 
       // Restore files
       for (const fileInfo of manifest.files) {
@@ -159,7 +174,7 @@ export class BackupManager {
       console.log(`  ✓ Backup restored: ${backupId}`);
       console.log(`  📁 Items restored: ${result.restored.length}`);
 
-    } catch (error) {
+    } catch (error: any) {
       result.success = false;
       result.errors.push(`Backup restoration failed: ${error.message}`);
     }
@@ -170,20 +185,21 @@ export class BackupManager {
   /**
    * List available backups
    */
-  async listBackups() {
-    const backups = [];
+  async listBackups(): Promise<BackupListItem[]> {
+    const backups: BackupListItem[] = [];
 
     try {
       await this.ensureBackupDir();
       
-      for await (const entry of Deno.readDir(this.backupDir)) {
+      const entries = fs.readdirSync(this.backupDir, { withFileTypes: true });
+      for (const entry of entries) {
         if (entry.isDirectory) {
           try {
             const metadataPath = `${this.backupDir}/${entry.name}/metadata.json`;
             const manifestPath = `${this.backupDir}/${entry.name}/manifest.json`;
             
-            const metadata = JSON.parse(await Deno.readTextFile(metadataPath));
-            const manifest = JSON.parse(await Deno.readTextFile(manifestPath));
+            const metadata: BackupMetadata = JSON.parse(fs.readFileSync(metadataPath, 'utf-8'));
+            const manifest: BackupManifest = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
             
             backups.push({
               id: entry.name,
@@ -209,17 +225,17 @@ export class BackupManager {
   /**
    * Delete a backup
    */
-  async deleteBackup(backupId) {
-    const result = {
+  async deleteBackup(backupId: string): Promise<GenericResult> {
+    const result: GenericResult = {
       success: true,
       errors: []
     };
 
     try {
       const backupPath = `${this.backupDir}/${backupId}`;
-      await Deno.remove(backupPath, { recursive: true });
+      fs.rmSync(backupPath, { recursive: true, force: true });
       console.log(`  🗑️  Deleted backup: ${backupId}`);
-    } catch (error) {
+    } catch (error: any) {
       result.success = false;
       result.errors.push(`Failed to delete backup: ${error.message}`);
     }
@@ -230,8 +246,8 @@ export class BackupManager {
   /**
    * Clean up old backups
    */
-  async cleanupOldBackups(keepCount = 5) {
-    const result = {
+  async cleanupOldBackups(keepCount: number = 5): Promise<CleanupResult> {
+    const result: CleanupResult = {
       success: true,
       cleaned: [],
       errors: []
@@ -253,7 +269,7 @@ export class BackupManager {
         }
       }
 
-    } catch (error) {
+    } catch (error: any) {
       result.success = false;
       result.errors.push(`Cleanup failed: ${error.message}`);
     }
@@ -264,8 +280,8 @@ export class BackupManager {
   /**
    * Validate backup system
    */
-  async validateBackupSystem() {
-    const result = {
+  async validateBackupSystem(): Promise<GenericResult> {
+    const result: GenericResult = {
       success: true,
       errors: [],
       warnings: []
@@ -280,7 +296,7 @@ export class BackupManager {
       if (!testBackup.success) {
         result.success = false;
         result.errors.push('Cannot create test backup');
-      } else {
+      } else if (testBackup.id) {
         // Clean up test backup
         await this.deleteBackup(testBackup.id);
       }
@@ -288,10 +304,10 @@ export class BackupManager {
       // Check disk space
       const spaceCheck = await this.checkBackupDiskSpace();
       if (!spaceCheck.adequate) {
-        result.warnings.push('Low disk space for backups');
+        result.warnings!.push('Low disk space for backups');
       }
 
-    } catch (error) {
+    } catch (error: any) {
       result.success = false;
       result.errors.push(`Backup system validation failed: ${error.message}`);
     }
@@ -301,18 +317,12 @@ export class BackupManager {
 
   // Helper methods
 
-  async ensureBackupDir() {
-    try {
-      await Deno.mkdir(this.backupDir, { recursive: true });
-    } catch (error) {
-      if (!(error instanceof Deno.errors.AlreadyExists)) {
-        throw error;
-      }
-    }
+  private async ensureBackupDir(): Promise<void> {
+    fs.mkdirSync(this.backupDir, { recursive: true });
   }
 
-  async getCriticalFiles() {
-    const files = [];
+  private async getCriticalFiles(): Promise<string[]> {
+    const files: string[] = [];
     const potentialFiles = [
       'CLAUDE.md',
       'memory-bank.md',
@@ -326,8 +336,8 @@ export class BackupManager {
 
     for (const file of potentialFiles) {
       try {
-        const stat = await Deno.stat(`${this.workingDir}/${file}`);
-        if (stat.isFile) {
+        const stat = fs.statSync(`${this.workingDir}/${file}`);
+        if (stat.isFile()) {
           files.push(file);
         }
       } catch {
@@ -338,8 +348,8 @@ export class BackupManager {
     return files;
   }
 
-  async getCriticalDirectories() {
-    const dirs = [];
+  private async getCriticalDirectories(): Promise<string[]> {
+    const dirs: string[] = [];
     const potentialDirs = [
       '.claude',
       '.roo',
@@ -350,7 +360,7 @@ export class BackupManager {
 
     for (const dir of potentialDirs) {
       try {
-        const stat = await Deno.stat(`${this.workingDir}/${dir}`);
+        const stat = fs.statSync(`${this.workingDir}/${dir}`);
         if (stat.isDirectory) {
           dirs.push(dir);
         }
@@ -362,8 +372,8 @@ export class BackupManager {
     return dirs;
   }
 
-  async backupFile(relativePath, backupPath) {
-    const result = {
+  private async backupFile(relativePath: string, backupPath: string): Promise<FileOperationResult> {
+    const result: FileOperationResult = {
       success: true,
       fileInfo: null
     };
@@ -374,13 +384,13 @@ export class BackupManager {
       
       // Ensure destination directory exists
       const destDir = destPath.split('/').slice(0, -1).join('/');
-      await Deno.mkdir(destDir, { recursive: true });
+      fs.mkdirSync(destDir, { recursive: true });
       
       // Copy file
-      await Deno.copyFile(sourcePath, destPath);
+      fs.copyFileSync(sourcePath, destPath);
       
       // Get file info
-      const stat = await Deno.stat(sourcePath);
+      const stat = fs.statSync(sourcePath);
       result.fileInfo = {
         originalPath: relativePath,
         backupPath: destPath,
@@ -388,7 +398,7 @@ export class BackupManager {
         modified: stat.mtime?.getTime() || 0
       };
 
-    } catch (error) {
+    } catch (error: any) {
       result.success = false;
       result.error = error.message;
     }
@@ -396,8 +406,8 @@ export class BackupManager {
     return result;
   }
 
-  async backupDirectory(relativePath, backupPath) {
-    const result = {
+  private async backupDirectory(relativePath: string, backupPath: string): Promise<FileOperationResult> {
+    const result: FileOperationResult = {
       success: true,
       dirInfo: null
     };
@@ -407,7 +417,7 @@ export class BackupManager {
       const destPath = `${backupPath}/${relativePath}`;
       
       // Create destination directory
-      await Deno.mkdir(destPath, { recursive: true });
+      fs.mkdirSync(destPath, { recursive: true });
       
       // Copy directory contents recursively
       await this.copyDirectoryRecursive(sourcePath, destPath);
@@ -417,7 +427,7 @@ export class BackupManager {
         backupPath: destPath
       };
 
-    } catch (error) {
+    } catch (error: any) {
       result.success = false;
       result.error = error.message;
     }
@@ -425,22 +435,23 @@ export class BackupManager {
     return result;
   }
 
-  async copyDirectoryRecursive(source, dest) {
-    for await (const entry of Deno.readDir(source)) {
+  private async copyDirectoryRecursive(source: string, dest: string): Promise<void> {
+    const entries = fs.readdirSync(source, { withFileTypes: true });
+    for (const entry of entries) {
       const sourcePath = `${source}/${entry.name}`;
       const destPath = `${dest}/${entry.name}`;
       
-      if (entry.isFile) {
-        await Deno.copyFile(sourcePath, destPath);
-      } else if (entry.isDirectory) {
-        await Deno.mkdir(destPath, { recursive: true });
+      if (entry.isFile()) {
+        fs.copyFileSync(sourcePath, destPath);
+      } else if (entry.isDirectory()) {
+        fs.mkdirSync(destPath, { recursive: true });
         await this.copyDirectoryRecursive(sourcePath, destPath);
       }
     }
   }
 
-  async restoreFile(fileInfo, backupPath) {
-    const result = {
+  private async restoreFile(fileInfo: FileInfo, backupPath: string): Promise<FileOperationResult> {
+    const result: FileOperationResult = {
       success: true
     };
 
@@ -450,12 +461,12 @@ export class BackupManager {
       
       // Ensure destination directory exists
       const destDir = destPath.split('/').slice(0, -1).join('/');
-      await Deno.mkdir(destDir, { recursive: true });
+      fs.mkdirSync(destDir, { recursive: true });
       
       // Copy file back
-      await Deno.copyFile(sourcePath, destPath);
+      fs.copyFileSync(sourcePath, destPath);
 
-    } catch (error) {
+    } catch (error: any) {
       result.success = false;
       result.error = error.message;
     }
@@ -463,8 +474,8 @@ export class BackupManager {
     return result;
   }
 
-  async restoreDirectory(dirInfo, backupPath) {
-    const result = {
+  private async restoreDirectory(dirInfo: DirectoryInfo, backupPath: string): Promise<FileOperationResult> {
+    const result: FileOperationResult = {
       success: true
     };
 
@@ -474,18 +485,18 @@ export class BackupManager {
       
       // Remove existing directory if it exists
       try {
-        await Deno.remove(destPath, { recursive: true });
+        fs.rmSync(destPath, { recursive: true, force: true });
       } catch {
         // Directory might not exist
       }
       
       // Create destination directory
-      await Deno.mkdir(destPath, { recursive: true });
+      fs.mkdirSync(destPath, { recursive: true });
       
       // Copy directory contents back
       await this.copyDirectoryRecursive(sourcePath, destPath);
 
-    } catch (error) {
+    } catch (error: any) {
       result.success = false;
       result.error = error.message;
     }
@@ -493,17 +504,18 @@ export class BackupManager {
     return result;
   }
 
-  async calculateBackupSize(backupPath) {
+  private async calculateBackupSize(backupPath: string): Promise<number> {
     let totalSize = 0;
 
     try {
-      for await (const entry of Deno.readDir(backupPath)) {
+      const entries = fs.readdirSync(backupPath, { withFileTypes: true });
+      for (const entry of entries) {
         const entryPath = `${backupPath}/${entry.name}`;
-        const stat = await Deno.stat(entryPath);
+        const stat = fs.statSync(entryPath);
         
-        if (stat.isFile) {
+        if (stat.isFile()) {
           totalSize += stat.size;
-        } else if (stat.isDirectory) {
+        } else if (stat.isDirectory()) {
           totalSize += await this.calculateBackupSize(entryPath);
         }
       }
@@ -514,33 +526,31 @@ export class BackupManager {
     return totalSize;
   }
 
-  async createTestBackup() {
+  private async createTestBackup(): Promise<BackupResult> {
     try {
       return await this.createBackup('test', 'System validation test');
-    } catch (error) {
+    } catch (error: any) {
       return {
         success: false,
-        error: error.message
+        id: null,
+        location: null,
+        errors: [error.message],
+        warnings: [],
+        files: []
       };
     }
   }
 
-  async checkBackupDiskSpace() {
-    const result = {
+  private async checkBackupDiskSpace(): Promise<DiskSpaceResult> {
+    const result: DiskSpaceResult = {
       adequate: true,
       available: 0
     };
 
     try {
-      const command = new Deno.Command('df', {
-        args: ['-k', this.backupDir],
-        stdout: 'piped'
-      });
-
-      const { stdout, success } = await command.output();
-      
-      if (success) {
-        const output = new TextDecoder().decode(stdout);
+      const { execSync } = await import('child_process');
+      try {
+        const output = execSync(`df -k "${this.backupDir}"`, { encoding: 'utf-8' });
         const lines = output.trim().split('\n');
         
         if (lines.length >= 2) {
@@ -550,6 +560,9 @@ export class BackupManager {
             result.adequate = result.available > 500; // At least 500MB for backups
           }
         }
+      } catch {
+        // Can't check - assume adequate
+        result.adequate = true;
       }
     } catch {
       // Can't check - assume adequate
