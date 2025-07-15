@@ -14,19 +14,19 @@ import {
   createSparcClaudeMd, 
   createFullClaudeMd, 
   createMinimalClaudeMd 
-} from './templates/claude-md.js';
+} from './templates/claude-md.ts';
 import { 
   createFullMemoryBankMd, 
   createMinimalMemoryBankMd 
-} from './templates/memory-bank-md.js';
+} from './templates/memory-bank-md.ts';
 import { 
   createFullCoordinationMd, 
   createMinimalCoordinationMd 
-} from './templates/coordination-md.js';
+} from './templates/coordination-md.ts';
 import { 
   createAgentsReadme, 
   createSessionsReadme 
-} from './templates/readme-files.js';
+} from './templates/readme-files.ts';
 
 // Progress tracking for batch operations
 class BatchProgressTracker {

@@ -1,6 +1,11 @@
-// claude-md.js - CLAUDE.md templates
+// claude-md.ts - CLAUDE.md templates with TypeScript support
 
-export function createMinimalClaudeMd() {
+import type { TemplateGenerator } from '../../../../types/template.js';
+
+/**
+ * Creates a minimal CLAUDE.md file with basic concurrent execution rules
+ */
+export const createMinimalClaudeMd: TemplateGenerator<void> = (): string => {
   return `# Claude Code Configuration
 
 ## 🚨 CRITICAL: CONCURRENT EXECUTION FOR ALL ACTIONS
@@ -39,9 +44,12 @@ If ANY answer is "No", you MUST combine operations into a single message!
 ## Project Info
 This is a Claude-Flow AI agent orchestration system.
 `;
-}
+};
 
-export function createFullClaudeMd() {
+/**
+ * Creates a full CLAUDE.md file with comprehensive configuration
+ */
+export const createFullClaudeMd: TemplateGenerator<void> = (): string => {
   return `# Claude Code Configuration
 
 ## 🚨 CRITICAL: CONCURRENT EXECUTION FOR ALL ACTIONS
@@ -142,9 +150,12 @@ This is a Claude-Flow AI agent orchestration system with the following component
 - Monitor with \`./claude-flow monitor\` for real-time updates
 - Verbose output available with \`--verbose\` flag on most commands
 `;
-}
+};
 
-export function createSparcClaudeMd() {
+/**
+ * Creates a SPARC-focused CLAUDE.md file
+ */
+export const createSparcClaudeMd: TemplateGenerator<void> = (): string => {
   return `# Claude Code Configuration - SPARC Development Environment
 
 ## 🚨 CRITICAL: CONCURRENT EXECUTION FOR ALL ACTIONS
@@ -330,123 +341,6 @@ Claude Code slash commands are available in \`.claude/commands/\`:
 - Query previous work before starting new tasks
 - Export/import memory for backup and sharing
 
-## SPARC Memory Integration
-
-### Memory Commands for SPARC Development
-\`\`\`bash
-# Store project specifications
-./claude-flow memory store spec_auth "User authentication requirements and constraints"
-
-# Store architectural decisions
-./claude-flow memory store arch_decisions "Database schema and API design choices"
-
-# Store test results and coverage
-./claude-flow memory store test_coverage "Authentication module: 95% coverage, all tests passing"
-
-# Query previous work
-./claude-flow memory query auth_implementation
-
-# Export project memory
-./claude-flow memory export project_backup.json
-\`\`\`
-
-### Memory Namespaces
-- **\`spec\`**: Requirements and specifications
-- **\`arch\`**: Architecture and design decisions
-- **\`impl\`**: Implementation notes and code patterns
-- **\`test\`**: Test results and coverage reports
-- **\`debug\`**: Bug reports and resolution notes
-
-## Workflow Examples
-
-### Feature Development Workflow
-\`\`\`bash
-# 1. Start with specification
-./claude-flow sparc run spec-pseudocode "User profile management feature"
-
-# 2. Design architecture
-./claude-flow sparc run architect "Profile service architecture with data validation"
-
-# 3. Implement with TDD
-./claude-flow sparc tdd "user profile CRUD operations"
-
-# 4. Security review
-./claude-flow sparc run security-review "profile data access and validation"
-
-# 5. Integration testing
-./claude-flow sparc run integration "profile service with authentication system"
-
-# 6. Documentation
-./claude-flow sparc run docs-writer "profile service API documentation"
-\`\`\`
-
-### Bug Fix Workflow
-\`\`\`bash
-# 1. Debug and analyze
-./claude-flow sparc run debug "authentication token expiration issue"
-
-# 2. Write regression tests
-./claude-flow sparc run tdd "token refresh mechanism tests"
-
-# 3. Implement fix
-./claude-flow sparc run code "fix token refresh in authentication service"
-
-# 4. Security review
-./claude-flow sparc run security-review "token handling security implications"
-\`\`\`
-
-## Configuration Files
-
-### Claude Code Integration
-- **\`.claude/commands/\`**: Claude Code slash commands for all SPARC modes
-- **\`.claude/logs/\`**: Conversation and session logs
-
-### SPARC Configuration
-- **\`.roomodes\`**: SPARC mode definitions and configurations (auto-generated)
-- **\`.roo/\`**: SPARC templates and workflows (auto-generated)
-
-### Claude-Flow Configuration
-- **\`memory/\`**: Persistent memory and session data
-- **\`coordination/\`**: Multi-agent coordination settings
-- **\`CLAUDE.md\`**: Project instructions for Claude Code
-
-## Git Workflow Integration
-
-### Commit Strategy with SPARC
-- **Specification commits**: After completing requirements analysis
-- **Architecture commits**: After design phase completion
-- **TDD commits**: After each Red-Green-Refactor cycle
-- **Integration commits**: After successful component integration
-- **Documentation commits**: After completing documentation updates
-
-### Branch Strategy
-- **\`feature/sparc-<feature-name>\`**: Feature development with SPARC methodology
-- **\`hotfix/sparc-<issue>\`**: Bug fixes using SPARC debugging workflow
-- **\`refactor/sparc-<component>\`**: Refactoring using optimization mode
-
-## Troubleshooting
-
-### Common SPARC Issues
-- **Mode not found**: Check \`.roomodes\` file exists and is valid JSON
-- **Memory persistence**: Ensure \`memory/\` directory has write permissions
-- **Tool access**: Verify required tools are available for the selected mode
-- **Namespace conflicts**: Use unique memory namespaces for different features
-
-### Debug Commands
-\`\`\`bash
-# Check SPARC configuration
-./claude-flow sparc modes
-
-# Verify memory system
-./claude-flow memory stats
-
-# Check system status
-./claude-flow status
-
-# View detailed mode information
-./claude-flow sparc info <mode-name>
-\`\`\`
-
 ## Project Architecture
 
 This SPARC-enabled project follows a systematic development approach:
@@ -467,10 +361,12 @@ This SPARC-enabled project follows a systematic development approach:
 
 For more information about SPARC methodology, see: https://github.com/ruvnet/claude-code-flow/docs/sparc.md
 `;
-}
+};
 
-// Create optimized SPARC CLAUDE.md with batchtools integration
-export async function createOptimizedSparcClaudeMd() {
+/**
+ * Creates an optimized SPARC CLAUDE.md with batchtools integration
+ */
+export const createOptimizedSparcClaudeMd: TemplateGenerator<void> = (): string => {
   return `# Claude Code Configuration - SPARC Development Environment (Batchtools Optimized)
 
 ## 🚨 CRITICAL: CONCURRENT EXECUTION FOR ALL ACTIONS
@@ -610,22 +506,6 @@ npx claude-flow sparc run integration "integrate authentication with user manage
 - **Documentation**: 200% improvement with concurrent content generation
 - **Memory Operations**: 180% faster with batched read/write operations
 
-## Code Style and Best Practices (Batchtools Enhanced)
-
-### SPARC Development Principles with Batchtools
-- **Modular Design**: Keep files under 500 lines, optimize with parallel analysis
-- **Environment Safety**: Never hardcode secrets, validate with concurrent checks
-- **Test-First**: Always write tests before implementation using parallel generation
-- **Clean Architecture**: Separate concerns with concurrent validation
-- **Parallel Documentation**: Maintain clear, up-to-date documentation with concurrent updates
-
-### Batchtools Best Practices
-- **Parallel Operations**: Use batchtools for independent tasks
-- **Concurrent Validation**: Validate multiple aspects simultaneously
-- **Batch Processing**: Group similar operations for efficiency
-- **Pipeline Optimization**: Chain operations with parallel stages
-- **Resource Management**: Monitor and optimize resource usage
-
 ## Important Notes (Enhanced)
 
 - Always run tests before committing with parallel execution (\`npm run test --parallel\`)
@@ -646,4 +526,4 @@ NEVER create files unless they're absolutely necessary for achieving your goal.
 ALWAYS prefer editing an existing file to creating a new one.
 NEVER proactively create documentation files (*.md) or README files. Only create documentation files if explicitly requested by the User.
 `;
-}
+};
