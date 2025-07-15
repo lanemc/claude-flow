@@ -1086,7 +1086,8 @@ export class ResourceManager extends EventEmitter {
         return candidates[0].resource;
 
       case "best-fit":
-        // Find resource with smallest waste
+        {
+// Find resource with smallest waste
         return candidates.reduce((best, current) => {
           const bestWaste = this.calculateWaste(best.resource, requirements);
           const currentWaste = this.calculateWaste(
@@ -1095,9 +1096,12 @@ export class ResourceManager extends EventEmitter {
           );
           return currentWaste < bestWaste ? current : best;
         }).resource;
+        break;
+        }
 
       case "worst-fit":
-        // Find resource with largest waste (for fragmentation avoidance)
+        {
+// Find resource with largest waste (for fragmentation avoidance)
         return candidates.reduce((worst, current) => {
           const worstWaste = this.calculateWaste(worst.resource, requirements);
           const currentWaste = this.calculateWaste(
@@ -1106,6 +1110,7 @@ export class ResourceManager extends EventEmitter {
           );
           return currentWaste > worstWaste ? current : worst;
         }).resource;
+        }
 
       case "balanced":
       default:
@@ -1514,7 +1519,7 @@ export class ResourceManager extends EventEmitter {
 
     pool.statistics.totalResources = resources.length;
     pool.statistics.availableResources = resources.filter(
-      (r) => r.status === "available"
+      (_r) => r.status === "available"
     ).length;
 
     if (resources.length > 0) {

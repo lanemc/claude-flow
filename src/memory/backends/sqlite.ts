@@ -203,7 +203,7 @@ export class SQLiteBackend implements IMemoryBackend {
     try {
       const stmt = this.db.prepare(sql);
       const rows = stmt.all(...params);
-      return rows.map((row: any) => this.rowToEntry(row as Record<string, unknown>));
+      return rows.map((row: unknown) => this.rowToEntry(row as Record<string, unknown>));
     } catch (error) {
       throw new MemoryBackendError('Failed to query entries', { error });
     }
@@ -219,7 +219,7 @@ export class SQLiteBackend implements IMemoryBackend {
     try {
       const stmt = this.db.prepare(sql);
       const rows = stmt.all();
-      return rows.map((row: any) => this.rowToEntry(row as Record<string, unknown>));
+      return rows.map((row: unknown) => this.rowToEntry(row as Record<string, unknown>));
     } catch (error) {
       throw new MemoryBackendError('Failed to get all entries', { error });
     }
@@ -242,10 +242,10 @@ export class SQLiteBackend implements IMemoryBackend {
       this.db.prepare('SELECT 1').get();
 
       // Get metrics
-      const countResult = this.db.prepare('SELECT COUNT(*) as count FROM memory_entries').get() as any;
+      const countResult = this.db.prepare('SELECT COUNT(*) as count FROM memory_entries').get() as unknown;
       const entryCount = countResult.count;
 
-      const sizeResult = this.db.prepare('SELECT page_count * page_size as size FROM pragma_page_count(), pragma_page_size()').get() as any;
+      const sizeResult = this.db.prepare('SELECT page_count * page_size as size FROM pragma_page_count(), pragma_page_size()').get() as unknown;
       const dbSize = sizeResult.size;
 
       return {

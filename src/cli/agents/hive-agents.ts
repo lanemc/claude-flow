@@ -20,9 +20,9 @@ export class QueenAgent extends BaseAgent {
   constructor(
     id: string,
     config: AgentConfig,
-    environment: any,
-    logger: any,
-    eventBus: any,
+    environment: unknown,
+    logger: unknown,
+    eventBus: unknown,
     memory: any
   ) {
     super(id, 'coordinator', config, environment, logger, eventBus, memory);
@@ -76,7 +76,7 @@ export class QueenAgent extends BaseAgent {
     };
   }
 
-  public async executeTask(task: TaskDefinition): Promise<any> {
+  public async executeTask(task: TaskDefinition): Promise<unknown> {
     // Queen agent execution logic
     return {
       result: 'orchestrated',
@@ -114,7 +114,7 @@ COMMUNICATION STYLE:
 - Focus on swarm objectives`;
   }
 
-  async analyzeObjective(objective: string): Promise<any> {
+  async analyzeObjective(objective: string): Promise<unknown> {
     return {
       complexity: 'high',
       requiredAgents: ['architect', 'worker', 'scout', 'guardian'],
@@ -134,10 +134,10 @@ export class WorkerAgent extends BaseAgent {
   constructor(
     id: string,
     config: AgentConfig,
-    environment: any,
-    logger: any,
-    eventBus: any,
-    memory: any,
+    environment: unknown,
+    logger: unknown,
+    eventBus: unknown,
+    memory: unknown,
     specialization: string = 'general'
   ) {
     super(id, 'coder', config, environment, logger, eventBus, memory);
@@ -192,7 +192,7 @@ export class WorkerAgent extends BaseAgent {
     };
   }
 
-  public async executeTask(task: TaskDefinition): Promise<any> {
+  public async executeTask(task: TaskDefinition): Promise<unknown> {
     // Worker agent execution logic
     return {
       result: 'implemented',
@@ -233,7 +233,7 @@ COMMUNICATION STYLE:
 - Solution-oriented`;
   }
 
-  async estimateEffort(task: any): Promise<number> {
+  async estimateEffort(task: unknown): Promise<number> {
     // Estimate based on task type and specialization match
     const baseEffort = task.complexity || 5;
     const specializationBonus = task.type === this.specialization ? 0.8 : 1.0;
@@ -248,9 +248,9 @@ export class ScoutAgent extends BaseAgent {
   constructor(
     id: string,
     config: AgentConfig,
-    environment: any,
-    logger: any,
-    eventBus: any,
+    environment: unknown,
+    logger: unknown,
+    eventBus: unknown,
     memory: any
   ) {
     super(id, 'researcher', config, environment, logger, eventBus, memory);
@@ -304,7 +304,7 @@ export class ScoutAgent extends BaseAgent {
     };
   }
 
-  public async executeTask(task: TaskDefinition): Promise<any> {
+  public async executeTask(task: TaskDefinition): Promise<unknown> {
     // Scout agent execution logic
     return {
       result: 'researched',
@@ -343,7 +343,7 @@ COMMUNICATION STYLE:
 - Risk-aware`;
   }
 
-  async scout(topic: string): Promise<any> {
+  async scout(topic: string): Promise<unknown> {
     return {
       findings: [`Best practices for ${topic}`, `Common pitfalls in ${topic}`],
       risks: ['Technical debt', 'Scalability concerns'],
@@ -360,9 +360,9 @@ export class GuardianAgent extends BaseAgent {
   constructor(
     id: string,
     config: AgentConfig,
-    environment: any,
-    logger: any,
-    eventBus: any,
+    environment: unknown,
+    logger: unknown,
+    eventBus: unknown,
     memory: any
   ) {
     super(id, 'reviewer', config, environment, logger, eventBus, memory);
@@ -416,7 +416,7 @@ export class GuardianAgent extends BaseAgent {
     };
   }
 
-  public async executeTask(task: TaskDefinition): Promise<any> {
+  public async executeTask(task: TaskDefinition): Promise<unknown> {
     // Guardian agent execution logic
     return {
       result: 'reviewed',
@@ -455,7 +455,7 @@ COMMUNICATION STYLE:
 - Security-minded`;
   }
 
-  async validateWork(work: any): Promise<any> {
+  async validateWork(work: unknown): Promise<unknown> {
     return {
       qualityScore: 0.85,
       issues: ['Missing error handling', 'Incomplete tests'],
@@ -473,9 +473,9 @@ export class ArchitectAgent extends BaseAgent {
   constructor(
     id: string,
     config: AgentConfig,
-    environment: any,
-    logger: any,
-    eventBus: any,
+    environment: unknown,
+    logger: unknown,
+    eventBus: unknown,
     memory: any
   ) {
     super(id, 'architect', config, environment, logger, eventBus, memory);
@@ -529,7 +529,7 @@ export class ArchitectAgent extends BaseAgent {
     };
   }
 
-  public async executeTask(task: TaskDefinition): Promise<any> {
+  public async executeTask(task: TaskDefinition): Promise<unknown> {
     // Architect agent execution logic
     return {
       result: 'designed',
@@ -568,7 +568,7 @@ COMMUNICATION STYLE:
 - Technically detailed`;
   }
 
-  async designSystem(requirements: any): Promise<any> {
+  async designSystem(requirements: unknown): Promise<unknown> {
     return {
       architecture: 'microservices',
       components: ['API Gateway', 'Auth Service', 'Business Logic', 'Database'],
@@ -586,9 +586,9 @@ export class HiveAgentFactory {
   static createAgent(
     config: HiveAgentConfig & { name: string },
     agentConfig: AgentConfig,
-    environment: any,
-    logger: any,
-    eventBus: any,
+    environment: unknown,
+    logger: unknown,
+    eventBus: unknown,
     memory: any
   ): BaseAgent {
     switch (config.type) {
@@ -619,9 +619,9 @@ export class HiveAgentFactory {
     objective: string,
     maxAgents: number = 8,
     agentConfig: AgentConfig,
-    environment: any,
-    logger: any,
-    eventBus: any,
+    environment: unknown,
+    logger: unknown,
+    eventBus: unknown,
     memory: any
   ): BaseAgent[] {
     const agents: BaseAgent[] = [];

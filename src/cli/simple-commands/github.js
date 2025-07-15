@@ -284,7 +284,7 @@ Begin execution now. Create all necessary GitHub workflow files and configuratio
 }
 
 // Allow direct execution for testing
-if (import.meta.main) {
+if (require.main === module) {
   const args = [];
   const flags = {};
   

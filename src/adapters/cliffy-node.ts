@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../utils/error-handler';
+// // import { getErrorMessage } from '../utils/error-handler'; // Unused import
 /**
  * Cliffy Node.js Adapter
  * 
@@ -32,7 +32,7 @@ export const colors = {
 };
 
 // Prompt adapter - map Cliffy prompt to inquirer
-export const Input = async (options: { message: string; default?: string }) => {
+export const Input = async (_options: { message: string; default?: string }) => {
   const answers = await inquirer.prompt([{
     type: 'input',
     name: 'value',
@@ -42,7 +42,7 @@ export const Input = async (options: { message: string; default?: string }) => {
   return answers.value;
 };
 
-export const Confirm = async (options: { message: string; default?: boolean }) => {
+export const Confirm = async (_options: { message: string; default?: boolean }) => {
   const answers = await inquirer.prompt([{
     type: 'confirm',
     name: 'value',

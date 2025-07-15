@@ -80,7 +80,7 @@ export class DatabaseManager extends EventEmitter {
   }
 
   // Delegate all operations to the operations module
-  async createSwarm(data: any): Promise<void> {
+  async createSwarm(data: Record<string, unknown>): Promise<void> {
     return this.operations.createSwarm(data);
   }
 
@@ -100,7 +100,7 @@ export class DatabaseManager extends EventEmitter {
     return this.operations.getAllSwarms();
   }
 
-  async createAgent(data: any): Promise<void> {
+  async createAgent(data: Record<string, unknown>): Promise<void> {
     return this.operations.createAgent(data);
   }
 
@@ -112,7 +112,7 @@ export class DatabaseManager extends EventEmitter {
     return this.operations.getAgents(swarmId);
   }
 
-  async updateAgent(id: string, updates: Record<string, any>): Promise<void> {
+  async updateAgent(id: string, updates: Record<string, unknown>): Promise<void> {
     return this.operations.updateAgent(id, updates);
   }
 
@@ -124,7 +124,7 @@ export class DatabaseManager extends EventEmitter {
     return this.operations.getAgentPerformance(agentId);
   }
 
-  async createTask(data: any): Promise<void> {
+  async createTask(data: Record<string, unknown>): Promise<void> {
     return this.operations.createTask(data);
   }
 
@@ -136,7 +136,7 @@ export class DatabaseManager extends EventEmitter {
     return this.operations.getTasks(swarmId);
   }
 
-  async updateTask(id: string, updates: Record<string, any>): Promise<void> {
+  async updateTask(id: string, updates: Record<string, unknown>): Promise<void> {
     return this.operations.updateTask(id, updates);
   }
 
@@ -156,7 +156,7 @@ export class DatabaseManager extends EventEmitter {
     return this.operations.reassignTask(taskId, newAgentId);
   }
 
-  async storeMemory(data: any): Promise<void> {
+  async storeMemory(data: Record<string, unknown>): Promise<void> {
     return this.operations.storeMemory(data);
   }
 
@@ -200,7 +200,7 @@ export class DatabaseManager extends EventEmitter {
     return this.operations.getOldMemoryEntries(daysOld);
   }
 
-  async updateMemoryEntry(entry: any): Promise<void> {
+  async updateMemoryEntry(entry: unknown): Promise<void> {
     return this.operations.updateMemoryEntry(entry);
   }
 
@@ -216,7 +216,7 @@ export class DatabaseManager extends EventEmitter {
     return this.operations.trimNamespace(namespace, maxEntries);
   }
 
-  async createCommunication(data: any): Promise<void> {
+  async createCommunication(data: Record<string, unknown>): Promise<void> {
     return this.operations.createCommunication(data);
   }
 
@@ -236,7 +236,7 @@ export class DatabaseManager extends EventEmitter {
     return this.operations.getRecentMessages(swarmId, timeWindow);
   }
 
-  async createConsensusProposal(proposal: any): Promise<void> {
+  async createConsensusProposal(proposal: unknown): Promise<void> {
     return this.operations.createConsensusProposal(proposal);
   }
 
@@ -244,7 +244,7 @@ export class DatabaseManager extends EventEmitter {
     return this.operations.submitConsensusVote(proposalId, agentId, vote, reason);
   }
 
-  async storePerformanceMetric(data: any): Promise<void> {
+  async storePerformanceMetric(data: Record<string, unknown>): Promise<void> {
     return this.operations.storePerformanceMetric(data);
   }
 
@@ -283,7 +283,7 @@ export class DatabaseManager extends EventEmitter {
   // Add missing methods for backward compatibility
   async getDatabaseAnalytics() {
     const healthCheck = await this.operations.healthCheck();
-    const totalRecords = Object.values(healthCheck.tables).reduce((sum: number, t: any) => sum + t.count, 0);
+    const totalRecords = Object.values(healthCheck.tables).reduce((sum: number, t: unknown) => sum + t.count, 0);
     
     return {
       totalTables: 6,
@@ -297,11 +297,11 @@ export class DatabaseManager extends EventEmitter {
     };
   }
 
-  get raw(): any {
+  get raw(): unknown {
     return this.db;
   }
 
-  prepare(sql: string): any {
+  prepare(sql: string): unknown {
     return this.db.prepare(sql);
   }
 }

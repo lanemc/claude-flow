@@ -20,7 +20,7 @@ export class ClaudeAPI {
     return this.isHealthy;
   }
   
-  async complete(options: any): Promise<any> {
+  async complete(options: Record<string, unknown>): Promise<unknown> {
     // Mock response for testing
     return {
       content: [{ text: `Mock response for: ${options.messages?.[0]?.content || 'test'}` }],

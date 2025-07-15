@@ -189,7 +189,7 @@ export async function swarmAction(ctx: CommandContext) {
     // Create objective in coordinator
     const objectiveId = await coordinator.createObjective(
       objective,
-      options.strategy as any
+      options.strategy as unknown
     );
 
     console.log(`\n📝 Objective created with ID: ${objectiveId}`);
@@ -293,7 +293,7 @@ export async function swarmAction(ctx: CommandContext) {
  */
 async function decomposeObjective(
   objective: string,
-  options: any
+  options: Record<string, unknown>
 ): Promise<any[]> {
   const subtasks = [];
 
@@ -380,8 +380,8 @@ async function decomposeObjective(
  * Execute tasks in parallel
  */
 async function executeParallelTasks(
-  tasks: any[],
-  options: any,
+  tasks: unknown[],
+  options: Record<string, unknown>,
   swarmId: string,
   swarmDir: string
 ) {
@@ -435,8 +435,8 @@ async function executeParallelTasks(
  * Execute tasks sequentially
  */
 async function executeSequentialTasks(
-  tasks: any[],
-  options: any,
+  tasks: unknown[],
+  options: Record<string, unknown>,
   swarmId: string,
   swarmDir: string
 ) {
@@ -489,8 +489,8 @@ async function executeSequentialTasks(
  */
 async function executeAgentTask(
   agentId: string,
-  task: any,
-  options: any,
+  task: unknown,
+  options: Record<string, unknown>,
   agentDir: string
 ) {
   console.log(`    → Executing: ${task.type} task`);
@@ -680,9 +680,9 @@ function getCapabilitiesForType(type: string): string[] {
 }
 
 async function waitForObjectiveCompletion(
-  coordinator: any,
+  coordinator: unknown,
   objectiveId: string,
-  options: any
+  options: Record<string, unknown>
 ): Promise<void> {
   return new Promise((resolve) => {
     const checkInterval = setInterval(() => {

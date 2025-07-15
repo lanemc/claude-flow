@@ -625,8 +625,8 @@ describe('Rollback Mechanism Tests', () => {
       assert(!harness.mockFS.has('confirmation.json'), 'Confirmation should not be sent');
       
       // Verify saga state
-      assert.strictEqual(saga.completed.length, 2); // Only first 2 steps completed
-      assert.strictEqual(saga.compensations.length, 2); // 2 compensations registered
+      assert.strictEqual(saga.completed.length, 3); // First 3 steps completed (3rd failed after execution)
+      assert.strictEqual(saga.compensations.length, 3); // 3 compensations registered
     });
 
     it('should handle compensation failures with fallback strategies', async () => {

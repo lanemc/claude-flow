@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../utils/error-handler';
+// import { getErrorMessage } from '../utils/error-handler';
 /**
  * MCP Integration with Claude-Flow Orchestration System
  * Provides seamless integration between MCP servers and the broader orchestration components
@@ -14,15 +14,15 @@ import { MCPPerformanceMonitor } from './performance-monitor';
 import { MCPProtocolManager } from './protocol-manager';
 
 export interface OrchestrationComponents {
-  orchestrator?: any;
-  swarmCoordinator?: any;
-  agentManager?: any;
-  resourceManager?: any;
-  memoryManager?: any;
-  messageBus?: any;
-  monitor?: any;
-  eventBus?: any;
-  terminalManager?: any;
+  orchestrator?: unknown;
+  swarmCoordinator?: unknown;
+  agentManager?: unknown;
+  resourceManager?: unknown;
+  memoryManager?: unknown;
+  messageBus?: unknown;
+  monitor?: unknown;
+  eventBus?: unknown;
+  terminalManager?: unknown;
 }
 
 export interface MCPOrchestrationConfig {
@@ -428,7 +428,7 @@ export class MCPOrchestrationIntegration extends EventEmitter {
             limit: { type: 'number', minimum: 1, maximum: 100 },
           },
         },
-        handler: async (input: any) => {
+        handler: async (input: unknown) => {
           if (typeof this.components.orchestrator?.listTasks === 'function') {
             return await this.components.orchestrator.listTasks(input);
           }
@@ -497,7 +497,7 @@ export class MCPOrchestrationIntegration extends EventEmitter {
           },
           required: ['profile'],
         },
-        handler: async (input: any) => {
+        handler: async (input: unknown) => {
           if (typeof this.components.agentManager?.spawnAgent === 'function') {
             return await this.components.agentManager.spawnAgent(input.profile, input.config);
           }
@@ -556,7 +556,7 @@ export class MCPOrchestrationIntegration extends EventEmitter {
           },
           required: ['query'],
         },
-        handler: async (input: any) => {
+        handler: async (input: unknown) => {
           if (typeof this.components.memoryManager?.query === 'function') {
             return await this.components.memoryManager.query(input);
           }
@@ -575,7 +575,7 @@ export class MCPOrchestrationIntegration extends EventEmitter {
           },
           required: ['data'],
         },
-        handler: async (input: any) => {
+        handler: async (input: unknown) => {
           if (typeof this.components.memoryManager?.store === 'function') {
             return await this.components.memoryManager.store(input);
           }
@@ -644,7 +644,7 @@ export class MCPOrchestrationIntegration extends EventEmitter {
           },
           required: ['command'],
         },
-        handler: async (input: any) => {
+        handler: async (input: unknown) => {
           if (typeof this.components.terminalManager?.execute === 'function') {
             return await this.components.terminalManager.execute(input.command, input.sessionId);
           }
@@ -796,7 +796,7 @@ export class MCPOrchestrationIntegration extends EventEmitter {
     return true;
   }
 
-  private getComponentInstance(component: string): any {
+  private getComponentInstance(component: string): unknown {
     switch (component) {
       case 'orchestrator': return this.components.orchestrator;
       case 'swarm': return this.components.swarmCoordinator;

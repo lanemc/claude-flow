@@ -4,11 +4,20 @@
 
 import { jest } from '@jest/globals';
 import { memoryCommand } from '../memory';
-import fs from 'fs-extra';
 import path from 'path';
 import chalk from 'chalk';
 
-jest.mock('fs-extra');
+const mockPathExists = jest.fn<(path: string) => Promise<boolean>>();
+const mockReadJson = jest.fn<(file: string) => Promise<unknown>>();
+const mockWriteJson = jest.fn<(file: string, object: unknown) => Promise<void>>();
+const mockEnsureDir = jest.fn<(path: string) => Promise<void>>();
+
+jest.mock('fs-extra', () => ({
+  pathExists: mockPathExists,
+  readJson: mockReadJson,
+  writeJson: mockWriteJson,
+  ensureDir: mockEnsureDir
+}));
 jest.mock('chalk', () => ({
   default: {
     blue: jest.fn(str => str),
@@ -23,13 +32,13 @@ jest.mock('chalk', () => ({
 }));
 
 describe('Memory Command', () => {
-  let consoleLogSpy: any;
-  let consoleErrorSpy: any;
+  let consoleLogSpy: jest.SpyInstance;
+  let consoleErrorSpy: jest.SpyInstance;
   const memoryPath = path.join(process.cwd(), '.claude', 'memory', 'memory.json');
 
   beforeEach(() => {
-    consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
-    consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+    consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => undefined);
+    consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
     jest.clearAllMocks();
   });
 
@@ -40,14 +49,14 @@ describe('Memory Command', () => {
 
   describe('store subcommand', () => {
     test('should store memory entry', async () => {
-      fs.pathExists.mockResolvedValue(true);
-      fs.readJson.mockResolvedValue({ entries: [] });
-      fs.writeJson.mockResolvedValue(undefined);
+      mockPathExists.mockResolvedValue(true);
+      mockReadJson.mockResolvedValue({ entries: [] });
+      mockWriteJson.mockResolvedValue(undefined);
 
       await memoryCommand(['store', 'test-key', 'test-value'], {});
       
-      expect(fs.writeJson).toHaveBeenCalled();
-      const writeCall = fs.writeJson.mock.calls[0];
+      expect(mockWriteJson).toHaveBeenCalled();
+      const writeCall = mockWriteJson.mock.calls[0];
       expect(writeCall[1].entries).toHaveLength(1);
       expect(writeCall[1].entries[0].key).toBe('test-key');
       expect(writeCall[1].entries[0].value).toBe('test-value');
@@ -58,48 +67,48 @@ describe('Memory Command', () => {
     });
 
     test('should store memory with tags', async () => {
-      fs.pathExists.mockResolvedValue(true);
-      fs.readJson.mockResolvedValue({ entries: [] });
-      fs.writeJson.mockResolvedValue(undefined);
+      mockPathExists.mockResolvedValue(true);
+      mockReadJson.mockResolvedValue({ entries: [] });
+      mockWriteJson.mockResolvedValue(undefined);
 
       await memoryCommand(['store', 'key', 'value'], { tags: 'important,api' });
       
-      const writeCall = fs.writeJson.mock.calls[0];
+      const writeCall = mockWriteJson.mock.calls[0];
       expect(writeCall[1].entries[0].tags).toEqual(['important', 'api']);
     });
 
     test('should store memory with TTL', async () => {
-      fs.pathExists.mockResolvedValue(true);
-      fs.readJson.mockResolvedValue({ entries: [] });
-      fs.writeJson.mockResolvedValue(undefined);
+      mockPathExists.mockResolvedValue(true);
+      mockReadJson.mockResolvedValue({ entries: [] });
+      mockWriteJson.mockResolvedValue(undefined);
 
       await memoryCommand(['store', 'key', 'value'], { ttl: 3600 });
       
-      const writeCall = fs.writeJson.mock.calls[0];
+      const writeCall = mockWriteJson.mock.calls[0];
       expect(writeCall[1].entries[0].expiresAt).toBeDefined();
     });
 
     test('should handle JSON values', async () => {
-      fs.pathExists.mockResolvedValue(true);
-      fs.readJson.mockResolvedValue({ entries: [] });
-      fs.writeJson.mockResolvedValue(undefined);
+      mockPathExists.mockResolvedValue(true);
+      mockReadJson.mockResolvedValue({ entries: [] });
+      mockWriteJson.mockResolvedValue(undefined);
 
       const jsonValue = '{"name":"test","count":42}';
       await memoryCommand(['store', 'json-key', jsonValue], {});
       
-      const writeCall = fs.writeJson.mock.calls[0];
+      const writeCall = mockWriteJson.mock.calls[0];
       expect(writeCall[1].entries[0].value).toEqual({ name: 'test', count: 42 });
     });
 
     test('should create memory file if not exists', async () => {
-      fs.pathExists.mockResolvedValue(false);
-      fs.ensureDir.mockResolvedValue(undefined);
-      fs.writeJson.mockResolvedValue(undefined);
+      mockPathExists.mockResolvedValue(false);
+      mockEnsureDir.mockResolvedValue(undefined);
+      mockWriteJson.mockResolvedValue(undefined);
 
       await memoryCommand(['store', 'key', 'value'], {});
       
-      expect(fs.ensureDir).toHaveBeenCalledWith(path.dirname(memoryPath));
-      expect(fs.writeJson).toHaveBeenCalled();
+      expect(mockEnsureDir).toHaveBeenCalledWith(path.dirname(memoryPath));
+      expect(mockWriteJson).toHaveBeenCalled();
     });
   });
 
@@ -110,8 +119,8 @@ describe('Memory Command', () => {
           { key: 'test-key', value: 'test-value', timestamp: new Date().toISOString() }
         ]
       };
-      fs.pathExists.mockResolvedValue(true);
-      fs.readJson.mockResolvedValue(mockMemory);
+      mockPathExists.mockResolvedValue(true);
+      mockReadJson.mockResolvedValue(mockMemory);
 
       await memoryCommand(['retrieve', 'test-key'], {});
       
@@ -120,8 +129,8 @@ describe('Memory Command', () => {
     });
 
     test('should show not found message', async () => {
-      fs.pathExists.mockResolvedValue(true);
-      fs.readJson.mockResolvedValue({ entries: [] });
+      mockPathExists.mockResolvedValue(true);
+      mockReadJson.mockResolvedValue({ entries: [] });
 
       await memoryCommand(['retrieve', 'nonexistent'], {});
       
@@ -137,8 +146,8 @@ describe('Memory Command', () => {
           { key: 'expired', value: 'value', expiresAt: pastDate }
         ]
       };
-      fs.pathExists.mockResolvedValue(true);
-      fs.readJson.mockResolvedValue(mockMemory);
+      mockPathExists.mockResolvedValue(true);
+      mockReadJson.mockResolvedValue(mockMemory);
 
       await memoryCommand(['retrieve', 'expired'], {});
       
@@ -157,8 +166,8 @@ describe('Memory Command', () => {
           { key: 'key3', value: 'value3', tags: ['important'], timestamp: new Date().toISOString() }
         ]
       };
-      fs.pathExists.mockResolvedValue(true);
-      fs.readJson.mockResolvedValue(mockMemory);
+      mockPathExists.mockResolvedValue(true);
+      mockReadJson.mockResolvedValue(mockMemory);
 
       await memoryCommand(['list'], {});
       
@@ -178,8 +187,8 @@ describe('Memory Command', () => {
           { key: 'config/settings', value: 'data3', timestamp: new Date().toISOString() }
         ]
       };
-      fs.pathExists.mockResolvedValue(true);
-      fs.readJson.mockResolvedValue(mockMemory);
+      mockPathExists.mockResolvedValue(true);
+      mockReadJson.mockResolvedValue(mockMemory);
 
       await memoryCommand(['list'], { pattern: 'api/*' });
       
@@ -197,8 +206,8 @@ describe('Memory Command', () => {
           { key: 'key3', value: 'v3', tags: ['important', 'api'], timestamp: new Date().toISOString() }
         ]
       };
-      fs.pathExists.mockResolvedValue(true);
-      fs.readJson.mockResolvedValue(mockMemory);
+      mockPathExists.mockResolvedValue(true);
+      mockReadJson.mockResolvedValue(mockMemory);
 
       await memoryCommand(['list'], { tags: 'important' });
       
@@ -209,8 +218,8 @@ describe('Memory Command', () => {
     });
 
     test('should show empty message', async () => {
-      fs.pathExists.mockResolvedValue(true);
-      fs.readJson.mockResolvedValue({ entries: [] });
+      mockPathExists.mockResolvedValue(true);
+      mockReadJson.mockResolvedValue({ entries: [] });
 
       await memoryCommand(['list'], {});
       
@@ -228,13 +237,13 @@ describe('Memory Command', () => {
           { key: 'key2', value: 'value2' }
         ]
       };
-      fs.pathExists.mockResolvedValue(true);
-      fs.readJson.mockResolvedValue(mockMemory);
-      fs.writeJson.mockResolvedValue(undefined);
+      mockPathExists.mockResolvedValue(true);
+      mockReadJson.mockResolvedValue(mockMemory);
+      mockWriteJson.mockResolvedValue(undefined);
 
       await memoryCommand(['delete', 'key1'], {});
       
-      const writeCall = fs.writeJson.mock.calls[0];
+      const writeCall = mockWriteJson.mock.calls[0];
       expect(writeCall[1].entries).toHaveLength(1);
       expect(writeCall[1].entries[0].key).toBe('key2');
       
@@ -244,8 +253,8 @@ describe('Memory Command', () => {
     });
 
     test('should handle non-existent key', async () => {
-      fs.pathExists.mockResolvedValue(true);
-      fs.readJson.mockResolvedValue({ entries: [] });
+      mockPathExists.mockResolvedValue(true);
+      mockReadJson.mockResolvedValue({ entries: [] });
 
       await memoryCommand(['delete', 'nonexistent'], {});
       
@@ -257,12 +266,12 @@ describe('Memory Command', () => {
 
   describe('clear subcommand', () => {
     test('should clear all memories with force flag', async () => {
-      fs.pathExists.mockResolvedValue(true);
-      fs.writeJson.mockResolvedValue(undefined);
+      mockPathExists.mockResolvedValue(true);
+      mockWriteJson.mockResolvedValue(undefined);
 
       await memoryCommand(['clear'], { force: true });
       
-      const writeCall = fs.writeJson.mock.calls[0];
+      const writeCall = mockWriteJson.mock.calls[0];
       expect(writeCall[1].entries).toEqual([]);
       
       expect(consoleLogSpy).toHaveBeenCalledWith(
@@ -287,13 +296,13 @@ describe('Memory Command', () => {
           { key: 'key2', value: 'value2' }
         ]
       };
-      fs.pathExists.mockResolvedValue(true);
-      fs.readJson.mockResolvedValue(mockMemory);
-      fs.writeJson.mockResolvedValue(undefined);
+      mockPathExists.mockResolvedValue(true);
+      mockReadJson.mockResolvedValue(mockMemory);
+      mockWriteJson.mockResolvedValue(undefined);
 
       await memoryCommand(['export', 'backup.json'], {});
       
-      expect(fs.writeJson).toHaveBeenCalledWith(
+      expect(mockWriteJson).toHaveBeenCalledWith(
         'backup.json',
         mockMemory,
         { spaces: 2 }
@@ -313,15 +322,15 @@ describe('Memory Command', () => {
           { key: 'imported2', value: 'value2' }
         ]
       };
-      fs.pathExists.mockResolvedValueOnce(true) // import file exists
+      mockPathExists.mockResolvedValueOnce(true) // import file exists
         .mockResolvedValueOnce(true); // memory file exists
-      fs.readJson.mockResolvedValueOnce(importData) // import data
+      mockReadJson.mockResolvedValueOnce(importData) // import data
         .mockResolvedValueOnce({ entries: [] }); // existing memory
-      fs.writeJson.mockResolvedValue(undefined);
+      mockWriteJson.mockResolvedValue(undefined);
 
       await memoryCommand(['import', 'import.json'], {});
       
-      const writeCall = fs.writeJson.mock.calls[0];
+      const writeCall = mockWriteJson.mock.calls[0];
       expect(writeCall[1].entries).toHaveLength(2);
       
       expect(consoleLogSpy).toHaveBeenCalledWith(
@@ -333,14 +342,14 @@ describe('Memory Command', () => {
       const importData = { entries: [{ key: 'new', value: 'imported' }] };
       const existingData = { entries: [{ key: 'existing', value: 'original' }] };
       
-      fs.pathExists.mockResolvedValue(true);
-      fs.readJson.mockResolvedValueOnce(importData)
+      mockPathExists.mockResolvedValue(true);
+      mockReadJson.mockResolvedValueOnce(importData)
         .mockResolvedValueOnce(existingData);
-      fs.writeJson.mockResolvedValue(undefined);
+      mockWriteJson.mockResolvedValue(undefined);
 
       await memoryCommand(['import', 'import.json'], { merge: true });
       
-      const writeCall = fs.writeJson.mock.calls[0];
+      const writeCall = mockWriteJson.mock.calls[0];
       expect(writeCall[1].entries).toHaveLength(2);
     });
   });
@@ -355,8 +364,8 @@ describe('Memory Command', () => {
           { key: 'expired', value: 'value', expiresAt: new Date(Date.now() - 1000).toISOString() }
         ]
       };
-      fs.pathExists.mockResolvedValue(true);
-      fs.readJson.mockResolvedValue(mockMemory);
+      mockPathExists.mockResolvedValue(true);
+      mockReadJson.mockResolvedValue(mockMemory);
 
       await memoryCommand(['stats'], {});
       
@@ -382,7 +391,7 @@ describe('Memory Command', () => {
 
   describe('error handling', () => {
     test('should handle file system errors', async () => {
-      fs.pathExists.mockRejectedValue(new Error('Permission denied'));
+      mockPathExists.mockRejectedValue(new Error('Permission denied'));
 
       await memoryCommand(['list'], {});
       
@@ -392,8 +401,8 @@ describe('Memory Command', () => {
     });
 
     test('should handle invalid JSON in import', async () => {
-      fs.pathExists.mockResolvedValue(true);
-      fs.readJson.mockRejectedValue(new Error('Invalid JSON'));
+      mockPathExists.mockResolvedValue(true);
+      mockReadJson.mockRejectedValue(new Error('Invalid JSON'));
 
       await memoryCommand(['import', 'bad.json'], {});
       

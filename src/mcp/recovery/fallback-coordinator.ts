@@ -310,7 +310,7 @@ export class FallbackCoordinator extends EventEmitter {
 
   private mapOperationToCli(operation: FallbackOperation): string | null {
     // Map common MCP operations to CLI commands
-    const mappings: Record<string, (params: any) => string> = {
+    const mappings: Record<string, (params: Record<string, unknown>) => string> = {
       // Tool operations
       'tools/list': () => `${this.config.cliPath} tools list`,
       'tools/call': (params) => `${this.config.cliPath} tools call ${params.name} '${JSON.stringify(params.arguments)}'`,

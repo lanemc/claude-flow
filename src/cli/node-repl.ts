@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../utils/error-handler';
+// import { getErrorMessage } from '../utils/error-handler';
 /**
  * Node.js Interactive REPL for Claude-Flow
  * Compatible implementation using Node.js readline and inquirer
@@ -23,7 +23,7 @@ interface REPLCommand {
 }
 
 interface REPLContext {
-  options: any;
+  options: Record<string, unknown>;
   history: string[];
   workingDirectory: string;
   currentSession?: string;
@@ -82,7 +82,7 @@ class CommandHistory {
 /**
  * Start the Node.js interactive REPL
  */
-export async function startNodeREPL(options: any = {}): Promise<void> {
+export async function startNodeREPL(options: Record<string, unknown> = {}): Promise<void> {
   
   const rl = readline.createInterface({
     input: process.stdin,
@@ -233,7 +233,7 @@ export async function startNodeREPL(options: any = {}): Promise<void> {
         }
         
         const recent = historyItems.slice(-20); // Show last 20
-        recent.forEach((cmd, i) => {
+        recent.forEach((cmd, _i) => {
           const lineNumber = historyItems.length - recent.length + i + 1;
           console.log(`${chalk.gray(lineNumber.toString().padStart(3))} ${cmd}`);
         });

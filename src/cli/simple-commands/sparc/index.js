@@ -4,9 +4,9 @@
 import { SparcSpecification } from './specification.js';
 import { SparcPseudocode } from './pseudocode.js';
 import { SparcArchitecture } from './architecture.js';
-import { SparcRefinement } from './refinement.js';
-import { SparcCompletion } from './completion.js';
-import { SparcCoordinator } from './coordinator.js';
+import { SparcRefinement } from './refinement.ts';
+import { SparcCompletion } from './completion.ts';
+import { SparcCoordinator } from './coordinator.ts';
 
 export class SparcMethodology {
   constructor(taskDescription, options = {}) {
@@ -268,7 +268,7 @@ export class SparcMethodology {
       if (!gate.passed) {
         recommendations.push({
           type: 'quality_improvement',
-          phase: phase,
+          phase,
           message: `Improve ${phase} quality: ${gate.reasons.join(', ')}`
         });
       }

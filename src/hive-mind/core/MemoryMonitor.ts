@@ -187,7 +187,7 @@ export class MemoryMonitor extends EventEmitter {
   /**
    * Store historical performance data
    */
-  private storeHistoricalData(metrics: any): void {
+  private storeHistoricalData(metrics: unknown): void {
     for (const [key, value] of Object.entries(metrics)) {
       if (typeof value === 'number') {
         if (!this.historicalData.has(key)) {
@@ -208,7 +208,7 @@ export class MemoryMonitor extends EventEmitter {
   /**
    * Check metrics against alert thresholds
    */
-  private checkAlerts(metrics: any): void {
+  private checkAlerts(metrics: unknown): void {
     const newAlerts: MemoryAlert[] = [];
 
     // Cache hit rate alerts
@@ -415,12 +415,12 @@ export class MemoryMonitor extends EventEmitter {
   /**
    * Calculate pool efficiency
    */
-  private calculatePoolEfficiency(pools: any): number {
+  private calculatePoolEfficiency(pools: unknown): number {
     if (!pools) return 0;
 
-    const efficiencies = Object.values(pools).map((pool: any) => pool.reuseRate || 0);
+    const efficiencies = Object.values(pools).map((pool: unknown) => pool.reuseRate || 0);
     return efficiencies.length > 0 
-      ? efficiencies.reduce((a, b) => a + b, 0) / efficiencies.length 
+      ? efficiencies.reduce((a, _b) => a + b, 0) / efficiencies.length 
       : 0;
   }
 
@@ -437,7 +437,7 @@ export class MemoryMonitor extends EventEmitter {
   /**
    * Calculate overall health score
    */
-  private calculateOverallScore(memoryHealth: any, dbHealth: any, analytics: any): number {
+  private calculateOverallScore(memoryHealth: unknown, dbHealth: unknown, analytics: unknown): number {
     let score = 100;
 
     // Cache performance impact (30%)
@@ -479,7 +479,7 @@ export class MemoryMonitor extends EventEmitter {
   /**
    * Generate health-based suggestions
    */
-  private generateHealthSuggestions(analytics: any): OptimizationSuggestion[] {
+  private generateHealthSuggestions(analytics: unknown): OptimizationSuggestion[] {
     const suggestions: OptimizationSuggestion[] = [];
 
     // Add specific suggestions based on current state
@@ -501,7 +501,7 @@ export class MemoryMonitor extends EventEmitter {
   /**
    * Calculate performance trends
    */
-  private calculateTrends(): any {
+  private calculateTrends(): unknown {
     const trends = {
       performance: 'stable' as 'improving' | 'stable' | 'degrading',
       memoryUsage: 'stable' as 'increasing' | 'stable' | 'decreasing',

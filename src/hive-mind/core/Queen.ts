@@ -133,7 +133,7 @@ export class Queen extends EventEmitter {
   /**
    * Make a strategic decision about task execution
    */
-  private async makeStrategicDecision(task: Task, analysis: any): Promise<QueenDecision> {
+  private async makeStrategicDecision(task: Task, analysis: unknown): Promise<QueenDecision> {
     // Use MCP neural capabilities for decision making
     if (!this.mcpWrapper) throw new Error('MCP wrapper not initialized');
     const neuralAnalysis = await this.mcpWrapper.analyzePattern({
@@ -171,7 +171,7 @@ export class Queen extends EventEmitter {
   /**
    * Select optimal coordination strategy
    */
-  private selectOptimalStrategy(task: Task, analysis: any, neuralAnalysis: any): CoordinationStrategy {
+  private selectOptimalStrategy(task: Task, analysis: unknown, neuralAnalysis: unknown): CoordinationStrategy {
     // Strategy selection based on multiple factors
     const factors = {
       taskComplexity: analysis.complexity || 'medium',
@@ -300,7 +300,7 @@ export class Queen extends EventEmitter {
   /**
    * Create execution plan for task
    */
-  private createExecutionPlan(task: Task, agents: Agent[], strategy: CoordinationStrategy): any {
+  private createExecutionPlan(task: Task, agents: Agent[], strategy: CoordinationStrategy): unknown {
     return {
       phases: strategy.phases || ['preparation', 'execution', 'validation'],
       agentAssignments: agents.map(agent => ({
@@ -470,7 +470,7 @@ export class Queen extends EventEmitter {
     );
   }
 
-  private async analyzeTask(task: Task): Promise<any> {
+  private async analyzeTask(task: Task): Promise<unknown> {
     // Use MCP tools to analyze task complexity and requirements
     if (!this.mcpWrapper) throw new Error('MCP wrapper not initialized');
     return this.mcpWrapper.analyzePattern({
@@ -570,15 +570,15 @@ export class Queen extends EventEmitter {
     return responsibilityMap[agent.type] || ['contribute to task'];
   }
 
-  private createCheckpoints(task: Task, strategy: CoordinationStrategy): any[] {
-    return strategy.coordinationPoints.map((point, index) => ({
+  private createCheckpoints(task: Task, strategy: CoordinationStrategy): unknown[] {
+    return strategy.coordinationPoints.map((point, _index) => ({
       name: point,
       expectedProgress: Math.round((index + 1) / strategy.coordinationPoints.length * 100),
       actions: ['status_check', 'sync_progress', 'adjust_strategy']
     }));
   }
 
-  private createFallbackPlan(task: Task, agents: Agent[]): any {
+  private createFallbackPlan(task: Task, agents: Agent[]): unknown {
     return {
       triggers: ['agent_failure', 'deadline_approaching', 'consensus_failure'],
       actions: [
@@ -675,12 +675,12 @@ export class Queen extends EventEmitter {
     this.emit('agentFailed', { agent });
   }
 
-  private async handleStalledTask(task: any): Promise<void> {
+  private async handleStalledTask(task: unknown): Promise<void> {
     // Implement stalled task recovery
     this.emit('taskStalled', { task });
   }
 
-  private isTaskStalled(task: any): boolean {
+  private isTaskStalled(task: unknown): boolean {
     // Check if task hasn't progressed in reasonable time
     const stalledThreshold = 10 * 60 * 1000; // 10 minutes
     return task.last_progress_update && 
@@ -698,14 +698,14 @@ export class Queen extends EventEmitter {
     }
   }
 
-  private async applyPerformanceRecommendations(recommendations: any[]): Promise<void> {
+  private async applyPerformanceRecommendations(recommendations: unknown[]): Promise<void> {
     // Apply recommended optimizations
     for (const rec of recommendations) {
       this.emit('performanceRecommendation', rec);
     }
   }
 
-  private async adjustStrategy(strategyName: string, performance: any): Promise<void> {
+  private async adjustStrategy(strategyName: string, performance: unknown): Promise<void> {
     const strategy = this.strategies.get(strategyName);
     if (strategy) {
       // Adjust strategy parameters based on performance

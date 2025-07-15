@@ -77,7 +77,7 @@ async function initializeAgentSystem(): Promise<{ manager: AgentManager; registr
 
 // Agent Management Commands
 export const agentCommands = {
-  async spawn(args: string[], options: Record<string, any> = {}): Promise<void> {
+  async spawn(args: string[], options: Record<string, unknown> = {}): Promise<void> {
     try {
       const { manager } = await initializeAgentSystem();
       
@@ -110,7 +110,7 @@ export const agentCommands = {
     }
   },
 
-  async list(args: string[], options: Record<string, any> = {}): Promise<void> {
+  async list(args: string[], options: Record<string, unknown> = {}): Promise<void> {
     try {
       const { manager } = await initializeAgentSystem();
       
@@ -170,7 +170,7 @@ export const agentCommands = {
     }
   },
 
-  async info(args: string[], options: Record<string, any> = {}): Promise<void> {
+  async info(args: string[], options: Record<string, unknown> = {}): Promise<void> {
     try {
       const { manager } = await initializeAgentSystem();
       
@@ -237,7 +237,7 @@ export const agentCommands = {
         
         if (health.issues.length > 0) {
           console.log('\\n⚠️ Active Issues:');
-          health.issues.forEach((issue, index) => {
+          health.issues.forEach((issue, _index) => {
             console.log(`  ${index + 1}. [${issue.severity.toUpperCase()}] ${issue.message}`);
           });
         }
@@ -264,7 +264,7 @@ export const agentCommands = {
     }
   },
 
-  async terminate(args: string[], options: Record<string, any> = {}): Promise<void> {
+  async terminate(args: string[], options: Record<string, unknown> = {}): Promise<void> {
     try {
       const { manager } = await initializeAgentSystem();
       
@@ -314,7 +314,7 @@ export const agentCommands = {
     }
   },
 
-  async start(args: string[], options: Record<string, any> = {}): Promise<void> {
+  async start(args: string[], options: Record<string, unknown> = {}): Promise<void> {
     try {
       const { manager } = await initializeAgentSystem();
       
@@ -334,7 +334,7 @@ export const agentCommands = {
     }
   },
 
-  async restart(args: string[], options: Record<string, any> = {}): Promise<void> {
+  async restart(args: string[], options: Record<string, unknown> = {}): Promise<void> {
     try {
       const { manager } = await initializeAgentSystem();
       
@@ -355,7 +355,7 @@ export const agentCommands = {
     }
   },
 
-  async health(args: string[], options: Record<string, any> = {}): Promise<void> {
+  async health(args: string[], options: Record<string, unknown> = {}): Promise<void> {
     try {
       const { manager } = await initializeAgentSystem();
       

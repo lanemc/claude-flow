@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../utils/error-handler';
+// import { getErrorMessage } from '../utils/error-handler';
 /**
  * Logging infrastructure for Claude-Flow
  */
@@ -66,7 +66,7 @@ export class Logger implements ILogger {
     context: Record<string, unknown> = {},
   ) {
     // Validate file path if file destination
-    if ((config.destination === 'file' || config.destination === 'both') && !config.filePath) {
+    if ((config.destination === 'file' || config.destination === 'both') && !config.file?.path) {
       throw new Error('File path required for file logging');
     }
     
@@ -84,7 +84,7 @@ export class Logger implements ILogger {
         const isTestEnv = process.env.CLAUDE_FLOW_ENV === 'test';
         if (isTestEnv) {
           // Use global test config if available
-          const globalTestConfig = (globalThis as any).testLoggerConfig;
+          const globalTestConfig = (globalThis as unknown).testLoggerConfig;
           if (globalTestConfig) {
             config = globalTestConfig;
           } else {
@@ -238,7 +238,7 @@ export class Logger implements ILogger {
   }
 
   private async writeToFile(message: string): Promise<void> {
-    if (!this.config.filePath || this.isClosing) {
+    if (!this.config.file?.path || this.isClosing) {
       return;
     }
 
@@ -250,7 +250,7 @@ export class Logger implements ILogger {
 
       // Open file handle if not already open
       if (!this.fileHandle) {
-        this.fileHandle = await fs.open(this.config.filePath, 'a');
+        this.fileHandle = await fs.open(this.config.file.path, 'a');
       }
 
       // Write the message
@@ -263,20 +263,20 @@ export class Logger implements ILogger {
   }
 
   private async shouldRotate(): Promise<boolean> {
-    if (!this.config.maxFileSize || !this.config.filePath) {
+    if (!this.config.file?.maxSize || !this.config.file?.path) {
       return false;
     }
 
     try {
-      const stat = await fs.stat(this.config.filePath);
-      return stat.size >= this.config.maxFileSize;
+      const stat = await fs.stat(this.config.file.path);
+      return stat.size >= this.config.file.maxSize;
     } catch {
       return false;
     }
   }
 
   private async rotate(): Promise<void> {
-    if (!this.config.filePath || !this.config.maxFiles) {
+    if (!this.config.file?.path || !this.config.file?.maxFiles) {
       return;
     }
 
@@ -288,8 +288,8 @@ export class Logger implements ILogger {
 
     // Rename current file
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const rotatedPath = `${this.config.filePath}.${timestamp}`;
-    await fs.rename(this.config.filePath, rotatedPath);
+    const rotatedPath = `${this.config.file.path}.${timestamp}`;
+    await fs.rename(this.config.file.path, rotatedPath);
 
     // Clean up old files
     await this.cleanupOldFiles();
@@ -299,12 +299,12 @@ export class Logger implements ILogger {
   }
 
   private async cleanupOldFiles(): Promise<void> {
-    if (!this.config.filePath || !this.config.maxFiles) {
+    if (!this.config.file?.path || !this.config.file?.maxFiles) {
       return;
     }
 
-    const dir = path.dirname(this.config.filePath);
-    const baseFileName = path.basename(this.config.filePath);
+    const dir = path.dirname(this.config.file.path);
+    const baseFileName = path.basename(this.config.file.path);
 
     try {
       const entries = await fs.readdir(dir, { withFileTypes: true });
@@ -320,7 +320,7 @@ export class Logger implements ILogger {
       files.sort().reverse();
 
       // Remove old files
-      const filesToRemove = files.slice(this.config.maxFiles - 1);
+      const filesToRemove = files.slice(this.config.file.maxFiles - 1);
       for (const file of filesToRemove) {
         await fs.unlink(path.join(dir, file));
       }

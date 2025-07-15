@@ -39,7 +39,7 @@ interface ComponentLibrary {
 
 interface EnhancedWebUI extends UIManagerInterface {
   new(): EnhancedWebUI;
-  initialize(existingUI?: any): Promise<void>;
+  initialize(existingUI?: unknown): Promise<void>;
 }
 
 interface EnhancedProcessUI {
@@ -56,17 +56,17 @@ const mockUIManager = class implements UIManagerInterface {
     console.log('Mock UI Manager destroyed');
   }
 
-  getState(): any {
+  getState(): unknown {
     return { initialized: true };
   }
 
-  setState(state: any): void {
+  setState(state: Record<string, unknown>): void {
     console.log('Mock UI Manager state set:', state);
   }
-} as any as { new(): UIManager };
+} as unknown as { new(): UIManager };
 
 const mockEnhancedWebUI = class implements UIManagerInterface {
-  async initialize(existingUI?: any): Promise<void> {
+  async initialize(existingUI?: unknown): Promise<void> {
     console.log('Mock Enhanced Web UI initialized with:', existingUI);
   }
 
@@ -74,18 +74,18 @@ const mockEnhancedWebUI = class implements UIManagerInterface {
     console.log('Mock Enhanced Web UI destroyed');
   }
 
-  getState(): any {
+  getState(): unknown {
     return { initialized: true };
   }
 
-  setState(state: any): void {
+  setState(state: Record<string, unknown>): void {
     console.log('Mock Enhanced Web UI state set:', state);
   }
-} as any as { new(): EnhancedWebUI };
+} as unknown as { new(): EnhancedWebUI };
 
 const mockEnhancedProcessUI = class {
   // Mock implementation
-} as any as { new(): EnhancedProcessUI };
+} as unknown as { new(): EnhancedProcessUI };
 
 // Core Architecture Components (mocked exports)
 export const VIEW_CATEGORIES = {
@@ -167,7 +167,7 @@ export async function initializeEnhancedUI(options: UIInitializationOptions = {}
   } = options;
 
   try {
-    if (mode === 'full' || (mode === 'auto' && typeof globalThis !== 'undefined' && typeof (globalThis as any).window !== 'undefined')) {
+    if (mode === 'full' || (mode === 'auto' && typeof globalThis !== 'undefined' && typeof (globalThis as unknown).window !== 'undefined')) {
       // Browser environment - full UI manager
       console.log('Initializing full UI manager for browser environment');
       const uiManager = new mockUIManager();
@@ -185,7 +185,7 @@ export async function initializeEnhancedUI(options: UIInitializationOptions = {}
       // Terminal/fallback mode
       console.log('Initializing fallback/terminal mode UI');
       const processUI = new mockEnhancedProcessUI();
-      return processUI as any;
+      return processUI as unknown;
     }
     
   } catch (error) {
@@ -193,7 +193,7 @@ export async function initializeEnhancedUI(options: UIInitializationOptions = {}
     
     // Always provide fallback
     const processUI = new mockEnhancedProcessUI();
-    return processUI as any;
+    return processUI as unknown;
   }
 }
 
@@ -322,8 +322,8 @@ export function getArchitectureInfo(): ArchitectureInfo {
 }
 
 // Auto-initialization for browser environments
-if (typeof globalThis !== 'undefined' && typeof (globalThis as any).window !== 'undefined') {
-  const window = (globalThis as any).window as any;
+if (typeof globalThis !== 'undefined' && typeof (globalThis as unknown).window !== 'undefined') {
+  const window = (globalThis as unknown).window as unknown;
   
   // Check if we should auto-initialize
   const claudeFlowEnhancedUI: WindowClaudeFlowUI = {

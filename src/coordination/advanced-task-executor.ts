@@ -362,8 +362,8 @@ export class AdvancedTaskExecutor extends EventEmitter {
     // Send input if provided
     if (task.input && childProcess.stdin) {
       childProcess.stdin.write(JSON.stringify({
-        task: task,
-        agent: agent,
+        task,
+        agent,
         input: task.input
       }));
       childProcess.stdin.end();
@@ -649,7 +649,7 @@ export class AdvancedTaskExecutor extends EventEmitter {
       cpu: number;
       disk: number;
     };
-    circuitBreakers: Record<string, any>;
+    circuitBreakers: Record<string, unknown>;
   } {
     return {
       runningTasks: this.runningTasks.size,

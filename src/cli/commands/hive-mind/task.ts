@@ -1,11 +1,3 @@
-#!/usr/bin/env node
-/**
- * Hive Mind Task Command
- * 
- * Submit tasks to the Hive Mind for collective processing
- * with automatic agent assignment and consensus coordination.
- */
-
 import { Command } from 'commander';
 import chalk from 'chalk';
 import ora from 'ora';
@@ -15,8 +7,18 @@ import { HiveMind } from '../../../hive-mind/core/HiveMind';
 import { TaskPriority, TaskStrategy } from '../../../hive-mind/types';
 import { formatSuccess, formatError, formatInfo, formatWarning } from '../../formatter';
 import { DatabaseManager } from '../../../hive-mind/core/DatabaseManager';
+// Hive Mind Task Command
+import Table from 'cli-table3';
 
 export const taskCommand = new Command('task')
+/**
+ * Hive Mind Task Command
+ * 
+ * Submit tasks to the Hive Mind for collective processing
+ * with automatic agent assignment and consensus coordination.
+ */
+
+
   .description('Submit and manage tasks in the Hive Mind')
   .argument('[description]', 'Task description')
   .option('-s, --swarm-id <id>', 'Target swarm ID')
@@ -186,7 +188,6 @@ async function listTasks(hiveMind: HiveMind) {
   }
   
   console.log('\n' + chalk.bold('📋 Task List:'));
-  const Table = require('cli-table3');
   const table = new Table({
     head: ['ID', 'Description', 'Priority', 'Status', 'Progress', 'Agents'],
     style: { head: ['cyan'] }

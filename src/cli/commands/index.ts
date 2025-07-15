@@ -406,7 +406,8 @@ export function setupCommands(cli: CLI): void {
           case "restart":
           case "pool":
           case "health":
-            // Use the enhanced agent command system
+            {
+// Use the enhanced agent command system
             console.log(chalk.cyan('🚀 Using enhanced agent management system...'));
             
             // Create a simplified wrapper around the enhanced command
@@ -422,6 +423,7 @@ export function setupCommands(cli: CLI): void {
             console.log("  - Enhanced features: pools, health monitoring, resource management");
             console.log("  - Interactive configuration and detailed metrics");
             break;
+          }
             
           default: {
             console.log(chalk.cyan("📋 Agent Management Commands:"));

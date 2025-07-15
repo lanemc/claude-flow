@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../utils/error-handler';
+// import { getErrorMessage } from '../utils/error-handler';
 /**
  * Progress Reporter - Provides visual feedback during migration
  */

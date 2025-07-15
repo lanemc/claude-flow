@@ -9,10 +9,10 @@ import path from 'path';
 import chalk from 'chalk';
 import ora from 'ora';
 
-const mockPathExists = jest.fn();
-const mockReadJson = jest.fn();
-const mockWriteJson = jest.fn();
-const mockEnsureDir = jest.fn();
+const mockPathExists = jest.fn<(path: string) => Promise<boolean>>();
+const mockReadJson = jest.fn<(file: string) => Promise<unknown>>();
+const mockWriteJson = jest.fn<(file: string, object: unknown) => Promise<void>>();
+const mockEnsureDir = jest.fn<(path: string) => Promise<void>>();
 
 jest.mock('fs-extra', () => ({
   pathExists: mockPathExists,
@@ -21,7 +21,7 @@ jest.mock('fs-extra', () => ({
   ensureDir: mockEnsureDir
 }));
 
-const mockOra = jest.fn();
+const mockOra = jest.fn<(text?: string) => unknown>();
 jest.mock('ora', () => mockOra);
 jest.mock('chalk', () => ({
   default: {
@@ -37,13 +37,13 @@ jest.mock('chalk', () => ({
 }));
 
 describe('Task Command', () => {
-  let consoleLogSpy: any;
-  let consoleErrorSpy: any;
-  let mockSpinner: any;
+  let consoleLogSpy: unknown;
+  let consoleErrorSpy: unknown;
+  let mockSpinner: unknown;
 
   beforeEach(() => {
-    consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
-    consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => { /* empty */ });
+    consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => { /* empty */ });
     
     mockSpinner = {
       start: jest.fn().mockReturnThis(),

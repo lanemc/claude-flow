@@ -1,11 +1,12 @@
 import { describe, test, expect } from '@jest/globals';
 import { VALID_AGENT_TYPES } from '../constants/agent-types';
+import mcpServer from '../mcp/mcp-server';
+import { createClaudeFlowTools } from '../mcp/claude-flow-tools';
+import { createRuvSwarmTools } from '../mcp/ruv-swarm-tools';
+import { swarmTools } from '../mcp/swarm-tools';
+
 
 // Import validation schemas from various files
-const mcpServer = require('../mcp/mcp-server');
-import { getClaudeFlowTools } from '../mcp/claude-flow-tools';
-import { getRuvSwarmTools } from '../mcp/ruv-swarm-tools';
-import { swarmTools } from '../mcp/swarm-tools';
 
 describe('Agent Type Validation Consistency', () => {
   const expectedTypes = VALID_AGENT_TYPES.sort();
@@ -17,15 +18,15 @@ describe('Agent Type Validation Consistency', () => {
   });
 
   test('Claude Flow tools use consistent agent types', () => {
-    const tools = getClaudeFlowTools({} as any);
-    const spawnTool = tools.find(t => t.name === 'spawn_agent');
+    const tools = createClaudeFlowTools({} as any);
+    const spawnTool = tools.find(t => t.name === 'agents/spawn');
     const enumValues = spawnTool?.inputSchema.properties.type.enum;
     expect(enumValues?.sort()).toEqual(expectedTypes);
   });
 
   test('Ruv Swarm tools use consistent agent types', () => {
-    const tools = getRuvSwarmTools({} as any);
-    const spawnTool = tools.find(t => t.name === 'spawn_agent');
+    const tools = createRuvSwarmTools({} as any);
+    const spawnTool = tools.find(t => t.name === 'agent_spawn');
     const enumValues = spawnTool?.inputSchema.properties.type.enum;
     expect(enumValues?.sort()).toEqual(expectedTypes);
   });

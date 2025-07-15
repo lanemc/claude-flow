@@ -28,7 +28,7 @@ import {
 export interface ClaudeExecutionOptionsV2 extends ClaudeExecutionOptions {
   nonInteractive?: boolean;
   autoApprove?: boolean;
-  promptDefaults?: Record<string, any>;
+  promptDefaults?: Record<string, unknown>;
   environmentOverride?: Record<string, string>;
   retryOnInteractiveError?: boolean;
   dangerouslySkipPermissions?: boolean;
@@ -230,7 +230,7 @@ export class TaskExecutorV2 extends TaskExecutor {
           this.logger.error('Process error', {
             sessionId,
             error: error instanceof Error ? error.message : String(error),
-            code: (error as any).code
+            code: (error as unknown).code
           });
           reject(error);
         });
@@ -269,7 +269,7 @@ export class TaskExecutorV2 extends TaskExecutor {
               metadata: {
                 environment: this.environment.terminalType,
                 nonInteractive: options.nonInteractive || false,
-                appliedDefaults: (options as any).appliedDefaults || []
+                appliedDefaults: (options as unknown).appliedDefaults || []
               }
             };
 
@@ -387,7 +387,7 @@ export class TaskExecutorV2 extends TaskExecutor {
     };
   }
 
-  private isInteractiveError(error: any): boolean {
+  private isInteractiveError(error: Error | unknown): boolean {
     if (!(error instanceof Error)) return false;
     
     const errorMessage = error.message.toLowerCase();

@@ -2,12 +2,12 @@
 const { readFileSync } = require("fs");
 const { dirname, join } = require("path");
 
-const __dirname = __dirname || dirname(__filename);
+const currentDir = __dirname;
 
 // Load template files
 const loadTemplate = (filename) => {
   try {
-    return readFileSync(join(__dirname, filename), "utf8");
+    return readFileSync(join(currentDir, filename), "utf8");
   } catch (error) {
     // Silently fall back to hardcoded templates if files not found
     // This handles npm packaging scenarios where template files may not be included
@@ -1096,7 +1096,7 @@ function createWrapperScriptFallback(type) {
   try {
     // Try to use import.meta.url (ES modules)
     const __filename = fileURLToPath(import.meta.url);
-    const __dirname = resolve(__filename, '..');
+    const currentDir = resolve(__filename, '..');
   } catch {
     // Fallback for CommonJS
   }
@@ -1197,7 +1197,7 @@ if (Test-Path "$scriptPath\\package.json") {
 function createEnhancedClaudeMdFallback() {
   // Read from the actual template file we created
   try {
-    return readFileSync(join(__dirname, "CLAUDE.md"), "utf8");
+    return readFileSync(join(currentDir, "CLAUDE.md"), "utf8");
   } catch (error) {
     // If that fails, return a minimal version
     return `# Claude Code Configuration for Claude Flow

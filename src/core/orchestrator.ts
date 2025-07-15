@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../utils/error-handler';
+// import { getErrorMessage } from '../utils/error-handler';
 /**
  * Main orchestrator for Claude-Flow
  */
@@ -649,7 +649,7 @@ export class Orchestrator implements IOrchestrator {
       queuedTasks: this.taskQueue.length,
       avgTaskDuration,
       memoryUsage: memUsage,
-      cpuUsage: cpuUsage,
+      cpuUsage,
       timestamp: new Date(),
     };
   }
@@ -833,7 +833,7 @@ export class Orchestrator implements IOrchestrator {
     const results = await Promise.allSettled(shutdownTasks);
     
     // Log any shutdown failures
-    results.forEach((result, index) => {
+    results.forEach((result, _index) => {
       if (result.status === 'rejected') {
         const componentName = ['Terminal Manager', 'Memory Manager', 'Coordination Manager', 'MCP Server'][index];
         this.logger.error(`Failed to shutdown ${componentName}`, result.reason);
@@ -847,10 +847,10 @@ export class Orchestrator implements IOrchestrator {
     try {
       // Force stop all components
       await Promise.allSettled([
-        this.terminalManager.shutdown().catch(() => {}),
-        this.memoryManager.shutdown().catch(() => {}),
-        this.coordinationManager.shutdown().catch(() => {}),
-        this.mcpServer.stop().catch(() => {}),
+        this.terminalManager.shutdown().catch(() => { /* empty */ }),
+        this.memoryManager.shutdown().catch(() => { /* empty */ }),
+        this.coordinationManager.shutdown().catch(() => { /* empty */ }),
+        this.mcpServer.stop().catch(() => { /* empty */ }),
       ]);
     } catch (error) {
       this.logger.error('Emergency shutdown error', error);
@@ -1196,12 +1196,12 @@ export class Orchestrator implements IOrchestrator {
 
   private async cleanupTerminatedSessions(): Promise<void> {
     const allSessions = this.sessionManager.getActiveSessions();
-    const terminatedSessions = allSessions.filter(s => (s as any).status === 'terminated');
+    const terminatedSessions = allSessions.filter(s => (s as unknown).status === 'terminated');
     
     const cutoffTime = Date.now() - (this.config.orchestrator.sessionRetentionMs || 3600000); // 1 hour default
     
     for (const session of terminatedSessions) {
-      const typedSession = session as any;
+      const typedSession = session as unknown;
       if (typedSession.endTime && typedSession.endTime.getTime() < cutoffTime) {
         await this.sessionManager.terminateSession(typedSession.id);
         this.logger.debug('Cleaned up old session', { sessionId: typedSession.id });

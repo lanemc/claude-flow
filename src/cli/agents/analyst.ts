@@ -63,9 +63,9 @@ interface DataAnalysis {
     duplicateRows: number;
     outliers: number;
   };
-  descriptiveStats: Record<string, any>;
-  correlations: Record<string, any>;
-  distributions: Record<string, any>;
+  descriptiveStats: Record<string, unknown>;
+  correlations: Record<string, unknown>;
+  distributions: Record<string, unknown>;
   insights: string[];
   recommendations: string[];
   visualizations: AnalysisVisualization[];
@@ -77,8 +77,8 @@ interface DataAnalysis {
 interface PerformanceAnalysis {
   system?: string;
   timeframe?: string;
-  metrics: Record<string, any>;
-  benchmarks?: Record<string, any>;
+  metrics: Record<string, unknown>;
+  benchmarks?: Record<string, unknown>;
   bottlenecks: AnalysisBottleneck[];
   anomalies: AnalysisAnomaly[];
   trends: AnalysisTrend[];
@@ -89,7 +89,7 @@ interface PerformanceAnalysis {
   projectedImprovement: number;
   confidence: number;
   timestamp: Date;
-  alertsTriggered?: any[];
+  alertsTriggered?: unknown[];
   slaCompliance?: {
     availability: number;
     responseTime: number;
@@ -119,11 +119,11 @@ interface QualityAnalysis {
 }
 
 interface StatisticalAnalysis {
-  tests: Record<string, any>;
+  tests: Record<string, unknown>;
   hypothesis: string;
   alpha: number;
-  results: Record<string, any>;
-  interpretation: Record<string, any>;
+  results: Record<string, unknown>;
+  interpretation: Record<string, unknown>;
   assumptions: {
     normality: boolean;
     independence: boolean;
@@ -143,8 +143,8 @@ interface VisualizationResult {
   chartType: string;
   style: string;
   interactive: boolean;
-  charts: any[];
-  dashboard: any;
+  charts: unknown[];
+  dashboard: unknown;
   insights: string[];
   recommendations: string[];
   exportFormats: string[];
@@ -187,7 +187,7 @@ interface TrendAnalysisResult {
     cyclical: boolean;
     trending: boolean;
   };
-  forecasts: any[];
+  forecasts: unknown[];
   insights: string[];
   recommendations: string[];
   confidence: number;
@@ -210,14 +210,14 @@ interface PredictiveModelResult {
   validation: {
     method: string;
     splits: number;
-    crossValidation: any;
+    crossValidation: unknown;
   };
-  predictions: any[];
+  predictions: unknown[];
   featureImportance: Record<string, number>;
   insights: string[];
   recommendations: string[];
   modelMetadata: {
-    parameters: Record<string, any>;
+    parameters: Record<string, unknown>;
     training: {
       epochs: number;
       convergence: boolean;
@@ -231,7 +231,7 @@ interface PredictiveModelResult {
 interface BusinessIntelligenceResult {
   scope: string;
   timeframe: string;
-  kpis: Record<string, any>;
+  kpis: Record<string, unknown>;
   trends: AnalysisTrend[];
   insights: string[];
   recommendations: string[];
@@ -239,15 +239,15 @@ interface BusinessIntelligenceResult {
   riskFactors: string[];
   opportunities: string[];
   marketAnalysis: {
-    competitors: any[];
+    competitors: unknown[];
     positioning: string;
     threats: string[];
     opportunities: string[];
   };
   financialProjections: {
-    revenue: any[];
-    costs: any[];
-    profitability: any[];
+    revenue: unknown[];
+    costs: unknown[];
+    profitability: unknown[];
   };
   confidence: number;
   timestamp: Date;
@@ -372,7 +372,7 @@ export class AnalystAgent extends BaseAgent {
     };
   }
 
-  override async executeTask(task: TaskDefinition): Promise<any> {
+  override async executeTask(task: TaskDefinition): Promise<unknown> {
     this.logger.info('Analyst executing task', {
       agentId: this.id,
       taskType: task.type,
@@ -412,7 +412,7 @@ export class AnalystAgent extends BaseAgent {
     }
   }
 
-  private async analyzeData(task: TaskDefinition): Promise<any> {
+  private async analyzeData(task: TaskDefinition): Promise<unknown> {
     const dataset = task.context?.dataset;
     const analysisType = task.context?.type || 'exploratory';
     const metrics = task.context?.metrics || ['central_tendency', 'distribution', 'correlation'];
@@ -426,12 +426,12 @@ export class AnalystAgent extends BaseAgent {
 
     const analysis: DataAnalysis = {
       dataset: {
-        name: dataset?.name || 'Unknown',
-        size: dataset?.size || 0,
-        columns: dataset?.columns || [],
-        types: dataset?.types || {}
+        name: (dataset as any)?.name || 'Unknown',
+        size: (dataset as any)?.size || 0,
+        columns: (dataset as any)?.columns || [],
+        types: (dataset as any)?.types || {}
       },
-      analysisType,
+      analysisType: analysisType as string,
       summary: {
         rowCount: 0,
         columnCount: 0,
@@ -457,7 +457,7 @@ export class AnalystAgent extends BaseAgent {
       analysisType
     }, {
       type: 'analysis-progress',
-      tags: ['analysis', this.id, analysisType],
+      tags: ['analysis', this.id, analysisType as string],
       partition: 'tasks'
     });
 
@@ -491,14 +491,14 @@ export class AnalystAgent extends BaseAgent {
     // Store final results
     await this.memory.store(`analysis:${task.id}:results`, analysis, {
       type: 'analysis-results',
-      tags: ['analysis', 'completed', this.id, analysisType],
+      tags: ['analysis', 'completed', this.id, analysisType as string],
       partition: 'tasks'
     });
 
     return analysis;
   }
 
-  private async analyzePerformance(task: TaskDefinition): Promise<any> {
+  private async analyzePerformance(task: TaskDefinition): Promise<unknown> {
     const system = task.context?.system;
     const metrics = task.context?.metrics || ['response_time', 'throughput', 'error_rate'];
     const timeframe = task.context?.timeframe || '24h';
@@ -511,21 +511,21 @@ export class AnalystAgent extends BaseAgent {
     });
 
     const performance: PerformanceAnalysis = {
-      system,
-      timeframe,
+      system: String(system),
+      timeframe: String(timeframe),
       metrics: {},
       benchmarks: {},
       bottlenecks: [] as AnalysisBottleneck[],
       trends: [] as AnalysisTrend[],
       recommendations: [] as string[],
-      alertsTriggered: [] as any[],
+      alertsTriggered: [] as unknown[],
       slaCompliance: {
         availability: 0,
         responseTime: 0,
         throughput: 0
       },
       comparison: {
-        baseline: baseline || 'previous_week',
+        baseline: String(baseline || 'previous_week'),
         improvements: [] as string[],
         regressions: [] as string[]
       },
@@ -588,8 +588,8 @@ export class AnalystAgent extends BaseAgent {
 
     const statistics: StatisticalAnalysis = {
       tests: {},
-      hypothesis: hypothesis || 'no_hypothesis',
-      alpha,
+      hypothesis: String(hypothesis || 'no_hypothesis'),
+      alpha: Number(alpha) || 0.05,
       results: {},
       interpretation: {},
       assumptions: {
@@ -647,10 +647,10 @@ export class AnalystAgent extends BaseAgent {
     });
 
     const visualization: VisualizationResult = {
-      chartType,
-      style,
-      interactive,
-      charts: [] as any[],
+      chartType: chartType as string,
+      style: style as string,
+      interactive: interactive as boolean,
+      charts: [] as unknown[],
       dashboard: null,
       insights: [] as string[],
       recommendations: [] as string[],
@@ -705,9 +705,9 @@ export class AnalystAgent extends BaseAgent {
     });
 
     const model: PredictiveModelResult = {
-      algorithm: algorithm === 'auto' ? 'random_forest' : algorithm,
+      algorithm: (algorithm as string) === 'auto' ? 'random_forest' : (algorithm as string),
       features: [],
-      target: target || 'default_target',
+      target: (target as string) || 'default_target',
       performance: {
         accuracy: 0,
         precision: 0,
@@ -775,10 +775,10 @@ export class AnalystAgent extends BaseAgent {
     });
 
     const anomalies: AnomalyDetectionResult = {
-      method,
-      sensitivity,
-      threshold: threshold || 'auto',
-      detected: ([] as any) as any[],
+      method: method as string,
+      sensitivity: sensitivity as number,
+      threshold: (threshold as string) || 'auto',
+      detected: [] as AnalysisAnomaly[],
       summary: {
         total: 0,
         severity: {
@@ -788,8 +788,8 @@ export class AnalystAgent extends BaseAgent {
           critical: 0
         }
       },
-      patterns: ([] as any) as string[],
-      recommendations: ([] as any) as string[],
+      patterns: ([] as unknown) as string[],
+      recommendations: ([] as unknown) as string[],
       falsePositiveRate: 0,
       confidence: 0,
       timestamp: new Date()
@@ -798,7 +798,7 @@ export class AnalystAgent extends BaseAgent {
     // Simulate anomaly detection
     await this.delay(2000);
 
-    (anomalies.detected as any).push(
+    (anomalies.detected as unknown).push(
       {
         id: 'anom_001',
         timestamp: new Date('2024-01-15'),
@@ -846,17 +846,17 @@ export class AnalystAgent extends BaseAgent {
 
     const trends: TrendAnalysisResult = {
       timeframe,
-      metrics: ([] as any) as string[],
-      trends: ([] as any) as any[],
+      metrics: ([] as unknown) as string[],
+      trends: ([] as unknown) as unknown[],
       correlations: {},
       patterns: {
         seasonal: false,
         cyclical: false,
         trending: false
       },
-      forecasts: forecast ? ([] as any) : [],
-      insights: ([] as any) as string[],
-      recommendations: ([] as any) as string[],
+      forecasts: forecast ? ([] as unknown) : [],
+      insights: ([] as unknown) as string[],
+      recommendations: ([] as unknown) as string[],
       confidence: 0,
       timestamp: new Date()
     };
@@ -864,7 +864,7 @@ export class AnalystAgent extends BaseAgent {
     // Simulate trend analysis
     await this.delay(2500);
 
-    (trends.trends as any).push(
+    (trends.trends as unknown).push(
       {
         metric: 'user_engagement',
         direction: 'increasing',
@@ -977,10 +977,10 @@ export class AnalystAgent extends BaseAgent {
         testCoverage: 0,
         technicalDebt: 0
       },
-      issues: ([] as any) as QualityIssue[],
-      patterns: ([] as any) as string[],
-      recommendations: ([] as any) as string[],
-      visualizations: ([] as any) as AnalysisVisualization[],
+      issues: ([] as unknown) as QualityIssue[],
+      patterns: ([] as unknown) as string[],
+      recommendations: ([] as unknown) as string[],
+      visualizations: ([] as unknown) as AnalysisVisualization[],
       overallScore: 0,
       confidence: 0,
       timestamp: new Date()
@@ -998,21 +998,21 @@ export class AnalystAgent extends BaseAgent {
     
     quality.overallScore = 0.91;
     
-    (quality.issues as any).push({
+    (quality.issues as unknown).push({
       category: 'completeness',
       severity: 'medium',
       description: 'Missing values in 13% of records',
       impact: 'Affects downstream analysis accuracy'
     });
     
-    (quality.patterns as any).push('High complexity in authentication module');
-    (quality.recommendations as any).push('Implement automated testing coverage');
+    (quality.patterns as unknown).push('High complexity in authentication module');
+    (quality.recommendations as unknown).push('Implement automated testing coverage');
     quality.confidence = 0.89;
 
     return quality;
   }
 
-  private async performGeneralAnalysis(task: TaskDefinition): Promise<any> {
+  private async performGeneralAnalysis(task: TaskDefinition): Promise<unknown> {
     this.logger.info('Performing general analysis', {
       description: task.description
     });
@@ -1025,7 +1025,7 @@ export class AnalystAgent extends BaseAgent {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 
-  override getAgentStatus(): any {
+  override getAgentStatus(): unknown {
     return {
       ...super.getAgentStatus(),
       specialization: 'Data Analysis & Performance Optimization',
@@ -1056,7 +1056,7 @@ export const createAnalystAgent = (
   memory: DistributedMemorySystem
 ): AnalystAgent => {
   const tempAgent = new AnalystAgent(id, {} as AgentConfig, {} as AgentEnvironment, logger, eventBus, memory);
-  const defaultConfig = (tempAgent as any).getDefaultConfig();
+  const defaultConfig = (tempAgent as unknown).getDefaultConfig();
   const defaultEnv = {
     runtime: 'deno' as const,
     version: '1.40.0',

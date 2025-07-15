@@ -1,4 +1,4 @@
-import { getErrorMessage } from "../utils/error-handler";
+// import { getErrorMessage } from '../utils/error-handler';
 /**
  * Real-time monitoring system for swarm operations
  */
@@ -46,7 +46,7 @@ export interface MetricPoint {
   timestamp: Date;
   value: number;
   tags: Record<string, string>;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface TimeSeries {
@@ -67,7 +67,7 @@ export interface MonitoringDashboard {
   panels: DashboardPanel[];
   refreshInterval: number;
   timeRange: { start: Date; end: Date };
-  filters: Record<string, any>;
+  filters: Record<string, unknown>;
 }
 
 export interface DashboardPanel {
@@ -79,7 +79,7 @@ export interface DashboardPanel {
     width: number;
     height: number;
     position: { x: number; y: number };
-    visualization: Record<string, any>;
+    visualization: Record<string, unknown>;
   };
 }
 
@@ -99,7 +99,7 @@ export interface AlertRule {
 
 export interface AlertAction {
   type: "email" | "webhook" | "slack" | "log" | "auto-scale" | "restart";
-  config: Record<string, any>;
+  config: Record<string, unknown>;
   enabled: boolean;
 }
 
@@ -116,7 +116,7 @@ export interface HealthCheck {
   interval: number;
   timeout: number;
   retries: number;
-  expectedResponse?: any;
+  expectedResponse?: unknown;
   customCheck?: () => Promise<boolean>;
 }
 
@@ -652,11 +652,11 @@ export class RealTimeMonitor extends EventEmitter {
     return dashboardId;
   }
 
-  getDashboardData(dashboardId: string): any {
+  getDashboardData(dashboardId: string): unknown {
     const dashboard = this.dashboards.get(dashboardId);
     if (!dashboard) return null;
 
-    const data: any = {
+    const data: Record<string, unknown> = {
       dashboard,
       panels: [],
     };
@@ -677,8 +677,8 @@ export class RealTimeMonitor extends EventEmitter {
   private getPanelData(
     panel: DashboardPanel,
     timeRange: { start: Date; end: Date }
-  ): any {
-    const data: any = {};
+  ): unknown {
+    const data: Record<string, unknown> = {};
 
     for (const metricName of panel.metrics) {
       const series = this.timeSeries.get(metricName);
@@ -743,7 +743,7 @@ export class RealTimeMonitor extends EventEmitter {
     this.swarmMetrics = { ...this.swarmMetrics, ...metrics };
   }
 
-  private handleError(data: any): void {
+  private handleError(data: Record<string, unknown>): void {
     this.recordMetric("error.count", 1, {
       type: data.type || "unknown",
       source: data.source || "unknown",
@@ -882,7 +882,7 @@ export class RealTimeMonitor extends EventEmitter {
     return totalQuality / agents.length;
   }
 
-  private calculateAggregations(points: MetricPoint[]): any {
+  private calculateAggregations(points: MetricPoint[]): unknown {
     if (points.length === 0) {
       return { min: 0, max: 0, avg: 0, sum: 0, count: 0 };
     }
@@ -1057,17 +1057,17 @@ export class RealTimeMonitor extends EventEmitter {
     return true;
   }
 
-  private async sendEmailAlert(alert: Alert, config: any): Promise<void> {
+  private async sendEmailAlert(alert: Alert, config: Record<string, unknown>): Promise<void> {
     // Placeholder for email alert
     this.logger.info("Email alert sent", { alertId: alert.id });
   }
 
-  private async sendWebhookAlert(alert: Alert, config: any): Promise<void> {
+  private async sendWebhookAlert(alert: Alert, config: Record<string, unknown>): Promise<void> {
     // Placeholder for webhook alert
     this.logger.info("Webhook alert sent", { alertId: alert.id });
   }
 
-  private async triggerAutoScale(alert: Alert, config: any): Promise<void> {
+  private async triggerAutoScale(alert: Alert, config: Record<string, unknown>): Promise<void> {
     // Placeholder for auto-scaling
     this.logger.info("Auto-scale triggered", {
       alertId: alert.id,
@@ -1076,7 +1076,7 @@ export class RealTimeMonitor extends EventEmitter {
     this.eventBus.emit("autoscale:triggered", { alert, config });
   }
 
-  private async triggerRestart(alert: Alert, config: any): Promise<void> {
+  private async triggerRestart(alert: Alert, config: Record<string, unknown>): Promise<void> {
     // Placeholder for restart action
     this.logger.info("Restart triggered", { alertId: alert.id });
     this.eventBus.emit("restart:triggered", { alert, config });
@@ -1132,8 +1132,8 @@ export class RealTimeMonitor extends EventEmitter {
       data !== null &&
       "agentId" in data &&
       "metrics" in data &&
-      typeof (data as any).agentId === "string" &&
-      typeof (data as any).metrics === "object"
+      typeof (data as unknown).agentId === "string" &&
+      typeof (data as unknown).metrics === "object"
     );
   }
 
@@ -1146,9 +1146,9 @@ export class RealTimeMonitor extends EventEmitter {
       "agentId" in data &&
       "from" in data &&
       "to" in data &&
-      typeof (data as any).agentId === "string" &&
-      typeof (data as any).from === "string" &&
-      typeof (data as any).to === "string"
+      typeof (data as unknown).agentId === "string" &&
+      typeof (data as unknown).from === "string" &&
+      typeof (data as unknown).to === "string"
     );
   }
 
@@ -1160,8 +1160,8 @@ export class RealTimeMonitor extends EventEmitter {
       data !== null &&
       "taskId" in data &&
       "agentId" in data &&
-      typeof (data as any).taskId === "string" &&
-      typeof (data as any).agentId === "string"
+      typeof (data as unknown).taskId === "string" &&
+      typeof (data as unknown).agentId === "string"
     );
   }
 
@@ -1173,8 +1173,8 @@ export class RealTimeMonitor extends EventEmitter {
       data !== null &&
       "taskId" in data &&
       "duration" in data &&
-      typeof (data as any).taskId === "string" &&
-      typeof (data as any).duration === "number"
+      typeof (data as unknown).taskId === "string" &&
+      typeof (data as unknown).duration === "number"
     );
   }
 
@@ -1186,8 +1186,8 @@ export class RealTimeMonitor extends EventEmitter {
       data !== null &&
       "taskId" in data &&
       "error" in data &&
-      typeof (data as any).taskId === "string" &&
-      typeof (data as any).error === "string"
+      typeof (data as unknown).taskId === "string" &&
+      typeof (data as unknown).error === "string"
     );
   }
 
@@ -1202,7 +1202,7 @@ export class RealTimeMonitor extends EventEmitter {
       typeof data === "object" &&
       data !== null &&
       "metrics" in data &&
-      typeof (data as any).metrics === "object"
+      typeof (data as unknown).metrics === "object"
     );
   }
 

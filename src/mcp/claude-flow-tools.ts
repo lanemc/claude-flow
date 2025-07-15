@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../utils/error-handler';
+// import { getErrorMessage } from '../utils/error-handler';
 /**
  * Claude-Flow specific MCP tools
  */
@@ -8,7 +8,7 @@ import type { ILogger } from '../core/logger';
 import type { Permissions } from './auth';
 
 export interface ClaudeFlowToolContext extends MCPContext {
-  orchestrator?: any; // Reference to orchestrator instance
+  orchestrator?: unknown; // Reference to orchestrator instance
 }
 
 /**
@@ -104,7 +104,7 @@ function createSpawnAgentTool(logger: ILogger): MCPTool {
       },
       required: ['type', 'name'],
     },
-    handler: async (input: any, context?: ClaudeFlowToolContext) => {
+    handler: async (input: unknown, context?: ClaudeFlowToolContext) => {
       logger.info('Spawning agent', { input, sessionId: context?.sessionId });
 
       if (!context?.orchestrator) {
@@ -155,7 +155,7 @@ function createListAgentsTool(logger: ILogger): MCPTool {
         },
       },
     },
-    handler: async (input: any, context?: ClaudeFlowToolContext) => {
+    handler: async (input: unknown, context?: ClaudeFlowToolContext) => {
       logger.info('Listing agents', { input, sessionId: context?.sessionId });
 
       if (!context?.orchestrator) {
@@ -167,11 +167,11 @@ function createListAgentsTool(logger: ILogger): MCPTool {
       let filteredAgents = agents;
       
       if (!input.includeTerminated) {
-        filteredAgents = filteredAgents.filter((agent: any) => agent.status !== 'terminated');
+        filteredAgents = filteredAgents.filter((agent: unknown) => agent.status !== 'terminated');
       }
       
       if (input.filterByType) {
-        filteredAgents = filteredAgents.filter((agent: any) => agent.type === input.filterByType);
+        filteredAgents = filteredAgents.filter((agent: unknown) => agent.type === input.filterByType);
       }
 
       return {
@@ -206,7 +206,7 @@ function createTerminateAgentTool(logger: ILogger): MCPTool {
       },
       required: ['agentId'],
     },
-    handler: async (input: any, context?: ClaudeFlowToolContext) => {
+    handler: async (input: unknown, context?: ClaudeFlowToolContext) => {
       logger.info('Terminating agent', { input, sessionId: context?.sessionId });
 
       if (!context?.orchestrator) {
@@ -242,7 +242,7 @@ function createGetAgentInfoTool(logger: ILogger): MCPTool {
       },
       required: ['agentId'],
     },
-    handler: async (input: any, context?: ClaudeFlowToolContext) => {
+    handler: async (input: unknown, context?: ClaudeFlowToolContext) => {
       logger.info('Getting agent info', { input, sessionId: context?.sessionId });
 
       if (!context?.orchestrator) {
@@ -308,7 +308,7 @@ function createCreateTaskTool(logger: ILogger): MCPTool {
       },
       required: ['type', 'description'],
     },
-    handler: async (input: any, context?: ClaudeFlowToolContext) => {
+    handler: async (input: unknown, context?: ClaudeFlowToolContext) => {
       logger.info('Creating task', { input, sessionId: context?.sessionId });
 
       if (!context?.orchestrator) {
@@ -375,7 +375,7 @@ function createListTasksTool(logger: ILogger): MCPTool {
         },
       },
     },
-    handler: async (input: any, context?: ClaudeFlowToolContext) => {
+    handler: async (input: unknown, context?: ClaudeFlowToolContext) => {
       logger.info('Listing tasks', { input, sessionId: context?.sessionId });
 
       if (!context?.orchestrator) {
@@ -413,7 +413,7 @@ function createGetTaskStatusTool(logger: ILogger): MCPTool {
       },
       required: ['taskId'],
     },
-    handler: async (input: any, context?: ClaudeFlowToolContext) => {
+    handler: async (input: unknown, context?: ClaudeFlowToolContext) => {
       logger.info('Getting task status', { input, sessionId: context?.sessionId });
 
       if (!context?.orchestrator) {
@@ -452,7 +452,7 @@ function createCancelTaskTool(logger: ILogger): MCPTool {
       },
       required: ['taskId'],
     },
-    handler: async (input: any, context?: ClaudeFlowToolContext) => {
+    handler: async (input: unknown, context?: ClaudeFlowToolContext) => {
       logger.info('Cancelling task', { input, sessionId: context?.sessionId });
 
       if (!context?.orchestrator) {
@@ -489,7 +489,7 @@ function createAssignTaskTool(logger: ILogger): MCPTool {
       },
       required: ['taskId', 'agentId'],
     },
-    handler: async (input: any, context?: ClaudeFlowToolContext) => {
+    handler: async (input: unknown, context?: ClaudeFlowToolContext) => {
       logger.info('Assigning task', { input, sessionId: context?.sessionId });
 
       if (!context?.orchestrator) {
@@ -559,7 +559,7 @@ function createQueryMemoryTool(logger: ILogger): MCPTool {
         },
       },
     },
-    handler: async (input: any, context?: ClaudeFlowToolContext) => {
+    handler: async (input: unknown, context?: ClaudeFlowToolContext) => {
       logger.info('Querying memory', { input, sessionId: context?.sessionId });
 
       if (!context?.orchestrator) {
@@ -630,7 +630,7 @@ function createStoreMemoryTool(logger: ILogger): MCPTool {
       },
       required: ['agentId', 'sessionId', 'type', 'content'],
     },
-    handler: async (input: any, context?: ClaudeFlowToolContext) => {
+    handler: async (input: unknown, context?: ClaudeFlowToolContext) => {
       logger.info('Storing memory', { input, sessionId: context?.sessionId });
 
       if (!context?.orchestrator) {
@@ -674,7 +674,7 @@ function createDeleteMemoryTool(logger: ILogger): MCPTool {
       },
       required: ['entryId'],
     },
-    handler: async (input: any, context?: ClaudeFlowToolContext) => {
+    handler: async (input: unknown, context?: ClaudeFlowToolContext) => {
       logger.info('Deleting memory', { input, sessionId: context?.sessionId });
 
       if (!context?.orchestrator) {
@@ -725,7 +725,7 @@ function createExportMemoryTool(logger: ILogger): MCPTool {
         },
       },
     },
-    handler: async (input: any, context?: ClaudeFlowToolContext) => {
+    handler: async (input: unknown, context?: ClaudeFlowToolContext) => {
       logger.info('Exporting memory', { input, sessionId: context?.sessionId });
 
       if (!context?.orchestrator) {
@@ -774,7 +774,7 @@ function createImportMemoryTool(logger: ILogger): MCPTool {
       },
       required: ['filePath'],
     },
-    handler: async (input: any, context?: ClaudeFlowToolContext) => {
+    handler: async (input: unknown, context?: ClaudeFlowToolContext) => {
       logger.info('Importing memory', { input, sessionId: context?.sessionId });
 
       if (!context?.orchestrator) {
@@ -803,7 +803,7 @@ function createGetSystemStatusTool(logger: ILogger): MCPTool {
       type: 'object',
       properties: {},
     },
-    handler: async (input: any, context?: ClaudeFlowToolContext) => {
+    handler: async (input: unknown, context?: ClaudeFlowToolContext) => {
       logger.info('Getting system status', { sessionId: context?.sessionId });
 
       if (!context?.orchestrator) {
@@ -835,7 +835,7 @@ function createGetMetricsTool(logger: ILogger): MCPTool {
         },
       },
     },
-    handler: async (input: any, context?: ClaudeFlowToolContext) => {
+    handler: async (input: unknown, context?: ClaudeFlowToolContext) => {
       logger.info('Getting system metrics', { input, sessionId: context?.sessionId });
 
       if (!context?.orchestrator) {
@@ -867,7 +867,7 @@ function createHealthCheckTool(logger: ILogger): MCPTool {
         },
       },
     },
-    handler: async (input: any, context?: ClaudeFlowToolContext) => {
+    handler: async (input: unknown, context?: ClaudeFlowToolContext) => {
       logger.info('Performing health check', { input, sessionId: context?.sessionId });
 
       if (!context?.orchestrator) {
@@ -898,7 +898,7 @@ function createGetConfigTool(logger: ILogger): MCPTool {
         },
       },
     },
-    handler: async (input: any, context?: ClaudeFlowToolContext) => {
+    handler: async (input: unknown, context?: ClaudeFlowToolContext) => {
       logger.info('Getting configuration', { input, sessionId: context?.sessionId });
 
       if (!context?.orchestrator) {
@@ -940,7 +940,7 @@ function createUpdateConfigTool(logger: ILogger): MCPTool {
       },
       required: ['section', 'config'],
     },
-    handler: async (input: any, context?: ClaudeFlowToolContext) => {
+    handler: async (input: unknown, context?: ClaudeFlowToolContext) => {
       logger.info('Updating configuration', { input, sessionId: context?.sessionId });
 
       if (!context?.orchestrator) {
@@ -975,7 +975,7 @@ function createValidateConfigTool(logger: ILogger): MCPTool {
       },
       required: ['config'],
     },
-    handler: async (input: any, context?: ClaudeFlowToolContext) => {
+    handler: async (input: unknown, context?: ClaudeFlowToolContext) => {
       logger.info('Validating configuration', { input, sessionId: context?.sessionId });
 
       if (!context?.orchestrator) {
@@ -1013,7 +1013,7 @@ function createExecuteWorkflowTool(logger: ILogger): MCPTool {
         },
       },
     },
-    handler: async (input: any, context?: ClaudeFlowToolContext) => {
+    handler: async (input: unknown, context?: ClaudeFlowToolContext) => {
       logger.info('Executing workflow', { input, sessionId: context?.sessionId });
 
       if (!context?.orchestrator) {
@@ -1078,7 +1078,7 @@ function createCreateWorkflowTool(logger: ILogger): MCPTool {
       },
       required: ['name', 'tasks'],
     },
-    handler: async (input: any, context?: ClaudeFlowToolContext) => {
+    handler: async (input: unknown, context?: ClaudeFlowToolContext) => {
       logger.info('Creating workflow', { input, sessionId: context?.sessionId });
 
       if (!context?.orchestrator) {
@@ -1116,7 +1116,7 @@ function createListWorkflowsTool(logger: ILogger): MCPTool {
         },
       },
     },
-    handler: async (input: any, context?: ClaudeFlowToolContext) => {
+    handler: async (input: unknown, context?: ClaudeFlowToolContext) => {
       logger.info('Listing workflows', { input, sessionId: context?.sessionId });
 
       if (!context?.orchestrator) {
@@ -1170,7 +1170,7 @@ function createExecuteCommandTool(logger: ILogger): MCPTool {
       },
       required: ['command'],
     },
-    handler: async (input: any, context?: ClaudeFlowToolContext) => {
+    handler: async (input: unknown, context?: ClaudeFlowToolContext) => {
       logger.info('Executing command', { input, sessionId: context?.sessionId });
 
       if (!context?.orchestrator) {
@@ -1208,7 +1208,7 @@ function createListTerminalsTool(logger: ILogger): MCPTool {
         },
       },
     },
-    handler: async (input: any, context?: ClaudeFlowToolContext) => {
+    handler: async (input: unknown, context?: ClaudeFlowToolContext) => {
       logger.info('Listing terminals', { input, sessionId: context?.sessionId });
 
       if (!context?.orchestrator) {
@@ -1247,7 +1247,7 @@ function createCreateTerminalTool(logger: ILogger): MCPTool {
         },
       },
     },
-    handler: async (input: any, context?: ClaudeFlowToolContext) => {
+    handler: async (input: unknown, context?: ClaudeFlowToolContext) => {
       logger.info('Creating terminal', { input, sessionId: context?.sessionId });
 
       if (!context?.orchestrator) {
@@ -1279,3 +1279,5 @@ function getDefaultSystemPrompt(type: string): string {
 
   return prompts[type as keyof typeof prompts] || prompts.custom;
 }
+// Add alias for backward compatibility
+export const getClaudeFlowTools = createClaudeFlowTools;

@@ -385,7 +385,7 @@ export class NativeAdapter implements ITerminalAdapter {
     // Verify shell is available
     try {
       const testConfig = this.getTestCommand();
-      const { spawnSync } = require('child_process');
+      const { spawnSync } = await import('child_process');
       const result = spawnSync(testConfig.cmd, testConfig.args, { stdio: 'ignore' });
       
       if (result.status !== 0) {
@@ -433,7 +433,7 @@ export class NativeAdapter implements ITerminalAdapter {
       
       // Check if PowerShell is available
       try {
-        const { spawnSync } = require('child_process');
+        const { spawnSync } = await import('child_process');
         const result = spawnSync('powershell', ['-Version'], { stdio: 'ignore' });
         if (result.status === 0) {
           return 'powershell';
@@ -457,7 +457,7 @@ export class NativeAdapter implements ITerminalAdapter {
       const shells = ['bash', 'zsh', 'sh'];
       for (const shell of shells) {
         try {
-          const { spawnSync } = require('child_process');
+          const { spawnSync } = await import('child_process');
           const result = spawnSync('which', [shell], { stdio: 'ignore' });
           if (result.status === 0) {
             return shell;

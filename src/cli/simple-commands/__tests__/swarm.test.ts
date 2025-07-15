@@ -1,21 +1,36 @@
+import { jest } from '@jest/globals';
+import { swarmCommand } from '../swarm';
+import { spawn } from 'child_process';
+      import { execSync  } from 'child_process';
+      import { execSync  } from 'child_process';
+      import { execSync  } from 'child_process';
+      import { execSync  } from 'child_process';
+      import mockFS from 'fs';
+      import { execSync  } from 'child_process';
+      import { execSync  } from 'child_process';
+      import { execSync  } from 'child_process';
+      import { execSync  } from 'child_process';
+      import { execSync  } from 'child_process';
+      import { execSync  } from 'child_process';
+      import { execSync  } from 'child_process';
+      import { execSync  } from 'child_process';
+      import { execSync  } from 'child_process';
+
 /**
  * Tests for swarm command - Updated for v2.0.0-alpha.49 API
  */
 
-import { jest } from '@jest/globals';
-import { swarmCommand } from '../swarm';
-import { spawn } from 'child_process';
 
 jest.mock('child_process');
 
 describe('Swarm Command', () => {
-  let consoleLogSpy: any;
-  let consoleErrorSpy: any;
-  let mockSpawnProcess: any;
+  let consoleLogSpy: jest.SpyInstance;
+  let consoleErrorSpy: jest.SpyInstance;
+  let mockSpawnProcess: unknown;
 
   beforeEach(() => {
-    consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
-    consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+    consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => undefined);
+    consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
     
     mockSpawnProcess = {
       stdout: { on: jest.fn() },
@@ -41,8 +56,7 @@ describe('Swarm Command', () => {
 
     test('should launch Claude Code with swarm coordination by default', async () => {
       // Mock execSync to simulate claude being available
-      const { execSync } = require('child_process');
-      execSync.mockImplementation(() => {});
+      execSync.mockImplementation(() => { /* empty */ });
 
       await swarmCommand(['Build a REST API'], {});
       
@@ -55,8 +69,7 @@ describe('Swarm Command', () => {
     });
 
     test('should handle custom strategy and mode', async () => {
-      const { execSync } = require('child_process');
-      execSync.mockImplementation(() => {});
+      execSync.mockImplementation(() => { /* empty */ });
 
       await swarmCommand(['Research task'], { strategy: 'research', mode: 'distributed' });
       
@@ -66,8 +79,7 @@ describe('Swarm Command', () => {
     });
 
     test('should handle custom max agents', async () => {
-      const { execSync } = require('child_process');
-      execSync.mockImplementation(() => {});
+      execSync.mockImplementation(() => { /* empty */ });
 
       await swarmCommand(['Task'], { 'max-agents': '10' });
       
@@ -76,7 +88,6 @@ describe('Swarm Command', () => {
     });
 
     test('should warn when Claude Code not available', async () => {
-      const { execSync } = require('child_process');
       execSync.mockImplementation(() => {
         throw new Error('Command not found');
       });
@@ -116,7 +127,6 @@ describe('Swarm Command', () => {
 
     test('should create files for REST API tasks', async () => {
       // For executor mode, it should create actual files
-      const mockFS = require('fs');
       mockFS.promises = {
         mkdir: jest.fn(),
         writeFile: jest.fn(),
@@ -133,8 +143,7 @@ describe('Swarm Command', () => {
 
   describe('strategy guidance', () => {
     test('should provide strategy-specific guidance', async () => {
-      const { execSync } = require('child_process');
-      execSync.mockImplementation(() => {});
+      execSync.mockImplementation(() => { /* empty */ });
 
       await swarmCommand(['Research AI'], { strategy: 'research' });
       
@@ -144,8 +153,7 @@ describe('Swarm Command', () => {
     });
 
     test('should provide development strategy guidance', async () => {
-      const { execSync } = require('child_process');
-      execSync.mockImplementation(() => {});
+      execSync.mockImplementation(() => { /* empty */ });
 
       await swarmCommand(['Build app'], { strategy: 'development' });
       
@@ -157,8 +165,7 @@ describe('Swarm Command', () => {
 
   describe('mode guidance', () => {
     test('should provide centralized mode guidance', async () => {
-      const { execSync } = require('child_process');
-      execSync.mockImplementation(() => {});
+      execSync.mockImplementation(() => { /* empty */ });
 
       await swarmCommand(['Task'], { mode: 'centralized' });
       
@@ -168,8 +175,7 @@ describe('Swarm Command', () => {
     });
 
     test('should provide mesh mode guidance', async () => {
-      const { execSync } = require('child_process');
-      execSync.mockImplementation(() => {});
+      execSync.mockImplementation(() => { /* empty */ });
 
       await swarmCommand(['Task'], { mode: 'mesh' });
       
@@ -181,8 +187,7 @@ describe('Swarm Command', () => {
 
   describe('agent recommendations', () => {
     test('should provide agent recommendations for research', async () => {
-      const { execSync } = require('child_process');
-      execSync.mockImplementation(() => {});
+      execSync.mockImplementation(() => { /* empty */ });
 
       await swarmCommand(['Research topic'], { strategy: 'research' });
       
@@ -192,8 +197,7 @@ describe('Swarm Command', () => {
     });
 
     test('should provide agent recommendations for development', async () => {
-      const { execSync } = require('child_process');
-      execSync.mockImplementation(() => {});
+      execSync.mockImplementation(() => { /* empty */ });
 
       await swarmCommand(['Build API'], { strategy: 'development' });
       
@@ -218,7 +222,7 @@ describe('Swarm Command', () => {
   describe('background mode', () => {
     test('should handle background mode flag', async () => {
       // Mock Deno environment check
-      (global as any).Deno = undefined;
+      (global as unknown).Deno = undefined;
       
       await swarmCommand(['Background task'], { background: true });
       
@@ -229,8 +233,7 @@ describe('Swarm Command', () => {
 
   describe('MCP tool integration', () => {
     test('should include MCP tool instructions in prompt', async () => {
-      const { execSync } = require('child_process');
-      execSync.mockImplementation(() => {});
+      execSync.mockImplementation(() => { /* empty */ });
 
       await swarmCommand(['Coordinate task'], {});
       
@@ -240,8 +243,7 @@ describe('Swarm Command', () => {
     });
 
     test('should include SPARC methodology when enabled', async () => {
-      const { execSync } = require('child_process');
-      execSync.mockImplementation(() => {});
+      execSync.mockImplementation(() => { /* empty */ });
 
       await swarmCommand(['Develop feature'], { strategy: 'development' });
       
@@ -251,8 +253,7 @@ describe('Swarm Command', () => {
     });
 
     test('should include parallel execution instructions', async () => {
-      const { execSync } = require('child_process');
-      execSync.mockImplementation(() => {});
+      execSync.mockImplementation(() => { /* empty */ });
 
       await swarmCommand(['Parallel task'], {});
       

@@ -15,7 +15,7 @@ export interface ValidationResult {
  */
 export function validateHookParams(
   hookType: HookType,
-  params: Record<string, any>
+  params: Record<string, unknown>
 ): ValidationResult {
   const result: ValidationResult = {
     valid: true,
@@ -163,8 +163,8 @@ export function validateHookParams(
 /**
  * Sanitize hook parameters for safe execution
  */
-export function sanitizeHookParams(params: Record<string, any>): Record<string, any> {
-  const sanitized: Record<string, any> = {};
+export function sanitizeHookParams(params: Record<string, unknown>): Record<string, unknown> {
+  const sanitized: Record<string, unknown> = {};
 
   for (const [key, value] of Object.entries(params)) {
     if (value === undefined || value === null) {

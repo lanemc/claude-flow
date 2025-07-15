@@ -119,7 +119,7 @@ export class ConsensusEngine extends EventEmitter {
   /**
    * Get proposal status
    */
-  async getProposalStatus(proposalId: string): Promise<any> {
+  async getProposalStatus(proposalId: string): Promise<unknown> {
     if (!this.db) throw new Error('Database not initialized');
     const dbProposal = await this.db.getConsensusProposal(proposalId);
     if (!dbProposal) {
@@ -128,7 +128,7 @@ export class ConsensusEngine extends EventEmitter {
     
     const votes = JSON.parse(dbProposal.votes || '{}');
     const voteCount = Object.keys(votes).length;
-    const positiveVotes = Object.values(votes).filter((v: any) => v.vote).length;
+    const positiveVotes = Object.values(votes).filter((v: unknown) => v.vote).length;
     
     return {
       id: proposalId,
@@ -138,7 +138,7 @@ export class ConsensusEngine extends EventEmitter {
       currentVotes: dbProposal.current_votes,
       totalVoters: dbProposal.total_voters,
       currentRatio: voteCount > 0 ? positiveVotes / voteCount : 0,
-      votes: votes,
+      votes,
       deadline: dbProposal.deadline_at,
       timeRemaining: dbProposal.deadline_at ? new Date(dbProposal.deadline_at).getTime() - Date.now() : 0
     };
@@ -151,7 +151,7 @@ export class ConsensusEngine extends EventEmitter {
     proposalId: string,
     agentId: string,
     agentType: string
-  ): Promise<any> {
+  ): Promise<unknown> {
     const proposal = this.activeProposals.get(proposalId);
     if (!proposal) {
       throw new Error('Proposal not found');
@@ -567,7 +567,7 @@ export class ConsensusEngine extends EventEmitter {
   /**
    * Database helper methods (to be implemented in DatabaseManager)
    */
-  private async getConsensusProposal(id: string): Promise<any> {
+  private async getConsensusProposal(id: string): Promise<unknown> {
     if (!this.db) throw new Error('Database not initialized');
     return this.db.prepare('SELECT * FROM consensus WHERE id = ?').get(id);
   }

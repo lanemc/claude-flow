@@ -786,7 +786,7 @@ Example:
       // Emit tool execution event
       this.eventBus.emit('tool:execute', {
         tool: toolName,
-        params: params,
+        params,
         source: 'daa-view'
       });
       
@@ -1055,7 +1055,7 @@ Example:
       
       if (matchedCaps.length > 0) {
         matches.push({
-          agent: agent,
+          agent,
           score: Math.round((matchedCaps.length / requirements.length) * 100),
           matchedCapabilities: matchedCaps
         });

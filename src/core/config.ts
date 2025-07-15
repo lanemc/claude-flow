@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../utils/error-handler';
+// import { getErrorMessage } from '../utils/error-handler';
 /**
  * Enterprise Configuration Management for Claude-Flow
  * Features: Security masking, change tracking, multi-format support, credential management
@@ -14,8 +14,8 @@ import { ConfigError, ValidationError } from '../utils/errors';
 
 // Format parsers
 interface FormatParser {
-  parse(content: string): any;
-  stringify(obj: any): string;
+  parse(content: string): unknown;
+  stringify(obj: unknown): string;
   extension: string;
 }
 
@@ -23,8 +23,8 @@ interface FormatParser {
 interface ConfigChange {
   timestamp: string;
   path: string;
-  oldValue: any;
-  newValue: any;
+  oldValue: unknown;
+  newValue: unknown;
   user?: string;
   reason?: string;
   source: 'cli' | 'api' | 'file' | 'env';
@@ -45,7 +45,7 @@ interface ValidationRule {
   max?: number;
   values?: string[];
   pattern?: RegExp;
-  validator?: (value: any, config: Config) => string | null;
+  validator?: (value: unknown, config: Config) => string | null;
   dependencies?: string[];
 }
 
@@ -90,8 +90,8 @@ const FORMAT_PARSERS: Record<string, FormatParser> = {
       // Simple YAML parser for basic key-value pairs
       const lines = content.split('\n');
       const result: any = {};
-      let current = result;
-      const stack: any[] = [result];
+      const current = result;
+      const stack: unknown[] = [result];
       
       for (const line of lines) {
         const trimmed = line.trim();
@@ -120,7 +120,7 @@ const FORMAT_PARSERS: Record<string, FormatParser> = {
       return result;
     },
     stringify: (obj) => {
-      const stringify = (obj: any, indent = 0): string => {
+      const stringify = (obj: unknown, indent = 0): string => {
         const spaces = '  '.repeat(indent);
         let result = '';
         
@@ -652,7 +652,7 @@ export class ConfigManager {
   /**
    * Sets a configuration value by path with change tracking and validation
    */
-  set(path: string, value: any, options: { user?: string, reason?: string, source?: 'cli' | 'api' | 'file' | 'env' } = {}): void {
+  set(path: string, value: unknown, options: { user?: string, reason?: string, source?: 'cli' | 'api' | 'file' | 'env' } = {}): void {
     const oldValue = this.getValue(path);
     
     // Record the change
@@ -692,7 +692,7 @@ export class ConfigManager {
   /**
    * Gets a configuration value by path with decryption for sensitive values
    */
-  getValue(path: string, decrypt = true): any {
+  getValue(path: string, decrypt = true): unknown {
     const keys = path.split('.');
     let current: any = this.config;
     
@@ -728,7 +728,7 @@ export class ConfigManager {
   /**
    * Gets configuration schema for validation
    */
-  getSchema(): any {
+  getSchema(): unknown {
     return {
       orchestrator: {
         maxConcurrentAgents: { type: 'number', min: 1, max: 100 },
@@ -773,7 +773,7 @@ export class ConfigManager {
   /**
    * Validates a value against schema
    */
-  private validateValue(value: any, schema: any, path: string): void {
+  private validateValue(value: unknown, schema: unknown, path: string): void {
     if (schema.type === 'number') {
       if (typeof value !== 'number' || isNaN(value)) {
         throw new ValidationError(`${path}: must be a number`);
@@ -801,11 +801,11 @@ export class ConfigManager {
   /**
    * Gets configuration diff between current and default
    */
-  getDiff(): any {
+  getDiff(): unknown {
     const defaultConfig = DEFAULT_CONFIG;
     const diff: any = {};
     
-    const findDifferences = (current: any, defaults: any, path: string = '') => {
+    const findDifferences = (current: unknown, defaults: unknown, path: string = '') => {
       for (const key in current) {
         const currentValue = current[key];
         const defaultValue = defaults[key];
@@ -842,7 +842,7 @@ export class ConfigManager {
   /**
    * Exports configuration with metadata
    */
-  export(): any {
+  export(): unknown {
     return {
       version: '1.0.0',
       exported: new Date().toISOString(),
@@ -855,7 +855,7 @@ export class ConfigManager {
   /**
    * Imports configuration from export
    */
-  import(data: any): void {
+  import(data: Record<string, unknown>): void {
     if (!data.config) {
       throw new ConfigError('Invalid configuration export format');
     }
@@ -935,7 +935,7 @@ export class ConfigManager {
     const maxAgents = process.env.CLAUDE_FLOW_MAX_AGENTS;
     if (maxAgents) {
       if (!config.orchestrator) {
-        config.orchestrator = {} as any;
+        config.orchestrator = {} as unknown;
       }
       config.orchestrator = {
         ...DEFAULT_CONFIG.orchestrator,
@@ -1041,7 +1041,7 @@ export class ConfigManager {
   /**
    * Validates a specific configuration path
    */
-  private validatePath(path: string, value: any, config?: Config): void {
+  private validatePath(path: string, value: unknown, config?: Config): void {
     const rule = this.validationRules.get(path);
     if (!rule) return;
     
@@ -1099,7 +1099,7 @@ export class ConfigManager {
   /**
    * Gets a value from a configuration object by path
    */
-  private getValueByPath(obj: any, path: string): any {
+  private getValueByPath(obj: unknown, path: string): unknown {
     const keys = path.split('.');
     let current = obj;
     
@@ -1128,7 +1128,7 @@ export class ConfigManager {
     const maskedConfig = deepClone(config);
     
     // Recursively mask sensitive paths
-    const maskObject = (obj: any, path: string = ''): any => {
+    const maskObject = (obj: unknown, path: string = ''): unknown => {
       if (!obj || typeof obj !== 'object') return obj;
       
       const masked: any = {};
@@ -1159,7 +1159,7 @@ export class ConfigManager {
       this.recordChange({
         timestamp: new Date().toISOString(),
         path: key,
-        oldValue: (oldConfig as any)[key],
+        oldValue: (oldConfig as unknown)[key],
         newValue: value,
         user: options.user,
         reason: options.reason,
@@ -1192,7 +1192,7 @@ export class ConfigManager {
   /**
    * Encrypts a sensitive value
    */
-  private encryptValue(value: any): string {
+  private encryptValue(value: unknown): string {
     if (!this.encryptionKey) {
       return value; // Return original if encryption not available
     }
@@ -1214,7 +1214,7 @@ export class ConfigManager {
   /**
    * Decrypts a sensitive value
    */
-  private decryptValue(encryptedValue: string): any {
+  private decryptValue(encryptedValue: string): unknown {
     if (!this.encryptionKey || !this.isEncryptedValue(encryptedValue)) {
       return encryptedValue;
     }
@@ -1238,7 +1238,7 @@ export class ConfigManager {
   /**
    * Checks if a value is encrypted
    */
-  private isEncryptedValue(value: any): boolean {
+  private isEncryptedValue(value: unknown): boolean {
     return typeof value === 'string' && value.startsWith('encrypted:');
   }
 }

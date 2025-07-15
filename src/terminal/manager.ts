@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../utils/error-handler';
+// import { getErrorMessage } from '../utils/error-handler';
 import * as process from 'node:process';
 /**
  * Terminal manager interface and implementation

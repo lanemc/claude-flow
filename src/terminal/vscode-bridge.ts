@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../utils/error-handler';
+// import { getErrorMessage } from '../utils/error-handler';
 /**
  * VSCode Extension Bridge for Terminal Integration
  * 
@@ -32,10 +32,10 @@ const terminalWriteEmulators = new Map<vscode.Terminal, vscode.EventEmitter<stri
  */
 export function initializeTerminalBridge(context: vscode.ExtensionContext): void {
   // Inject VSCode API into global scope for Claude-Flow
-  (globalThis as any).vscode = vscode;
+  (globalThis as unknown).vscode = vscode;
 
   // Register terminal output processor function
-  (globalThis as any).registerTerminalOutputProcessor = (
+  (globalThis as unknown).registerTerminalOutputProcessor = (
     terminalId: string,
     processor: (data: string) => void
   ) => {
@@ -44,7 +44,7 @@ export function initializeTerminalBridge(context: vscode.ExtensionContext): void
 
   // Override terminal creation to capture output
   const originalCreateTerminal = vscode.window.createTerminal;
-  (vscode.window as any).createTerminal = function(options: vscode.TerminalOptions) {
+  (vscode.window as unknown).createTerminal = function(options: vscode.TerminalOptions) {
     const terminal = originalCreateTerminal.call(vscode.window, options) as vscode.Terminal;
     
     // Create write emulator for this terminal
@@ -92,7 +92,7 @@ export function initializeTerminalBridge(context: vscode.ExtensionContext): void
 function captureTerminalOutput(terminal: vscode.Terminal, terminalId: string): void {
   // Method 1: Use terminal.sendText override to capture commands
   const originalSendText = terminal.sendText;
-  (terminal as any).sendText = function(text: string, addNewLine?: boolean) {
+  (terminal as unknown).sendText = function(text: string, addNewLine?: boolean) {
     // Call original method
     originalSendText.call(terminal, text, addNewLine);
     
@@ -106,7 +106,7 @@ function captureTerminalOutput(terminal: vscode.Terminal, terminalId: string): v
 
   // Method 2: Use proposed API if available
   if ('onDidWriteData' in terminal) {
-    const writeDataEvent = (terminal as any).onDidWriteData;
+    const writeDataEvent = (terminal as unknown).onDidWriteData;
     if (writeDataEvent) {
       writeDataEvent((data: string) => {
         const processor = terminalOutputProcessors.get(terminalId);
@@ -131,7 +131,7 @@ function setupTerminalRenderer(terminal: vscode.Terminal, terminalId: string): v
     // It would involve creating a custom terminal profile that captures output
     
     // For now, we'll use a simpler approach with periodic output checking
-    let lastOutput = '';
+    const lastOutput = '';
     const checkOutput = setInterval(() => {
       // This is a placeholder - actual implementation would depend on
       // available VSCode APIs for reading terminal content

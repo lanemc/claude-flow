@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../utils/error-handler';
+// import { getErrorMessage } from '../utils/error-handler';
 /**
  * Simple orchestrator implementation for Node.js compatibility
  */
@@ -57,7 +57,7 @@ function startWebUI(host: string, port: number) {
   }));
   
   // Global error handler middleware
-  app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  app.use((err: unknown, req: express.Request, res: express.Response, next: express.NextFunction) => {
     console.error('Global error handler:', err);
     res.status(err.status || 500).json({
       error: err.message || 'Internal server error',
@@ -73,10 +73,10 @@ function startWebUI(host: string, port: number) {
   
   // Store CLI output history and active connections
   const outputHistory: string[] = [];
-  const activeConnections: Set<any> = new Set();
+  const activeConnections: Set<unknown> = new Set();
   
   // CLI output capture system
-  let cliProcess: any = null;
+  const cliProcess: any = null;
   
   const consoleHTML = `
     <!DOCTYPE html>
@@ -594,7 +594,7 @@ function startWebUI(host: string, port: number) {
   });
   
   // Helper function to send response to specific client or broadcast
-  function sendResponse(ws: any, data: any) {
+  function sendResponse(ws: unknown, data: Record<string, unknown>) {
     if (ws) {
       ws.send(JSON.stringify(data));
     } else {
@@ -603,7 +603,7 @@ function startWebUI(host: string, port: number) {
   }
   
   // CLI command execution handler
-  function handleCliCommand(command: string, ws: any) {
+  function handleCliCommand(command: string, ws: unknown) {
     try {
       // Add timestamp and format output
       const timestamp = new Date().toLocaleTimeString();
@@ -630,7 +630,7 @@ function startWebUI(host: string, port: number) {
   }
   
   // Execute CLI commands and capture output
-  function executeCliCommand(command: string, ws: any) {
+  function executeCliCommand(command: string, ws: unknown) {
     // Handle built-in commands first
     if (command === 'help') {
       const helpText = `<span class="success">Available Commands:</span>
@@ -754,7 +754,7 @@ function startWebUI(host: string, port: number) {
   }
   
   // Broadcast message to all connected clients
-  function broadcastToClients(message: any) {
+  function broadcastToClients(message: unknown) {
     const messageStr = JSON.stringify(message);
     activeConnections.forEach(client => {
       if (client.readyState === 1) { // WebSocket.OPEN
@@ -785,7 +785,7 @@ function startWebUI(host: string, port: number) {
   }
 
   return new Promise((resolve, reject) => {
-    server.on('error', (err: any) => {
+    server.on('error', (err: unknown) => {
       if (err.code === 'EADDRINUSE') {
         console.error(`\n❌ Port ${port} is already in use`);
         console.log(`💡 Try a different port: claude-flow start --ui --port ${port + 1}`);
@@ -807,7 +807,7 @@ function startWebUI(host: string, port: number) {
 }
 
 // Start all components
-export async function startOrchestrator(options: any) {
+export async function startOrchestrator(options: Record<string, unknown>) {
   console.log('\n🚀 Starting orchestration components...\n');
 
   // Start Event Bus
@@ -847,7 +847,7 @@ export async function startOrchestrator(options: any) {
     const port = options.port || 3000;
     try {
       await startWebUI(host, port);
-    } catch (err: any) {
+    } catch (_err: unknown) {
       if (err.code === 'EADDRINUSE') {
         console.log('\n⚠️  Web UI could not start due to port conflict');
         console.log('   Orchestrator is running without Web UI');

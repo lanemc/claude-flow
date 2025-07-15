@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../utils/error-handler';
+// import { getErrorMessage } from '../utils/error-handler';
 import { promises as fs } from 'node:fs';
 /**
  * Enhanced Interactive REPL for Claude-Flow
@@ -21,7 +21,7 @@ interface REPLCommand {
 }
 
 interface REPLContext {
-  options: any;
+  options: Record<string, unknown>;
   history: string[];
   workingDirectory: string;
   currentSession?: string;
@@ -161,7 +161,7 @@ class CommandCompleter {
 /**
  * Start the enhanced interactive REPL
  */
-export async function startREPL(options: any = {}): Promise<void> {
+export async function startREPL(options: Record<string, unknown> = {}): Promise<void> {
   const context: REPLContext = {
     options,
     history: [],
@@ -305,7 +305,7 @@ export async function startREPL(options: any = {}): Promise<void> {
         }
         
         const recent = historyItems.slice(-20); // Show last 20
-        recent.forEach((cmd, i) => {
+        recent.forEach((cmd, _i) => {
           const lineNumber = historyItems.length - recent.length + i + 1;
           console.log(`${chalk.gray(lineNumber.toString().padStart(3))} ${cmd}`);
         });

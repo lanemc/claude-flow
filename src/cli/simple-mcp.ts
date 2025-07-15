@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../utils/error-handler';
+// import { getErrorMessage } from '../utils/error-handler';
 /**
  * Simple MCP command implementation for Node.js compatibility
  */
@@ -19,7 +19,7 @@ async function checkMCPStatus(host: string, port: number): Promise<boolean> {
   return new Promise((resolve) => {
     const options = {
       hostname: host,
-      port: port,
+      port,
       path: '/health',
       method: 'GET',
       timeout: 2000

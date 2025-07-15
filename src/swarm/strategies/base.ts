@@ -43,7 +43,7 @@ export interface DecompositionResult {
   ttl: number;
   accessCount: number;
   lastAccessed: Date;
-  data: any;
+  data: Record<string, unknown>;
   // Resource requirements
   resourceRequirements?: {
     memory?: number;

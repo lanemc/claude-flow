@@ -129,7 +129,7 @@ export class HiveDashboard {
   /**
    * Determine overall swarm status
    */
-  private determineSwarmStatus(metrics: any): HiveDashboardData['status'] {
+  private determineSwarmStatus(metrics: unknown): HiveDashboardData['status'] {
     if (metrics.executingTasks > 0) return 'executing';
     if (metrics.pendingTasks > 0) return 'active';
     if (metrics.completedTasks === metrics.totalTasks) return 'completed';
@@ -220,7 +220,7 @@ export class HiveDashboard {
   /**
    * Get communication statistics
    */
-  private getCommunicationStats(stats: any): CommunicationStats {
+  private getCommunicationStats(stats: unknown): CommunicationStats {
     return {
       totalMessages: stats.totalMessages,
       messageRate: stats.totalMessages / 10, // Approximate rate
@@ -232,7 +232,7 @@ export class HiveDashboard {
   /**
    * Get performance metrics
    */
-  private getPerformanceMetrics(metrics: any): PerformanceMetrics {
+  private getPerformanceMetrics(metrics: unknown): PerformanceMetrics {
     return {
       tasksCompleted: metrics.completedTasks,
       tasksPending: metrics.pendingTasks,
@@ -361,7 +361,7 @@ export class HiveDashboard {
   /**
    * Get real-time event stream
    */
-  getEventStream(): AsyncGenerator<any> {
+  getEventStream(): AsyncGenerator<unknown> {
     // This would return a stream of dashboard events
     return (async function* () {
       while (true) {

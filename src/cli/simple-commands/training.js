@@ -172,7 +172,7 @@ async function modelUpdateCommand(subArgs, flags) {
         const updateResult = await callRuvSwarmMCP('learning_adapt', {
             experience: {
                 type: `${agentType}_operation`,
-                result: result,
+                result,
                 timestamp: Date.now(),
                 environment: 'claude-flow'
             }

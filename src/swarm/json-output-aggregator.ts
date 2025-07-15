@@ -29,7 +29,7 @@ export interface SwarmOutputAggregate {
   agents: AgentOutputData[];
   tasks: TaskOutputData[];
   results: {
-    artifacts: Record<string, any>;
+    artifacts: Record<string, unknown>;
     outputs: string[];
     errors: string[];
     insights: string[];
@@ -38,7 +38,7 @@ export interface SwarmOutputAggregate {
   metadata: {
     strategy: string;
     mode: string;
-    configuration: Record<string, any>;
+    configuration: Record<string, unknown>;
     version: string;
   };
 }
@@ -73,7 +73,7 @@ export interface TaskOutputData {
   priority: string;
   output?: string;
   result?: TaskResult;
-  artifacts?: Record<string, any>;
+  artifacts?: Record<string, unknown>;
   error?: string;
 }
 
@@ -83,7 +83,7 @@ export class SwarmJsonOutputAggregator extends EventEmitter {
   private objective: string;
   private startTime: Date;
   private endTime?: Date;
-  private configuration: Record<string, any>;
+  private configuration: Record<string, unknown>;
   
   // Data collection
   private agents: Map<string, AgentOutputData> = new Map();
@@ -91,10 +91,10 @@ export class SwarmJsonOutputAggregator extends EventEmitter {
   private outputs: string[] = [];
   private errors: string[] = [];
   private insights: string[] = [];
-  private artifacts: Record<string, any> = {};
+  private artifacts: Record<string, unknown> = {};
   private metrics: SwarmMetrics = this.initializeMetrics();
 
-  constructor(swarmId: string, objective: string, configuration: Record<string, any> = {}) {
+  constructor(swarmId: string, objective: string, configuration: Record<string, unknown> = {}) {
     super();
     this.swarmId = swarmId;
     this.objective = objective;
@@ -224,7 +224,7 @@ export class SwarmJsonOutputAggregator extends EventEmitter {
     this.logger.debug('Insight added', { insight });
   }
 
-  addArtifact(key: string, artifact: any): void {
+  addArtifact(key: string, artifact: unknown): void {
     this.artifacts[key] = artifact;
     this.logger.debug('Artifact added', { key });
   }
@@ -308,9 +308,9 @@ export class SwarmJsonOutputAggregator extends EventEmitter {
   }
 
   // Handle circular references in JSON serialization
-  private circularReplacer(): (key: string, value: any) => any {
+  private circularReplacer(): (key: string, value: unknown) => unknown {
     const seen = new WeakSet();
-    return (key: string, value: any) => {
+    return (key: string, value: unknown) => {
       if (typeof value === 'object' && value !== null) {
         if (seen.has(value)) {
           return '[Circular]';

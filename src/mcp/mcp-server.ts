@@ -6,7 +6,7 @@
  */
 
 import { promises as fs } from "fs";
-import path from "path";
+import * as path from "path";
 import { getFilename, getDirname } from "../utils/import-meta-shim";
 import {
   MCPMessage,
@@ -109,7 +109,7 @@ class MockEnhancedMemory implements EnhancedMemoryStore {
       timestamp: string;
     }> = [];
 
-    for (const [fullKey, entry] of this.memoryStore.entries()) {
+    for (const [fullKey, entry] of Array.from(this.memoryStore.entries())) {
       if (fullKey.startsWith(`${namespace}:`)) {
         const key = fullKey.substring(namespace.length + 1);
         results.push({
@@ -158,7 +158,7 @@ class MockEnhancedMemory implements EnhancedMemoryStore {
       metadata?: any;
     }> = [];
 
-    for (const [fullKey, entry] of this.memoryStore.entries()) {
+    for (const [fullKey, entry] of Array.from(this.memoryStore.entries())) {
       if (fullKey.startsWith(`${namespace}:`)) {
         const key = fullKey.substring(namespace.length + 1);
         const valueStr = JSON.stringify(entry.value).toLowerCase();
@@ -668,11 +668,11 @@ export class ClaudeFlowMCPServer implements ClaudeFlowMCPServerInterface {
         case "tools/list":
           return this.handleToolsList(id!);
         case "tools/call":
-          return this.handleToolCall(id!, params);
+          return this.handleToolCall(id!, params as { name: string; arguments: Record<string, any> });
         case "resources/list":
           return this.handleResourcesList(id!);
         case "resources/read":
-          return this.handleResourceRead(id!, params);
+          return this.handleResourceRead(id!, params as { uri: string });
         default:
           return this.createErrorResponse(id!, -32601, "Method not found");
       }
@@ -824,35 +824,37 @@ export class ClaudeFlowMCPServer implements ClaudeFlowMCPServerInterface {
         } as AgentSpawnResult;
 
       case "neural_train":
-        const epochs = args.epochs || 50;
-        const baseAccuracy = 0.65;
-        const maxAccuracy = 0.98;
+        {
+          const epochs = args.epochs || 50;
+          const baseAccuracy = 0.65;
+          const maxAccuracy = 0.98;
 
-        // Realistic training progression: more epochs = better accuracy but with diminishing returns
-        const epochFactor = Math.min(epochs / 100, 10); // Normalize epochs
-        const accuracyGain =
-          (maxAccuracy - baseAccuracy) * (1 - Math.exp(-epochFactor / 3));
-        const finalAccuracy =
-          baseAccuracy + accuracyGain + (Math.random() * 0.05 - 0.025); // Add some noise
+          // Realistic training progression: more epochs = better accuracy but with diminishing returns
+          const epochFactor = Math.min(epochs / 100, 10); // Normalize epochs
+          const accuracyGain =
+            (maxAccuracy - baseAccuracy) * (1 - Math.exp(-epochFactor / 3));
+          const finalAccuracy =
+            baseAccuracy + accuracyGain + (Math.random() * 0.05 - 0.025); // Add some noise
 
-        // Training time increases with epochs but not linearly (parallel processing)
-        const baseTime = 2;
-        const timePerEpoch = 0.08;
-        const trainingTime =
-          baseTime + epochs * timePerEpoch + (Math.random() * 2 - 1);
+          // Training time increases with epochs but not linearly (parallel processing)
+          const baseTime = 2;
+          const timePerEpoch = 0.08;
+          const trainingTime =
+            baseTime + epochs * timePerEpoch + (Math.random() * 2 - 1);
 
-        return {
-          success: true,
-          modelId: `model_${args.pattern_type || "general"}_${Date.now()}`,
-          pattern_type: args.pattern_type || "coordination",
-          epochs: epochs,
-          accuracy: Math.min(finalAccuracy, maxAccuracy),
-          training_time: Math.max(trainingTime, 1),
-          status: "completed",
-          improvement_rate: epochFactor > 1 ? "converged" : "improving",
-          data_source: args.training_data || "recent",
-          timestamp: new Date().toISOString(),
-        } as NeuralTrainingResult;
+          return {
+            success: true,
+            modelId: `model_${args.pattern_type || "general"}_${Date.now()}`,
+            pattern_type: args.pattern_type || "coordination",
+            epochs,
+            accuracy: Math.min(finalAccuracy, maxAccuracy),
+            training_time: Math.max(trainingTime, 1),
+            status: "completed",
+            improvement_rate: epochFactor > 1 ? "converged" : "improving",
+            data_source: args.training_data || "recent",
+            timestamp: new Date().toISOString(),
+          } as NeuralTrainingResult;
+        }
 
       case "memory_usage":
         return await this.handleMemoryUsage(args as MemoryOperation);
@@ -1091,7 +1093,7 @@ export class ClaudeFlowMCPServer implements ClaudeFlowMCPServerInterface {
           success: true,
           tool: name,
           message: `Tool ${name} executed successfully`,
-          args: args,
+          args,
           timestamp: new Date().toISOString(),
         };
     }
@@ -1219,25 +1221,27 @@ export class ClaudeFlowMCPServer implements ClaudeFlowMCPServerInterface {
             success: true,
             action: "retrieve",
             key: args.key,
-            value: value,
+            value,
             found: value !== null,
             namespace: args.namespace || "default",
             timestamp: new Date().toISOString(),
           } as MemoryRetrieveResult;
 
         case "list":
-          const entries = await this.memoryStore.list({
-            namespace: args.namespace || "default",
-            limit: 100,
-          });
-          return {
-            success: true,
-            action: "list",
-            namespace: args.namespace || "default",
-            entries: entries,
-            count: entries.length,
-            timestamp: new Date().toISOString(),
-          } as MemoryListResult;
+          {
+            const entries = await this.memoryStore.list({
+              namespace: args.namespace || "default",
+              limit: 100,
+            });
+            return {
+              success: true,
+              action: "list",
+              namespace: args.namespace || "default",
+              entries,
+              count: entries.length,
+              timestamp: new Date().toISOString(),
+            } as MemoryListResult;
+          }
 
         case "delete":
           if (!args.key) {
@@ -1255,7 +1259,7 @@ export class ClaudeFlowMCPServer implements ClaudeFlowMCPServerInterface {
             action: "delete",
             key: args.key,
             namespace: args.namespace || "default",
-            deleted: deleted,
+            deleted,
             timestamp: new Date().toISOString(),
           } as any; // This matches the original return structure
 
@@ -1276,7 +1280,7 @@ export class ClaudeFlowMCPServer implements ClaudeFlowMCPServerInterface {
             action: "search",
             pattern: args.value,
             namespace: args.namespace || "default",
-            results: results,
+            results,
             count: results.length,
             timestamp: new Date().toISOString(),
           } as MemorySearchResult;
@@ -1303,12 +1307,10 @@ export class ClaudeFlowMCPServer implements ClaudeFlowMCPServerInterface {
   }
 
   async handleMemorySearch(args: {
-    pattern: string;
-    namespace?: string;
-    limit?: number;
-  }): Promise<
-    MemorySearchResult | { success: false; error: string; timestamp: string }
-  > {
+    pattern: string,
+    namespace?: string,
+    limit?: number
+  }): Promise<MemorySearchResult | { success: false, error: string, timestamp: string }> {
     if (!this.memoryStore) {
       return {
         success: false,
@@ -1328,7 +1330,7 @@ export class ClaudeFlowMCPServer implements ClaudeFlowMCPServerInterface {
         action: "search",
         pattern: args.pattern,
         namespace: args.namespace || "default",
-        results: results,
+        results,
         count: results.length,
         timestamp: new Date().toISOString(),
       } as MemorySearchResult;

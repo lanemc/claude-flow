@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../utils/error-handler';
+// import { getErrorMessage } from '../utils/error-handler';
 /**
  * Session manager for MCP connections
  */
@@ -401,7 +401,7 @@ export class SessionManager implements ISessionManager {
     return {};
   }
 
-  private extractAuthData(credentials: unknown): any {
+  private extractAuthData(credentials: unknown): unknown {
     if (typeof credentials === 'object' && credentials !== null) {
       const creds = credentials as Record<string, unknown>;
       return {

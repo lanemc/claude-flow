@@ -14,12 +14,12 @@ import type {
 } from './types';
 
 class InMemoryStore implements IMemoryStore {
-  private options: any;
+  private options: Record<string, unknown>;
   private data = new Map<string, Map<string, InMemoryEntry>>(); // namespace -> Map(key -> entry)
   private isInitialized = false;
   private cleanupInterval: NodeJS.Timeout | null = null;
 
-  constructor(options: any = {}) {
+  constructor(options: Record<string, unknown> = {}) {
     this.options = options;
   }
 
@@ -47,7 +47,7 @@ class InMemoryStore implements IMemoryStore {
     return this.data.get(namespace)!;
   }
 
-  async store(key: string, value: any, options: MemoryStoreOptions = {}): Promise<{
+  async store(key: string, value: unknown, options: MemoryStoreOptions = {}): Promise<{
     success: boolean;
     id?: string | number;
     size?: number;
@@ -84,7 +84,7 @@ class InMemoryStore implements IMemoryStore {
     };
   }
 
-  async retrieve(key: string, options: { namespace?: string } = {}): Promise<any> {
+  async retrieve(key: string, options: { namespace?: string } = {}): Promise<unknown> {
     await this.initialize();
     
     const namespace = options.namespace || 'default';
@@ -208,7 +208,7 @@ class InMemoryStore implements IMemoryStore {
     return cleaned;
   }
 
-  private _tryParseJson(value: string): any {
+  private _tryParseJson(value: string): unknown {
     try {
       return JSON.parse(value);
     } catch {

@@ -11,7 +11,7 @@ export interface HiveMessage {
   from: string;
   to: string | 'broadcast';
   type: HiveMessageType;
-  payload: any;
+  payload: Record<string, unknown>;
   timestamp: number;
   priority: 'urgent' | 'high' | 'normal' | 'low';
   requiresResponse?: boolean;
@@ -40,7 +40,7 @@ export interface HiveChannel {
 export class HiveCommunicationProtocol extends EventEmitter {
   private channels: Map<string, HiveChannel> = new Map();
   private messageQueue: Map<string, HiveMessage[]> = new Map();
-  private knowledgeBase: Map<string, any> = new Map();
+  private knowledgeBase: Map<string, unknown> = new Map();
   private consensusThreshold: number;
   
   constructor(options: { consensusThreshold?: number } = {}) {
@@ -343,7 +343,7 @@ export class HiveCommunicationProtocol extends EventEmitter {
   /**
    * Query knowledge base
    */
-  queryKnowledge(pattern: string): any[] {
+  queryKnowledge(pattern: string): unknown[] {
     const results = [];
     
     for (const [key, data] of this.knowledgeBase) {
@@ -439,7 +439,7 @@ export class HiveCommunicationProtocol extends EventEmitter {
   /**
    * Export communication log
    */
-  exportLog(): any {
+  exportLog(): unknown {
     const log = {
       channels: Array.from(this.channels.values()).map(channel => ({
         id: channel.id,

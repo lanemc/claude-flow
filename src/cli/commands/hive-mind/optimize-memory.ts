@@ -141,7 +141,7 @@ async function analyzeMemoryPerformance(): Promise<void> {
 /**
  * Run comprehensive memory optimization
  */
-async function runMemoryOptimization(options: any): Promise<void> {
+async function runMemoryOptimization(options: Record<string, unknown>): Promise<void> {
   console.log(chalk.yellow('⚡ Running memory optimization...\n'));
 
   try {
@@ -339,7 +339,7 @@ async function generateMemoryReport(): Promise<void> {
     // Optimization Suggestions
     if (report.suggestions.length > 0) {
       console.log(chalk.cyan.bold('💡 Optimization Suggestions:'));
-      report.suggestions.forEach((suggestion, index) => {
+      report.suggestions.forEach((suggestion, _index) => {
         const priorityColor = suggestion.priority === 'critical' ? 'red' :
                              suggestion.priority === 'high' ? 'yellow' :
                              suggestion.priority === 'medium' ? 'blue' : 'gray';
@@ -448,7 +448,7 @@ function getStatusBadge(status: string): string {
     'critical': 'red'
   };
   const color = colors[status] || 'gray';
-  return (chalk as any)[color].bold(status.toUpperCase());
+  return (chalk as unknown)[color].bold(status.toUpperCase());
 }
 
 function formatMetric(value: number, unit: string, threshold: number, inverse = false): string {

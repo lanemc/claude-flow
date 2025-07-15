@@ -45,7 +45,7 @@ export class SparcPhase {
     // Store phase completion in memory
     await this.storeInMemory(`${this.phaseName}_completed`, {
       timestamp: this.endTime,
-      duration: duration,
+      duration,
       artifacts: this.artifacts
     });
     

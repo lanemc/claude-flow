@@ -101,7 +101,7 @@ export class StdioTransport implements ITransport {
 
 
   private async processMessage(line: string): Promise<void> {
-    let message: any;
+    let message: unknown;
 
     try {
       message = JSON.parse(line);

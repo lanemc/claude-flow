@@ -27,7 +27,7 @@ export class DatabaseOperations {
   }
 
   // Swarm operations
-  async createSwarm(data: any): Promise<void> {
+  async createSwarm(data: Record<string, unknown>): Promise<void> {
     const stmt = this.getStatement('createSwarm', SQL_STATEMENTS.CREATE_SWARM);
     stmt.run(data.id, data.name, data.topology, data.queen_mode, data.max_agents,
              data.consensus_threshold, data.memory_ttl, data.config, data.created_at,
@@ -56,7 +56,7 @@ export class DatabaseOperations {
   }
 
   // Agent operations
-  async createAgent(data: any): Promise<void> {
+  async createAgent(data: Record<string, unknown>): Promise<void> {
     const stmt = this.getStatement('createAgent', SQL_STATEMENTS.CREATE_AGENT);
     stmt.run(data.id, data.swarm_id, data.name, data.type, data.status, data.capabilities,
              data.current_task_id, data.message_count, data.error_count, data.success_count,
@@ -73,7 +73,7 @@ export class DatabaseOperations {
     return stmt.all(swarmId) as AgentRow[];
   }
 
-  async updateAgent(id: string, updates: Record<string, any>): Promise<void> {
+  async updateAgent(id: string, updates: Record<string, unknown>): Promise<void> {
     const setClause = Object.keys(updates).map(key => `${key} = ?`).join(', ');
     const sql = SQL_STATEMENTS.UPDATE_AGENT.replace('{{COLUMNS}}', setClause);
     const stmt = this.db.prepare(sql);
@@ -85,13 +85,13 @@ export class DatabaseOperations {
     stmt.run(status, new Date().toISOString(), id);
   }
 
-  async getAgentPerformance(agentId: string): Promise<any> {
+  async getAgentPerformance(agentId: string): Promise<unknown> {
     const stmt = this.getStatement('getAgentPerformance', SQL_STATEMENTS.GET_AGENT_PERFORMANCE);
     return stmt.get(agentId);
   }
 
   // Task operations
-  async createTask(data: any): Promise<void> {
+  async createTask(data: Record<string, unknown>): Promise<void> {
     const stmt = this.getStatement('createTask', SQL_STATEMENTS.CREATE_TASK);
     stmt.run(data.id, data.swarm_id, data.type, data.description, data.status, data.priority,
              data.assigned_agent_id, data.dependencies, data.requirements, data.result,
@@ -109,7 +109,7 @@ export class DatabaseOperations {
     return stmt.all(swarmId) as TaskRow[];
   }
 
-  async updateTask(id: string, updates: Record<string, any>): Promise<void> {
+  async updateTask(id: string, updates: Record<string, unknown>): Promise<void> {
     const setClause = Object.keys(updates).map(key => `${key} = ?`).join(', ');
     const sql = SQL_STATEMENTS.UPDATE_TASK.replace('{{COLUMNS}}', setClause);
     const stmt = this.db.prepare(sql);
@@ -138,7 +138,7 @@ export class DatabaseOperations {
   }
 
   // Memory operations
-  async storeMemory(data: any): Promise<void> {
+  async storeMemory(data: Record<string, unknown>): Promise<void> {
     const stmt = this.getStatement('storeMemory', SQL_STATEMENTS.STORE_MEMORY);
     stmt.run(data.key, data.namespace, data.value, data.access_count || 0,
              data.last_accessed_at, data.created_at, data.updated_at, data.metadata, data.ttl);
@@ -196,7 +196,7 @@ export class DatabaseOperations {
   }
 
   // Performance operations
-  async storePerformanceMetric(data: any): Promise<void> {
+  async storePerformanceMetric(data: Record<string, unknown>): Promise<void> {
     const stmt = this.getStatement('storePerformanceMetric', SQL_STATEMENTS.STORE_PERFORMANCE_METRIC);
     stmt.run(data.id, data.swarm_id, data.agent_id, data.task_id, data.metric_type,
              data.metric_value, data.metadata, data.created_at);
@@ -225,7 +225,7 @@ export class DatabaseOperations {
   }
 
   // Communication operations
-  async createCommunication(data: any): Promise<void> {
+  async createCommunication(data: Record<string, unknown>): Promise<void> {
     const stmt = this.getStatement('createCommunication', SQL_STATEMENTS.CREATE_COMMUNICATION);
     stmt.run(data.id, data.swarm_id, data.from_agent_id, data.to_agent_id, data.message_type,
              data.content, data.metadata, data.broadcast_scope, data.priority, data.created_at,
@@ -254,7 +254,7 @@ export class DatabaseOperations {
   }
 
   // Consensus operations
-  async createConsensusProposal(proposal: any): Promise<void> {
+  async createConsensusProposal(proposal: unknown): Promise<void> {
     const stmt = this.getStatement('createConsensusProposal', SQL_STATEMENTS.CREATE_CONSENSUS_PROPOSAL);
     stmt.run(proposal.id, proposal.swarm_id, proposal.proposal_type, proposal.proposal_data,
              proposal.proposed_by, proposal.threshold_required, proposal.votes_for,
@@ -300,7 +300,7 @@ export class DatabaseOperations {
     stmt.run(namespace, namespace, maxEntries);
   }
 
-  async updateMemoryEntry(entry: any): Promise<void> {
+  async updateMemoryEntry(entry: unknown): Promise<void> {
     const stmt = this.getStatement('updateMemoryEntry', SQL_STATEMENTS.UPDATE_MEMORY_ENTRY);
     stmt.run(entry.value, entry.metadata, new Date().toISOString(), entry.key, entry.namespace);
   }
@@ -310,7 +310,7 @@ export class DatabaseOperations {
     stmt.run(key, namespace);
   }
 
-  async healthCheck(): Promise<any> {
+  async healthCheck(): Promise<unknown> {
     const results = {
       swarms: this.db.prepare(SQL_STATEMENTS.HEALTH_CHECK_SWARMS).get() as { count: number },
       agents: this.db.prepare(SQL_STATEMENTS.HEALTH_CHECK_AGENTS).get() as { count: number },

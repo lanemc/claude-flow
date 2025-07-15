@@ -300,7 +300,8 @@ export class ConnectionStateManager {
         break;
       
       case 'disconnect':
-        this.metrics.totalDisconnections++;
+        {
+this.metrics.totalDisconnections++;
         
         // Calculate session duration
         const duration = this.getSessionDuration(event.sessionId);
@@ -311,11 +312,15 @@ export class ConnectionStateManager {
           const totalDuration = this.metrics.averageSessionDuration * 
             (this.metrics.totalDisconnections - 1) + duration;
           this.metrics.averageSessionDuration = totalDuration / this.metrics.totalDisconnections;
+
+      
+      }
         }
         break;
       
       case 'reconnect':
-        this.metrics.totalReconnections++;
+        {
+this.metrics.totalReconnections++;
         
         // Calculate reconnection time
         const reconnectTime = this.getReconnectionTime(event.sessionId);
@@ -324,6 +329,9 @@ export class ConnectionStateManager {
           const totalTime = this.metrics.averageReconnectionTime * 
             (this.metrics.totalReconnections - 1) + reconnectTime;
           this.metrics.averageReconnectionTime = totalTime / this.metrics.totalReconnections;
+
+      
+      }
         }
         break;
     }
@@ -347,7 +355,7 @@ export class ConnectionStateManager {
         pendingRequests: state.pendingRequests.length,
       });
     } catch (error) {
-      if ((error as any).code !== 'ENOENT') {
+      if ((error as unknown).code !== 'ENOENT') {
         this.logger.error('Failed to load connection state', error);
       }
     }
@@ -359,7 +367,7 @@ export class ConnectionStateManager {
       const loaded = JSON.parse(data);
       
       // Convert date strings back to Date objects
-      loaded.connectionHistory = loaded.connectionHistory.map((event: any) => ({
+      loaded.connectionHistory = loaded.connectionHistory.map((event: Event | Record<string, unknown>) => ({
         ...event,
         timestamp: new Date(event.timestamp),
       }));
@@ -372,7 +380,7 @@ export class ConnectionStateManager {
         historySize: this.connectionHistory.length,
       });
     } catch (error) {
-      if ((error as any).code !== 'ENOENT') {
+      if ((error as unknown).code !== 'ENOENT') {
         this.logger.error('Failed to load connection metrics', error);
       }
     }

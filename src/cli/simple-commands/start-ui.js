@@ -141,6 +141,6 @@ function getArgValue(args, flag) {
 }
 
 // Run if called directly
-if (import.meta.main) {
+if (require.main === module) {
   await launchUI();
 }

@@ -603,10 +603,10 @@ await swarmCommand(args, flags);
       
       // Save process info first
       await writeTextFile(`${swarmRunDir}/process.json`, JSON.stringify({
-        swarmId: swarmId,
-        objective: objective,
+        swarmId,
+        objective,
         startTime: new Date().toISOString(),
-        logFile: logFile,
+        logFile,
         status: 'starting'
       }, null, 2));
       
@@ -1775,7 +1775,7 @@ function getAgentRecommendations(strategy, maxAgents, objective) {
 }
 
 // Allow direct execution
-if (import.meta.main) {
+if (require.main === module) {
   // When called directly as a script, parse all arguments
   const args = [];
   const flags = {};

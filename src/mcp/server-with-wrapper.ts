@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { getErrorMessage } from '../utils/error-handler';
+// import { getErrorMessage } from '../utils/error-handler';
 /**
  * MCP Server entry point that uses the wrapper by default
  */

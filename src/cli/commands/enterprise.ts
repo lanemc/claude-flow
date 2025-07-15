@@ -97,8 +97,8 @@ export const enterpriseCommands: Command[] = [
             const project = await manager.createProject({
               name,
               description: ctx.flags.description as string || `Project: ${name}`,
-              type: (ctx.flags.type as any) || 'custom',
-              priority: (ctx.flags.priority as any) || 'medium',
+              type: (ctx.flags.type as unknown) || 'custom',
+              priority: (ctx.flags.priority as unknown) || 'medium',
               owner: ctx.flags.owner as string || 'system',
               stakeholders: ctx.flags.stakeholders ? 
                 (ctx.flags.stakeholders as string).split(',') : []
@@ -149,7 +149,7 @@ export const enterpriseCommands: Command[] = [
               
               if (ctx.flags.verbose) {
                 const progress = manager['calculateProjectProgress'] ? 
-                  await (manager as any).calculateProjectProgress(project) : 0;
+                  await (manager as unknown).calculateProjectProgress(project) : 0;
                 console.log(`  Progress: ${progress.toFixed(1)}% | Phases: ${project.phases.length}`);
                 console.log(`  Budget: ${project.budget.spent}/${project.budget.total} ${project.budget.currency}`);
               }
@@ -241,7 +241,7 @@ export const enterpriseCommands: Command[] = [
 
         case 'report': {
           const projectId = ctx.args[1];
-          const reportType = (ctx.args[2] as any) || 'status';
+          const reportType = (ctx.args[2] as unknown) || 'status';
 
           if (!projectId) {
             error('Usage: project report <project-id> [type]');
@@ -479,10 +479,10 @@ export const enterpriseCommands: Command[] = [
               try {
                 const environment = await manager.createEnvironment({
                   name,
-                  type: (ctx.flags.type as any) || 'development',
+                  type: (ctx.flags.type as unknown) || 'development',
                   configuration: {
                     region: ctx.flags.region as string || 'us-east-1',
-                    provider: (ctx.flags.provider as any) || 'aws',
+                    provider: (ctx.flags.provider as unknown) || 'aws',
                     endpoints: ctx.flags.endpoints ? 
                       (ctx.flags.endpoints as string).split(',') : [],
                     secrets: {},
@@ -569,7 +569,7 @@ export const enterpriseCommands: Command[] = [
           switch (providerCmd) {
             case 'add': {
               const name = ctx.args[2];
-              const type = ctx.args[3] as any;
+              const type = ctx.args[3] as unknown;
 
               if (!name || !type) {
                 error('Usage: cloud providers add <name> <type>');
@@ -626,7 +626,7 @@ export const enterpriseCommands: Command[] = [
           switch (resourceCmd) {
             case 'create': {
               const name = ctx.args[2];
-              const type = ctx.args[3] as any;
+              const type = ctx.args[3] as unknown;
 
               if (!name || !type) {
                 error('Usage: cloud resources create <name> <type> --provider <provider-id>');
@@ -841,7 +841,7 @@ export const enterpriseCommands: Command[] = [
           try {
             const scan = await manager.createSecurityScan({
               name,
-              type: (ctx.flags.type as any) || 'vulnerability',
+              type: (ctx.flags.type as unknown) || 'vulnerability',
               target: {
                 type: 'repository',
                 path: target,
@@ -850,7 +850,7 @@ export const enterpriseCommands: Command[] = [
               projectId: ctx.flags.project as string,
               configuration: {
                 severity: ctx.flags.severity ? 
-                  (ctx.flags.severity as string).split(',') as any : undefined,
+                  (ctx.flags.severity as string).split(',') as unknown : undefined,
                 formats: ctx.flags.format ? 
                   (ctx.flags.format as string).split(',') : undefined
               }
@@ -895,8 +895,8 @@ export const enterpriseCommands: Command[] = [
                 const incident = await manager.createSecurityIncident({
                   title,
                   description: ctx.args.slice(3).join(' ') || title,
-                  severity: (ctx.flags.severity as any) || 'medium',
-                  type: (ctx.flags.type as any) || 'security-breach',
+                  severity: (ctx.flags.severity as unknown) || 'medium',
+                  type: (ctx.flags.type as unknown) || 'security-breach',
                   source: {
                     type: 'user-report',
                     details: { reporter: 'cli-user' }
@@ -949,7 +949,7 @@ export const enterpriseCommands: Command[] = [
             success(`Compliance assessment completed: ${checks.length} checks`);
             console.log();
 
-            const byFramework: Record<string, any> = {};
+            const byFramework: Record<string, unknown> = {};
             for (const check of checks) {
               if (!byFramework[check.framework]) {
                 byFramework[check.framework] = { passed: 0, failed: 0, total: 0 };
@@ -1065,7 +1065,7 @@ export const enterpriseCommands: Command[] = [
                 const dashboard = await manager.createDashboard({
                   name,
                   description: ctx.args.slice(3).join(' ') || `Dashboard: ${name}`,
-                  type: (ctx.flags.type as any) || 'operational',
+                  type: (ctx.flags.type as unknown) || 'operational',
                   widgets: [] // Would be populated based on template
                 });
 
@@ -1265,7 +1265,7 @@ export const enterpriseCommands: Command[] = [
                 const model = await manager.trainPredictiveModel({
                   name,
                   description: `Predictive model: ${name}`,
-                  type: (ctx.flags.type as any) || 'regression',
+                  type: (ctx.flags.type as unknown) || 'regression',
                   algorithm: ctx.flags.algorithm as string || 'linear-regression',
                   features,
                   target,
@@ -1378,8 +1378,8 @@ export const enterpriseCommands: Command[] = [
           try {
             const entry = await manager.logAuditEvent({
               eventType,
-              category: (ctx.flags.category as any) || 'system-change',
-              severity: (ctx.flags.severity as any) || 'medium',
+              category: (ctx.flags.category as unknown) || 'system-change',
+              severity: (ctx.flags.severity as unknown) || 'medium',
               userId: ctx.flags.user as string,
               resource: {
                 type: ctx.flags.resourceType as string || 'system',
@@ -1387,7 +1387,7 @@ export const enterpriseCommands: Command[] = [
                 name: ctx.flags.resourceName as string
               },
               action,
-              outcome: (ctx.flags.outcome as any) || 'success',
+              outcome: (ctx.flags.outcome as unknown) || 'success',
               details: ctx.flags.details ? JSON.parse(ctx.flags.details as string) : {},
               context: {
                 source: 'cli',
@@ -1413,7 +1413,7 @@ export const enterpriseCommands: Command[] = [
         }
 
         case 'report': {
-          const reportType = (ctx.args[1] as any) || 'compliance';
+          const reportType = (ctx.args[1] as unknown) || 'compliance';
 
           try {
             const timeRange = ctx.flags.timerange as string || '30d';
@@ -1483,7 +1483,7 @@ export const enterpriseCommands: Command[] = [
 
         case 'export': {
           try {
-            const format = (ctx.flags.export as any) || 'json';
+            const format = (ctx.flags.export as unknown) || 'json';
             const timeRange = ctx.flags.timerange as string || '30d';
             const now = new Date();
             let start: Date;

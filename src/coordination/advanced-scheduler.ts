@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../utils/error-handler';
+// import { getErrorMessage } from '../utils/error-handler';
 /**
  * Advanced task scheduler with intelligent agent selection and priority handling
  */
@@ -412,7 +412,7 @@ export class AdvancedTaskScheduler extends TaskScheduler {
    */
   private setupAdvancedEventHandlers(): void {
     // Handle work stealing requests
-    this.eventBus.on('workstealing:request', async (data: any) => {
+    this.eventBus.on('workstealing:request', async (data: Record<string, unknown>) => {
       const { sourceAgent, targetAgent, taskCount } = data;
       
       try {
@@ -436,13 +436,13 @@ export class AdvancedTaskScheduler extends TaskScheduler {
     });
 
     // Update workload on task events
-    this.eventBus.on(SystemEvents.TASK_ASSIGNED, async (data: any) => {
+    this.eventBus.on(SystemEvents.TASK_ASSIGNED, async (data: Record<string, unknown>) => {
       const { agentId } = data;
       const taskCount = await this.getAgentTaskCount(agentId);
       this.workStealing.updateAgentWorkload(agentId, { taskCount });
     });
 
-    this.eventBus.on(SystemEvents.TASK_COMPLETED, async (data: any) => {
+    this.eventBus.on(SystemEvents.TASK_COMPLETED, async (data: Record<string, unknown>) => {
       const { taskId } = data;
       // Update workload after task completion
       // This would need the agent ID from the task

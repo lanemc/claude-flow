@@ -9,7 +9,7 @@ export interface ProcessInfo {
   status: ProcessStatus;
   pid?: number;
   startTime?: number;
-  config?: Record<string, any>;
+  config?: Record<string, unknown>;
   metrics?: ProcessMetrics;
 }
 
@@ -66,5 +66,5 @@ export interface StartOptions {
 export interface UIAction {
   type: 'start' | 'stop' | 'restart' | 'logs' | 'status' | 'exit';
   processId?: string;
-  options?: Record<string, any>;
+  options?: Record<string, unknown>;
 }

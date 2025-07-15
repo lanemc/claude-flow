@@ -7,24 +7,59 @@ import { Database as SQLiteDatabase, Statement } from 'better-sqlite3';
 
 // ==== Core Memory Types ====
 
+export interface MemoryOptions {
+  type?: 'shared' | 'swarm';
+  swarmId?: string;
+  directory?: string;
+  filename?: string;
+  dbName?: string;
+  cacheSize?: number;
+  cacheMemoryMB?: number;
+  compressionThreshold?: number;
+  gcInterval?: number;
+  enableWAL?: boolean;
+  enableVacuum?: boolean;
+}
+
 export interface MemoryStoreOptions {
   namespace?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   ttl?: number;
   tags?: string[];
 }
 
+export interface StoreOptions {
+  namespace?: string;
+  ttl?: number;
+  metadata?: Record<string, any>;
+  tags?: string[];
+  limit?: number;
+  offset?: number;
+}
+
+export interface StoreResult {
+  success: boolean;
+  id: string | number;
+  size: number;
+}
+
+export interface EnhancedMemoryOptions extends MemoryOptions {
+  enableAnalytics?: boolean;
+  enableCompression?: boolean;
+  backupInterval?: number;
+}
+
 export interface MemoryEntry {
   key: string;
-  value: any;
+  value: string;
   namespace: string;
-  metadata?: Record<string, any> | null;
-  createdAt: Date;
-  updatedAt: Date;
-  accessedAt: Date;
+  metadata: Record<string, any> | null;
+  createdAt: number;
+  updatedAt: number;
+  accessedAt: number;
   accessCount: number;
-  ttl?: number | null;
-  expiresAt?: Date | null;
+  ttl: number | null;
+  expiresAt: number | null;
 }
 
 export interface MemorySearchOptions {
@@ -43,11 +78,11 @@ export interface MemoryListOptions {
 
 export interface MemorySearchResult {
   key: string;
-  value: any;
+  value: unknown;
   namespace: string;
   score?: number;
   updatedAt: Date;
-  metadata?: Record<string, any> | null;
+  metadata?: Record<string, unknown> | null;
   tags?: string[];
 }
 
@@ -56,7 +91,7 @@ export interface MemorySearchResult {
 export interface SQLiteMemoryStoreOptions {
   dbName?: string;
   directory?: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface SQLiteRow {
@@ -84,11 +119,11 @@ export interface SharedMemoryOptions {
   gcInterval?: number;
   enableWAL?: boolean;
   enableVacuum?: boolean;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface CacheEntry {
-  data: any;
+  data: Record<string, unknown>;
   size: number;
   timestamp: number;
 }
@@ -153,6 +188,20 @@ export interface SwarmMemoryOptions extends SharedMemoryOptions {
 }
 
 export interface AgentData {
+  agentId: string;
+  type: string;
+  capabilities: string[];
+  status: string;
+  createdAt: number;
+  lastHeartbeat: number;
+  metrics: {
+    tasksCompleted: number;
+    successRate: number;
+    avgResponseTime: number;
+  };
+}
+
+export interface SwarmAgentData {
   id: string;
   type: string;
   status: string;
@@ -162,7 +211,7 @@ export interface AgentData {
     successRate: number;
     avgResponseTime: number;
   };
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface TaskData {
@@ -173,8 +222,8 @@ export interface TaskData {
   createdAt?: string;
   updatedAt?: string;
   completedAt?: string;
-  result?: any;
-  [key: string]: any;
+  result?: unknown;
+  [key: string]: unknown;
 }
 
 export interface CommunicationMessage {
@@ -183,7 +232,7 @@ export interface CommunicationMessage {
   toAgent: string;
   message: {
     type: string;
-    [key: string]: any;
+    [key: string]: unknown;
   };
   swarmId: string;
   timestamp: string;
@@ -193,7 +242,7 @@ export interface ConsensusDecision {
   status: string;
   taskId?: string;
   threshold?: number;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface NeuralPattern {
@@ -203,7 +252,7 @@ export interface NeuralPattern {
   usageCount?: number;
   successRate?: number;
   lastUsedAt?: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface SwarmStats {
@@ -229,31 +278,35 @@ export interface SwarmStats {
 
 // ==== Enhanced Memory Types ====
 
-export interface SessionState {
+export interface SessionData {
   sessionId: string;
-  userId?: string;
-  projectPath?: string;
-  activeBranch?: string;
+  userId: string;
+  projectPath: string;
+  activeBranch: string;
   lastActivity: number;
-  state?: string;
-  context?: Record<string, any>;
-  environment?: Record<string, string>;
+  state: 'active' | 'inactive' | 'suspended';
+  context: Record<string, any>;
+  environment: Record<string, any>;
+}
+
+export interface SessionState extends SessionData {
+  // Legacy alias for backwards compatibility
 }
 
 export interface WorkflowData {
   workflowId: string;
   name: string;
-  steps?: any[];
+  steps?: unknown[];
   status?: string;
   progress?: number;
   startTime?: number;
   endTime?: number;
-  results?: Record<string, any>;
+  results?: Record<string, unknown>;
 }
 
 export interface MetricData {
   name: string;
-  value: any;
+  value: number;
   timestamp: number;
   metadata: Record<string, any>;
 }
@@ -262,10 +315,19 @@ export interface LearningData {
   agentId: string;
   timestamp: number;
   type: string;
-  input: any;
-  output: any;
-  feedback?: any;
-  improvement?: any;
+  input: Record<string, any>;
+  output: Record<string, any>;
+  feedback?: string;
+  improvement?: string;
+}
+
+export interface KnowledgeData {
+  domain: string;
+  key: string;
+  value: any;
+  metadata: Record<string, any>;
+  createdAt: number;
+  updatedAt: number;
 }
 
 export interface PerformanceData {
@@ -288,7 +350,7 @@ export interface InMemoryEntry {
   key: string;
   value: string;
   namespace: string;
-  metadata: any;
+  metadata: Record<string, unknown>;
   createdAt: number;
   updatedAt: number;
   accessedAt: number;
@@ -301,15 +363,11 @@ export interface InMemoryEntry {
 
 export interface IMemoryStore {
   initialize(): Promise<void>;
-  store(key: string, value: any, options?: MemoryStoreOptions): Promise<{
-    success: boolean;
-    id?: string | number;
-    size?: number;
-  }>;
-  retrieve(key: string, options?: { namespace?: string }): Promise<any>;
-  list(options?: MemoryListOptions): Promise<MemoryEntry[]>;
-  delete(key: string, options?: { namespace?: string }): Promise<boolean>;
-  search(pattern: string, options?: MemorySearchOptions): Promise<MemorySearchResult[]>;
+  store(key: string, value: unknown, options?: StoreOptions): Promise<StoreResult>;
+  retrieve(key: string, options?: StoreOptions): Promise<unknown>;
+  list(options?: StoreOptions): Promise<any[]>;
+  delete(key: string, options?: StoreOptions): Promise<boolean>;
+  search(pattern: string, options?: StoreOptions): Promise<any[]>;
   cleanup(): Promise<number>;
   close?(): void;
 }
@@ -362,7 +420,7 @@ export interface SwarmExportState {
   agents: AgentData[];
   tasks: TaskData[];
   patterns: NeuralPattern[];
-  statistics: any;
+  statistics: unknown;
 }
 
 export interface ImportResult {
@@ -370,3 +428,30 @@ export interface ImportResult {
   tasks: number;
   patterns: number;
 }
+
+// ==== Migration Types ====
+
+export interface MigrationOptions {
+  oldDbPath: string;
+  newDbPath: string;
+  swarmDbPath: string;
+  dryRun: boolean;
+  verbose: boolean;
+}
+
+export interface MigrationStats {
+  total: number;
+  migrated: number;
+  skipped: number;
+  errors: number;
+}
+
+export interface MigrationResult {
+  success: boolean;
+  stats: MigrationStats;
+  error?: string;
+}
+
+// ==== Memory Instance Type ====
+
+export type MemoryInstance = import('./shared-memory.js').default | import('./swarm-memory.js').SwarmMemory;

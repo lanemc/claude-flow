@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../utils/error-handler';
+// import { getErrorMessage } from '../utils/error-handler';
 /**
  * Utility helper functions for Claude-Flow
  */
@@ -16,8 +16,8 @@ export const execAsync = promisify(exec);
 /**
  * Simple calculator function that adds two numbers
  */
-export function add(a: number, b: number): number {
-  return a + b;
+export function add(a: number, _b: number): number {
+  return a + _b;
 }
 
 /**
@@ -192,8 +192,8 @@ export function deepClone<T>(obj: T): T {
 
   if (obj instanceof Map) {
     const map = new Map();
-    obj.forEach((value, key) => {
-      map.set(key, deepClone(value));
+    obj.forEach((value, _key) => {
+      map.set(_key, deepClone(value));
     });
     return map as T;
   }

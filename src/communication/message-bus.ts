@@ -37,7 +37,7 @@ export interface Message {
   type: string;
   sender: AgentId;
   receivers: AgentId[];
-  content: any;
+  content: unknown;
   metadata: MessageMetadata;
   timestamp: Date;
   expiresAt?: Date;
@@ -116,7 +116,7 @@ export interface MessageFilter {
 export interface FilterCondition {
   field: string;
   operator: 'eq' | 'ne' | 'gt' | 'lt' | 'contains' | 'matches' | 'in';
-  value: any;
+  value: unknown;
   caseSensitive?: boolean;
 }
 
@@ -132,7 +132,7 @@ export interface MiddlewareContext {
   channel: MessageChannel;
   direction: 'inbound' | 'outbound';
   agent: AgentId;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
 }
 
 export interface MessageQueue {
@@ -205,7 +205,7 @@ export interface RoutingRule {
 export interface RoutingAction {
   type: 'forward' | 'duplicate' | 'transform' | 'aggregate' | 'delay';
   target?: string;
-  config: Record<string, any>;
+  config: Record<string, unknown>;
 }
 
 export type MessagePriority = 'low' | 'normal' | 'high' | 'critical';
@@ -352,7 +352,7 @@ export class MessageBus extends EventEmitter {
 
   async sendMessage(
     type: string,
-    content: any,
+    content: unknown,
     sender: AgentId,
     receivers: AgentId | AgentId[],
     options: {
@@ -420,7 +420,7 @@ export class MessageBus extends EventEmitter {
 
   async broadcastMessage(
     type: string,
-    content: any,
+    content: unknown,
     sender: AgentId,
     options: {
       channel?: string;
@@ -811,7 +811,7 @@ export class MessageBus extends EventEmitter {
     }
   }
 
-  private async processContent(content: any): Promise<any> {
+  private async processContent(content: unknown): Promise<unknown> {
     let processed = content;
 
     // Compress if enabled
@@ -827,11 +827,11 @@ export class MessageBus extends EventEmitter {
     return processed;
   }
 
-  private calculateSize(content: any): number {
+  private calculateSize(content: unknown): number {
     return JSON.stringify(content).length;
   }
 
-  private detectContentType(content: any): string {
+  private detectContentType(content: unknown): string {
     if (typeof content === 'string') return 'text/plain';
     if (typeof content === 'object') return 'application/json';
     if (Buffer.isBuffer(content)) return 'application/octet-stream';
@@ -841,7 +841,7 @@ export class MessageBus extends EventEmitter {
   private async filterReceivers(
     receivers: AgentId[],
     filter: MessageFilter,
-    context: any
+    context: Record<string, unknown>
   ): Promise<AgentId[]> {
     // Placeholder for receiver filtering logic
     return receivers;
@@ -870,7 +870,7 @@ export class MessageBus extends EventEmitter {
     });
   }
 
-  private getFieldValue(message: Message, field: string): any {
+  private getFieldValue(message: Message, field: string): unknown {
     const parts = field.split('.');
     let value: any = message;
     
@@ -881,7 +881,7 @@ export class MessageBus extends EventEmitter {
     return value;
   }
 
-  private evaluateCondition(fieldValue: any, operator: string, compareValue: any): boolean {
+  private evaluateCondition(fieldValue: unknown, operator: string, compareValue: unknown): boolean {
     switch (operator) {
       case 'eq': return fieldValue === compareValue;
       case 'ne': return fieldValue !== compareValue;
@@ -1105,15 +1105,15 @@ export class MessageBus extends EventEmitter {
     this.emit('agent:disconnected', { agentId });
   }
 
-  private handleDeliverySuccess(data: any): void {
+  private handleDeliverySuccess(data: Record<string, unknown>): void {
     this.metrics.recordDeliverySuccess(data.message);
   }
 
-  private handleDeliveryFailure(data: any): void {
+  private handleDeliveryFailure(data: Record<string, unknown>): void {
     this.metrics.recordDeliveryFailure(data.message);
   }
 
-  private handleRetryExhausted(data: any): void {
+  private handleRetryExhausted(data: Record<string, unknown>): void {
     this.logger.error('Message delivery retry exhausted', {
       messageId: data.message.id,
       target: data.target
@@ -1140,12 +1140,12 @@ export class MessageBus extends EventEmitter {
     }
   }
 
-  private async compress(content: any): Promise<any> {
+  private async compress(content: unknown): Promise<unknown> {
     // Placeholder for compression
     return content;
   }
 
-  private async encrypt(content: any): Promise<any> {
+  private async encrypt(content: unknown): Promise<unknown> {
     // Placeholder for encryption
     return content;
   }
@@ -1181,7 +1181,7 @@ export class MessageBus extends EventEmitter {
     return Array.from(this.subscriptions.values());
   }
 
-  getMetrics(): any {
+  getMetrics(): unknown {
     return {
       channels: this.channels.size,
       queues: this.queues.size,
@@ -1326,7 +1326,7 @@ class RetryManager extends EventEmitter {
     this.logger.debug('Retry manager shutdown');
   }
 
-  async scheduleRetry(message: Message, target: DeliveryTarget, error: any): Promise<void> {
+  async scheduleRetry(message: Message, target: DeliveryTarget, error: Error | unknown): Promise<void> {
     const existingEntry = this.retryQueue.find(entry =>
       entry.message.id === message.id && entry.target.id === target.id
     );
@@ -1422,7 +1422,7 @@ class MessageBusMetrics {
     this.messagesFailed++;
   }
 
-  getMetrics(): any {
+  getMetrics(): unknown {
     const avgLatency = this.deliveryLatencies.length > 0 ?
       this.deliveryLatencies.reduce((sum, lat) => sum + lat, 0) / this.deliveryLatencies.length : 0;
 

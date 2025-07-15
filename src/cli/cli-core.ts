@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { getErrorMessage } from '../utils/error-handler';
+// import { getErrorMessage } from '../utils/error-handler';
 /**
  * Claude-Flow CLI - Core implementation using Node.js
  */
@@ -126,8 +126,8 @@ class CLI {
     }
   }
 
-  private parseArgs(args: string[]): Record<string, any> {
-    const result: Record<string, any> = { _: [] };
+  private parseArgs(args: string[]): Record<string, unknown> {
+    const result: Record<string, unknown> = { _: [] };
     let i = 0;
 
     while (i < args.length) {

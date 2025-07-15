@@ -57,7 +57,7 @@ class FallbackMemoryStore implements IFallbackStore {
     return this.useFallback ? this.fallbackStore! : this.primaryStore!;
   }
 
-  async store(key: string, value: any, options: MemoryStoreOptions = {}): Promise<{
+  async store(key: string, value: unknown, options: MemoryStoreOptions = {}): Promise<{
     success: boolean;
     id?: string | number;
     size?: number;
@@ -66,7 +66,7 @@ class FallbackMemoryStore implements IFallbackStore {
     return this.activeStore.store(key, value, options);
   }
 
-  async retrieve(key: string, options: { namespace?: string } = {}): Promise<any> {
+  async retrieve(key: string, options: { namespace?: string } = {}): Promise<unknown> {
     await this.initialize();
     return this.activeStore.retrieve(key, options);
   }

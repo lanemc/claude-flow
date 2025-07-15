@@ -6,7 +6,7 @@
 import { Request, Response, NextFunction } from 'express';
 
 // Base API Response Interface
-export interface APIResponse<T = any> {
+export interface APIResponse<T = unknown> {
   success: boolean;
   timestamp: number;
   data?: T;
@@ -247,13 +247,27 @@ export interface LoadMonitor {
 // API Route Handler Types
 export type APIRouteHandler = (req: Request, res: Response, next: NextFunction) => void | Promise<void>;
 
+// Validation Schema Types
+export interface ValidationSchema {
+  type?: string;
+  properties?: Record<string, ValidationSchema>;
+  required?: string[];
+  items?: ValidationSchema;
+  minimum?: number;
+  maximum?: number;
+  minLength?: number;
+  maxLength?: number;
+  pattern?: string;
+  enum?: unknown[];
+}
+
 export interface APIRouteOptions {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
   middleware?: ((req: Request, res: Response, next: NextFunction) => void)[];
   validation?: {
-    body?: any;
-    params?: any;
-    query?: any;
+    body?: ValidationSchema;
+    params?: ValidationSchema;
+    query?: ValidationSchema;
   };
 }
 
@@ -271,9 +285,9 @@ export interface AuthenticatedRequest extends Request {
 }
 
 // WebSocket Types
-export interface WebSocketMessage {
+export interface WebSocketMessage<T = unknown> {
   type: string;
-  payload?: any;
+  payload?: T;
   timestamp?: number;
 }
 
@@ -292,18 +306,21 @@ export interface MetricsUpdateMessage extends WebSocketMessage {
   };
 }
 
+// Error Details Type
+export type ErrorDetails = string | Record<string, unknown> | unknown[];
+
 // Error Types
 export interface APIError extends Error {
   statusCode?: number;
   code?: string;
-  details?: any;
+  details?: ErrorDetails;
 }
 
 export class ValidationError extends Error implements APIError {
   statusCode = 400;
   code = 'VALIDATION_ERROR';
   
-  constructor(message: string, public details?: any) {
+  constructor(message: string, public details?: ErrorDetails) {
     super(message);
     this.name = 'ValidationError';
   }
@@ -323,7 +340,7 @@ export class InternalServerError extends Error implements APIError {
   statusCode = 500;
   code = 'INTERNAL_SERVER_ERROR';
   
-  constructor(message: string = 'Internal server error', public details?: any) {
+  constructor(message: string = 'Internal server error', public details?: ErrorDetails) {
     super(message);
     this.name = 'InternalServerError';
   }
@@ -336,7 +353,7 @@ export type DeepPartial<T> = {
 };
 
 // Analysis Tool Response Types
-export type AnalysisToolResponse<T = any> = APIResponse<T>;
+export type AnalysisToolResponse<T = unknown> = APIResponse<T>;
 
 export interface TrendAnalysis {
   timestamp: number;

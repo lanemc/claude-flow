@@ -52,7 +52,7 @@ configCommand
   .command('list')
   .description('List all configuration values')
   .option('--json', 'Output as JSON')
-  .action(async (options: any) => {
+  .action(async (_options: Record<string, unknown>) => {
     try {
       const config = await configManager.getAll();
       
@@ -76,7 +76,7 @@ configCommand
   .command('reset')
   .description('Reset configuration to defaults')
   .option('--force', 'Skip confirmation')
-  .action(async (options: any) => {
+  .action(async (_options: Record<string, unknown>) => {
     try {
       if (!options.force) {
         console.log(chalk.yellow('This will reset all configuration to defaults.'));

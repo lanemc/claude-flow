@@ -389,9 +389,9 @@ router.get('/capacity-plan', (req: Request, res: Response): void => {
 
 // WebSocket Server Setup (needs to be integrated with main app)
 export function setupWebSocket(server: any): void {
-    const wss = new WebSocketServer({ server });
+    const wss = new WebSocketServer({ server: server as any });
     
-    wss.on('connection', (ws: WebSocket, req: any) => {
+    wss.on('connection', (ws: WebSocket, req: unknown) => {
         console.log('Analysis WebSocket connected');
         
         // Send initial metrics

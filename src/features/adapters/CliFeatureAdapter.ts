@@ -2,17 +2,17 @@ import { ConfigManager } from '../../config/config-manager';
 import chalk from 'chalk';
 
 export interface CliFeatureAdapter {
-  listFeatures(args: any[], options: any): Promise<void>;
-  enableFeature(args: any[], options: any): Promise<void>;
-  disableFeature(args: any[], options: any): Promise<void>;
-  toggleFeature(args: any[], options: any): Promise<void>;
-  configureFeature(args: any[], options: any): Promise<void>;
-  showFeatureStatus(args: any[], options: any): Promise<void>;
+  listFeatures(args: unknown[], options: Record<string, unknown>): Promise<void>;
+  enableFeature(args: unknown[], options: Record<string, unknown>): Promise<void>;
+  disableFeature(args: unknown[], options: Record<string, unknown>): Promise<void>;
+  toggleFeature(args: unknown[], options: Record<string, unknown>): Promise<void>;
+  configureFeature(args: unknown[], options: Record<string, unknown>): Promise<void>;
+  showFeatureStatus(args: unknown[], options: Record<string, unknown>): Promise<void>;
 }
 
 export function createCliFeatureAdapter(configManager: ConfigManager): CliFeatureAdapter {
   return {
-    async listFeatures(args: any[], options: any): Promise<void> {
+    async listFeatures(args: unknown[], options: Record<string, unknown>): Promise<void> {
       console.log(chalk.blue('Available features:'));
       const config = configManager.show();
       
@@ -31,7 +31,7 @@ export function createCliFeatureAdapter(configManager: ConfigManager): CliFeatur
       });
     },
 
-    async enableFeature(args: any[], options: any): Promise<void> {
+    async enableFeature(args: unknown[], options: Record<string, unknown>): Promise<void> {
       const featureName = args[0];
       if (!featureName) {
         console.error(chalk.red('Feature name is required'));
@@ -54,7 +54,7 @@ export function createCliFeatureAdapter(configManager: ConfigManager): CliFeatur
       console.log(chalk.green(`Feature '${featureName}' enabled`));
     },
 
-    async disableFeature(args: any[], options: any): Promise<void> {
+    async disableFeature(args: unknown[], options: Record<string, unknown>): Promise<void> {
       const featureName = args[0];
       if (!featureName) {
         console.error(chalk.red('Feature name is required'));
@@ -77,7 +77,7 @@ export function createCliFeatureAdapter(configManager: ConfigManager): CliFeatur
       console.log(chalk.green(`Feature '${featureName}' disabled`));
     },
 
-    async toggleFeature(args: any[], options: any): Promise<void> {
+    async toggleFeature(args: unknown[], options: Record<string, unknown>): Promise<void> {
       const featureName = args[0];
       if (!featureName) {
         console.error(chalk.red('Feature name is required'));
@@ -106,7 +106,7 @@ export function createCliFeatureAdapter(configManager: ConfigManager): CliFeatur
       console.log(chalk.green(`Feature '${featureName}' ${status ? 'enabled' : 'disabled'}`));
     },
 
-    async configureFeature(args: any[], options: any): Promise<void> {
+    async configureFeature(args: unknown[], options: Record<string, unknown>): Promise<void> {
       const [featureName, key, value] = args;
       if (!featureName || !key || !value) {
         console.error(chalk.red('Usage: configure <feature> <key> <value>'));
@@ -120,7 +120,7 @@ export function createCliFeatureAdapter(configManager: ConfigManager): CliFeatur
       console.log(chalk.green(`Set ${featureName}.${key} = ${value}`));
     },
 
-    async showFeatureStatus(args: any[], options: any): Promise<void> {
+    async showFeatureStatus(args: unknown[], options: Record<string, unknown>): Promise<void> {
       const featureName = args[0];
       if (!featureName) {
         console.error(chalk.red('Feature name is required'));

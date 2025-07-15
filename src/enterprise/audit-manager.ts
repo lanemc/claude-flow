@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../utils/error-handler';
+// import { getErrorMessage } from '../utils/error-handler';
 import { EventEmitter } from 'events';
 import { writeFile, readFile, mkdir, readdir } from 'fs/promises';
 import { join } from 'path';
@@ -22,7 +22,7 @@ export interface AuditEntry {
   };
   action: string;
   outcome: 'success' | 'failure' | 'partial' | 'denied';
-  details: Record<string, any>;
+  details: Record<string, unknown>;
   context: {
     ipAddress?: string;
     userAgent?: string;
@@ -41,7 +41,7 @@ export interface AuditEntry {
     signature?: string;
     verified: boolean;
   };
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
 }
 
 export interface ComplianceFramework {
@@ -88,7 +88,7 @@ export interface ComplianceRequirement {
     enabled: boolean;
     frequency: string;
     query: string;
-    threshold?: any;
+    threshold?: unknown;
   };
 }
 
@@ -416,7 +416,7 @@ export class AuditManager extends EventEmitter {
     resource: AuditEntry['resource'];
     action: string;
     outcome: AuditEntry['outcome'];
-    details: Record<string, any>;
+    details: Record<string, unknown>;
     context: Partial<AuditEntry['context']>;
     compliance?: {
       frameworks?: string[];
@@ -492,7 +492,7 @@ export class AuditManager extends EventEmitter {
       version: frameworkData.version,
       description: frameworkData.description,
       type: frameworkData.type,
-      requirements: frameworkData.requirements.map((req, index) => ({
+      requirements: frameworkData.requirements.map((req, _index) => ({
         id: `req-${Date.now()}-${index}`,
         ...req,
         automatedCheck: {
@@ -510,7 +510,7 @@ export class AuditManager extends EventEmitter {
         format: ['pdf', 'json'],
         automated: false
       },
-      controls: frameworkData.controls.map((control, index) => ({
+      controls: frameworkData.controls.map((control, _index) => ({
         id: `control-${Date.now()}-${index}`,
         ...control
       })),
@@ -710,7 +710,7 @@ export class AuditManager extends EventEmitter {
     let totalEntries = 0;
     let verifiedEntries = 0;
     let corruptedEntries = 0;
-    let missingEntries = 0;
+    const missingEntries = 0;
 
     const trails = trailId ? [this.auditTrails.get(trailId)].filter(Boolean) as AuditTrail[] : 
                             Array.from(this.auditTrails.values());
@@ -798,7 +798,7 @@ export class AuditManager extends EventEmitter {
     // Compliance metrics
     const complianceMetrics = {
       overallScore: 85, // Would be calculated from actual compliance data
-      byFramework: {} as Record<string, any>,
+      byFramework: {} as Record<string, unknown>,
       trending: 'stable' as const
     };
 

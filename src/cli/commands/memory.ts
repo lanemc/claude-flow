@@ -134,7 +134,7 @@ memoryCommand
   .description('Store information in memory')
   .arguments('<key> <value>')
   .option('-n, --namespace <namespace>', 'Target namespace', 'default')
-  .action(async (key: string, value: string, options: any) => {
+  .action(async (key: string, value: string, options: Record<string, unknown>) => {
     try {
       const memory = new SimpleMemoryManager();
       await memory.store(key, value, options.namespace);
@@ -154,7 +154,7 @@ memoryCommand
   .arguments('<search>')
   .option('-n, --namespace <namespace>', 'Filter by namespace')
   .option('-l, --limit <limit>', 'Limit results', '10')
-  .action(async (search: string, options: any) => {
+  .action(async (search: string, options: Record<string, unknown>) => {
     try {
       const memory = new SimpleMemoryManager();
       const results = await memory.query(search, options.namespace);
@@ -187,7 +187,7 @@ memoryCommand
   .command('export')
   .description('Export memory to file')
   .arguments('<file>')
-  .action(async (file: string, options: any) => {
+  .action(async (file: string, options: Record<string, unknown>) => {
     try {
       const memory = new SimpleMemoryManager();
       await memory.exportData(file);
@@ -206,7 +206,7 @@ memoryCommand
   .command('import')
   .description('Import memory from file')
   .arguments('<file>')
-  .action(async (file: string, options: any) => {
+  .action(async (file: string, options: Record<string, unknown>) => {
     try {
       const memory = new SimpleMemoryManager();
       await memory.importData(file);
@@ -250,7 +250,7 @@ memoryCommand
   .command('cleanup')
   .description('Clean up old entries')
   .option('-d, --days <days>', 'Entries older than n days', '30')
-  .action(async (options: any) => {
+  .action(async (_options: Record<string, unknown>) => {
     try {
       const memory = new SimpleMemoryManager();
       const removed = await memory.cleanup(parseInt(options.days));

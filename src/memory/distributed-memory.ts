@@ -1,4 +1,4 @@
-import { getErrorMessage } from "../utils/error-handler";
+// import { getErrorMessage } from '../utils/error-handler';
 /**
  * Distributed memory system with sharing capabilities
  */
@@ -331,7 +331,7 @@ export class DistributedMemorySystem extends EventEmitter {
 
   async store(
     key: string,
-    value: any,
+    value: unknown,
     options: {
       type?: string;
       tags?: string[];
@@ -490,7 +490,7 @@ export class DistributedMemorySystem extends EventEmitter {
 
   async update(
     key: string,
-    value: any,
+    value: unknown,
     options: {
       partition?: string;
       merge?: boolean;
@@ -710,9 +710,9 @@ export class DistributedMemorySystem extends EventEmitter {
   // === UTILITY METHODS ===
 
   private async processValue(
-    value: any,
+    value: unknown,
     partition: MemoryPartition
-  ): Promise<any> {
+  ): Promise<unknown> {
     if (partition.compressed && this.config.compressionEnabled) {
       return this.compressValue(value);
     }
@@ -720,10 +720,10 @@ export class DistributedMemorySystem extends EventEmitter {
   }
 
   private async mergeValues(
-    oldValue: any,
-    newValue: any,
+    oldValue: unknown,
+    newValue: unknown,
     partition: MemoryPartition
-  ): Promise<any> {
+  ): Promise<unknown> {
     // Simple merge strategy - can be enhanced
     if (typeof oldValue === "object" && typeof newValue === "object") {
       return { ...oldValue, ...newValue };
@@ -731,7 +731,7 @@ export class DistributedMemorySystem extends EventEmitter {
     return newValue;
   }
 
-  private compressValue(value: any): any {
+  private compressValue(value: unknown): unknown {
     // Placeholder for compression logic
     return value;
   }
@@ -817,7 +817,7 @@ export class DistributedMemorySystem extends EventEmitter {
 
     // Sort by last access time and remove oldest 10%
     const entries = partition.entries.sort(
-      (a, b) => a.updatedAt.getTime() - b.updatedAt.getTime()
+      (a, _b) => a.updatedAt.getTime() - b.updatedAt.getTime()
     );
 
     const toRemove = entries.slice(0, Math.floor(entries.length * 0.1));
@@ -844,7 +844,7 @@ export class DistributedMemorySystem extends EventEmitter {
     return true;
   }
 
-  private getNestedProperty(obj: any, path: string): any {
+  private getNestedProperty(obj: unknown, path: string): unknown {
     return path.split(".").reduce((current, key) => current?.[key], obj);
   }
 
@@ -936,7 +936,7 @@ export class DistributedMemorySystem extends EventEmitter {
 
   private async retrieveFromRemote(
     key: string,
-    options: any
+    options: Record<string, unknown>
   ): Promise<MemoryEntry | null> {
     // Implementation for retrieving from remote nodes
     return null;
@@ -971,19 +971,19 @@ export class DistributedMemorySystem extends EventEmitter {
     // Implementation for persisting data
   }
 
-  private handleSyncRequest(data: any): void {
+  private handleSyncRequest(data: Record<string, unknown>): void {
     // Handle sync requests from other nodes
   }
 
-  private handleNodeJoined(data: any): void {
+  private handleNodeJoined(data: Record<string, unknown>): void {
     // Handle new node joining
   }
 
-  private handleNodeLeft(data: any): void {
+  private handleNodeLeft(data: Record<string, unknown>): void {
     // Handle node leaving
   }
 
-  private handleConflict(data: any): void {
+  private handleConflict(data: Record<string, unknown>): void {
     // Handle conflict resolution
   }
 

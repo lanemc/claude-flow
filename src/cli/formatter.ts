@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../utils/error-handler';
+// import { getErrorMessage } from '../utils/error-handler';
 /**
  * Output formatting utilities for CLI
  */
@@ -17,11 +17,11 @@ export function formatError(error: unknown): string {
     let message = (error instanceof Error ? error.message : String(error));
     
     if ('code' in error) {
-      message = `[${(error as any).code}] ${message}`;
+      message = `[${(error as unknown).code}] ${message}`;
     }
     
-    if ('details' in error && (error as any).details) {
-      message += '\n' + chalk.gray('Details: ' + JSON.stringify((error as any).details, null, 2));
+    if ('details' in error && (error as unknown).details) {
+      message += '\n' + chalk.gray('Details: ' + JSON.stringify((error as unknown).details, null, 2));
     }
     
     return message;
@@ -148,7 +148,7 @@ export function formatHealthStatus(health: HealthStatus): string {
 /**
  * Creates a table for agent listing
  */
-export function createAgentTable(agents: AgentProfile[]): any {
+export function createAgentTable(agents: AgentProfile[]): unknown {
   const table = new Table({
     head: ['ID', 'Name', 'Type', 'Priority', 'Max Tasks']
   });
@@ -169,7 +169,7 @@ export function createAgentTable(agents: AgentProfile[]): any {
 /**
  * Creates a table for task listing
  */
-export function createTaskTable(tasks: Task[]): any {
+export function createTaskTable(tasks: Task[]): unknown {
   const table = new Table({
     head: ['ID', 'Type', 'Description', 'Status', 'Agent']
   });

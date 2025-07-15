@@ -26,7 +26,7 @@ export interface ComponentState {
   id: string;
   type: string;
   visible: boolean;
-  data: any;
+  data: Record<string, unknown>;
   error?: string;
   loading: boolean;
 }
@@ -48,7 +48,7 @@ export interface UserSettings {
   id: string;
   name: string;
   email?: string;
-  preferences: Record<string, any>;
+  preferences: Record<string, unknown>;
   permissions: string[];
 }
 
@@ -62,7 +62,7 @@ export interface ViewDefinition {
   description?: string;
   requiredPermissions?: string[];
   dependencies?: string[];
-  config?: Record<string, any>;
+  config?: Record<string, unknown>;
 }
 
 export enum ViewCategory {
@@ -89,7 +89,7 @@ export interface ViewManager {
 export interface ComponentDefinition {
   name: string;
   type: ComponentType;
-  props: Record<string, any>;
+  props: Record<string, unknown>;
   children?: ComponentDefinition[];
   events?: Record<string, EventHandler>;
   style?: CSSProperties;
@@ -125,7 +125,7 @@ export enum ComponentType {
   FOOTER = 'footer'
 }
 
-export type EventHandler = (event: Event, data?: any) => void | Promise<void>;
+export type EventHandler = (event: Event, data?: unknown) => void | Promise<void>;
 
 export interface CSSProperties {
   [key: string]: string | number;
@@ -154,7 +154,7 @@ export interface ToolCategoriesInfo {
 export interface EventBus {
   on(event: string, handler: EventHandler): void;
   off(event: string, handler: EventHandler): void;
-  emit(event: string, data?: any): void;
+  emit(event: string, data?: unknown): void;
   once(event: string, handler: EventHandler): void;
 }
 
@@ -162,7 +162,7 @@ export interface UIEvent {
   type: string;
   timestamp: number;
   source: string;
-  data?: any;
+  data?: unknown;
   target?: string;
 }
 
@@ -170,7 +170,7 @@ export interface UIEvent {
 export interface StateManager {
   getState<T = any>(key: string): T | null;
   setState<T = any>(key: string, value: T): void;
-  subscribe(key: string, callback: (value: any) => void): () => void;
+  subscribe(key: string, callback: (value: unknown) => void): () => void;
   clearState(key?: string): void;
   persistState(): Promise<void>;
   restoreState(): Promise<void>;
@@ -179,7 +179,7 @@ export interface StateManager {
 export interface StateSnapshot {
   timestamp: number;
   version: string;
-  data: Record<string, any>;
+  data: Record<string, unknown>;
 }
 
 // Neural Network View Types
@@ -216,8 +216,8 @@ export interface TrainingProgress {
 export interface Prediction {
   id: string;
   modelId: string;
-  input: any;
-  output: any;
+  input: unknown;
+  output: unknown;
   confidence: number;
   timestamp: string;
 }
@@ -331,7 +331,7 @@ export interface WorkflowStep {
   id: string;
   name: string;
   type: 'action' | 'condition' | 'loop' | 'parallel';
-  config: Record<string, any>;
+  config: Record<string, unknown>;
   dependencies?: string[];
   timeout?: number;
 }
@@ -360,7 +360,7 @@ export interface TemplateVariable {
   name: string;
   type: 'string' | 'number' | 'boolean' | 'array' | 'object';
   required: boolean;
-  default?: any;
+  default?: unknown;
   description?: string;
 }
 
@@ -368,7 +368,7 @@ export interface TriggerDefinition {
   id: string;
   name: string;
   type: 'webhook' | 'schedule' | 'event' | 'manual';
-  config: Record<string, any>;
+  config: Record<string, unknown>;
   enabled: boolean;
 }
 
@@ -394,7 +394,7 @@ export interface LogEntry {
   timestamp: string;
   level: 'debug' | 'info' | 'warn' | 'error';
   message: string;
-  data?: any;
+  data?: unknown;
 }
 
 // DAA (Dynamic Agent Architecture) View Types
@@ -449,14 +449,14 @@ export interface Communication {
   from: string;
   to: string;
   type: 'request' | 'response' | 'broadcast' | 'notification';
-  message: any;
+  message: unknown;
   timestamp: string;
   status: 'sent' | 'delivered' | 'processed' | 'failed';
 }
 
 export interface ConsensusState {
   id: string;
-  proposal: any;
+  proposal: unknown;
   participants: string[];
   votes: Record<string, 'agree' | 'disagree' | 'abstain'>;
   status: 'pending' | 'accepted' | 'rejected' | 'timeout';
@@ -499,11 +499,11 @@ export interface CompatibilityInfo {
 // Initialization Options
 export interface UIInitializationOptions {
   mode?: UIMode;
-  existingUI?: any;
+  existingUI?: unknown;
   enableAllFeatures?: boolean;
   theme?: Partial<ThemeSettings>;
   user?: UserSettings;
-  config?: Record<string, any>;
+  config?: Record<string, unknown>;
 }
 
 // Enhanced Process UI Types
@@ -519,15 +519,15 @@ export interface ProcessUIOptions {
 
 export interface ProcessUIComponent {
   render(): string;
-  update(data: any): void;
+  update(data: Record<string, unknown>): void;
   destroy(): void;
-  getState(): any;
+  getState(): unknown;
 }
 
 // Auto-initialization Types
 export interface WindowClaudeFlowUI {
   initialize: (options?: UIInitializationOptions) => Promise<UIManagerInterface>;
-  launch: () => Promise<any>;
+  launch: () => Promise<unknown>;
   getInfo: () => ArchitectureInfo;
   toolCategories: ToolCategoriesInfo;
 }
@@ -535,7 +535,7 @@ export interface WindowClaudeFlowUI {
 declare global {
   interface Window {
     claudeFlowEnhancedUI?: WindowClaudeFlowUI;
-    claudeFlowProcessUI?: any;
+    claudeFlowProcessUI?: unknown;
     claudeFlowEnhanced?: UIManagerInterface;
   }
 }
@@ -543,7 +543,7 @@ declare global {
 // Module Export Types
 export interface ModuleExports {
   initializeEnhancedUI: (options?: UIInitializationOptions) => Promise<UIManagerInterface>;
-  launchTerminalUI: () => Promise<any>;
+  launchTerminalUI: () => Promise<unknown>;
   getArchitectureInfo: () => ArchitectureInfo;
   TOOL_CATEGORIES_INFO: ToolCategoriesInfo;
   getTotalToolCount: () => number;

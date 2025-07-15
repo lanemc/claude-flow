@@ -178,7 +178,7 @@ export class HealthCheckManager {
       components.map((component) => this.checkComponent(component))
     );
 
-    return checks.map((result, index) => {
+    return checks.map((result, _index) => {
       if (result.status === "fulfilled") {
         return result.value;
       } else {
@@ -213,9 +213,9 @@ export class HealthCheckManager {
       }
 
       // Try to call health check method if available
-      if (typeof (component as any).healthCheck === "function") {
+      if (typeof (component as unknown).healthCheck === "function") {
         const result = await Promise.race([
-          (component as any).healthCheck(),
+          (component as unknown).healthCheck(),
           new Promise((_, reject) =>
             setTimeout(
               () => reject(new Error("Health check timeout")),
@@ -267,15 +267,15 @@ export class HealthCheckManager {
 
       if (
         agentManager &&
-        typeof (agentManager as any).getMetrics === "function"
+        typeof (agentManager as unknown).getMetrics === "function"
       ) {
-        const agentMetrics = await (agentManager as any).getMetrics();
-        activeAgents = (agentMetrics as any)?.activeAgents || 0;
+        const agentMetrics = await (agentManager as unknown).getMetrics();
+        activeAgents = (agentMetrics as unknown)?.activeAgents || 0;
       }
 
-      if (taskEngine && typeof (taskEngine as any).getMetrics === "function") {
-        const taskMetrics = await (taskEngine as any).getMetrics();
-        activeTasks = (taskMetrics as any)?.activeTasks || 0;
+      if (taskEngine && typeof (taskEngine as unknown).getMetrics === "function") {
+        const taskMetrics = await (taskEngine as unknown).getMetrics();
+        activeTasks = (taskMetrics as unknown)?.activeTasks || 0;
         queuedTasks = taskMetrics.queuedTasks || 0;
         completedTasks = taskMetrics.completedTasks || 0;
       }
@@ -468,8 +468,8 @@ export class HealthCheckManager {
       data !== null &&
       "component" in data &&
       "status" in data &&
-      typeof (data as any).component === "string" &&
-      typeof (data as any).status === "string"
+      typeof (data as unknown).component === "string" &&
+      typeof (data as unknown).status === "string"
     );
   }
 

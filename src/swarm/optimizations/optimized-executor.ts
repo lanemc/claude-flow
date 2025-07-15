@@ -242,7 +242,7 @@ export class OptimizedExecutor extends EventEmitter {
           error: {
             type: error instanceof Error ? error.constructor.name : 'UnknownError',
             message: error instanceof Error ? error.message : 'Unknown error',
-            code: (error as any).code,
+            code: (error as unknown).code,
             stack: error instanceof Error ? error.stack : undefined,
             context: { taskId: task.id.id, agentId: agentId.id },
             recoverable: this.isRecoverableError(error),
@@ -313,7 +313,7 @@ export class OptimizedExecutor extends EventEmitter {
     );
   }
   
-  private buildMessages(task: TaskDefinition): any[] {
+  private buildMessages(task: TaskDefinition): unknown[] {
     const messages = [];
     
     // Add system message if needed
@@ -357,7 +357,7 @@ export class OptimizedExecutor extends EventEmitter {
     return `${task.type}-${task.objective}-${JSON.stringify(task.metadata || {})}`;
   }
   
-  private isRecoverableError(error: any): boolean {
+  private isRecoverableError(error: Error | unknown): boolean {
     if (!error) return false;
     
     // Network errors are often recoverable
@@ -375,7 +375,7 @@ export class OptimizedExecutor extends EventEmitter {
     return false;
   }
   
-  private isRetryableError(error: any): boolean {
+  private isRetryableError(error: Error | unknown): boolean {
     if (!error) return false;
     
     // Most recoverable errors are retryable

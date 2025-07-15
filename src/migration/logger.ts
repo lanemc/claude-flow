@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../utils/error-handler';
+// import { getErrorMessage } from '../utils/error-handler';
 import * as process from 'node:process';
 /**
  * Migration Logger - Structured logging for migration operations
@@ -12,7 +12,7 @@ export interface LogEntry {
   timestamp: Date;
   level: 'info' | 'warn' | 'error' | 'success' | 'debug';
   message: string;
-  context?: any;
+  context?: unknown;
   stack?: string;
 }
 
@@ -24,17 +24,17 @@ export class MigrationLogger {
     this.logFile = logFile;
   }
 
-  info(message: string, context?: any): void {
+  info(message: string, context?: unknown): void {
     this.log('info', message, context);
     console.log(chalk.blue(`ℹ️  ${message}`));
   }
 
-  warn(message: string, context?: any): void {
+  warn(message: string, context?: unknown): void {
     this.log('warn', message, context);
     console.log(chalk.yellow(`⚠️  ${message}`));
   }
 
-  error(message: string, error?: Error | any, context?: any): void {
+  error(message: string, error?: Error | any, context?: unknown): void {
     this.log('error', message, context, error?.stack);
     console.log(chalk.red(`❌ ${message}`));
     if (error && (error instanceof Error ? error.message : String(error)) !== message) {
@@ -42,19 +42,19 @@ export class MigrationLogger {
     }
   }
 
-  success(message: string, context?: any): void {
+  success(message: string, context?: unknown): void {
     this.log('success', message, context);
     console.log(chalk.green(`✅ ${message}`));
   }
 
-  debug(message: string, context?: any): void {
+  debug(message: string, context?: unknown): void {
     if (process.env.DEBUG === 'true' || process.env.NODE_ENV === 'development') {
       this.log('debug', message, context);
       console.log(chalk.gray(`🔍 ${message}`));
     }
   }
 
-  private log(level: LogEntry['level'], message: string, context?: any, stack?: string): void {
+  private log(level: LogEntry['level'], message: string, context?: unknown, stack?: string): void {
     const entry: LogEntry = {
       timestamp: new Date(),
       level,

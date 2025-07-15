@@ -1,9 +1,9 @@
-import { getErrorMessage } from '../utils/error-handler';
-import { dirname, join, resolve } from 'path';
-import { getFilename, getDirname } from './import-meta-shim';
+// import { getErrorMessage } from '../utils/error-handler';
+import { join, resolve } from 'path';
+import { getDirname } from './import-meta-shim';
 import { existsSync } from 'fs';
 
-const __filename = getFilename();
+// const __filename = getFilename(); // Not used
 const __dirname = getDirname();
 
 export function getClaudeFlowRoot(): string {
@@ -26,7 +26,9 @@ export function getClaudeFlowRoot(): string {
         if (pkg.name === 'claude-flow') {
           return path;
         }
-      } catch {}
+      } catch {
+        // Ignore errors when package.json is not found
+      }
     }
   }
 

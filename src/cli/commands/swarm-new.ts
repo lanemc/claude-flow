@@ -17,7 +17,7 @@ import { getImportMetaUrl } from "../../utils/import-meta-shim";
 
 async function launchClaudeCodeWithSwarm(
   objective: string,
-  options: any
+  options: Record<string, unknown>
 ): Promise<void> {
   console.log("\n🤖 Launching Claude Code with swarm configuration...\n");
 
@@ -845,7 +845,7 @@ export async function swarmAction(ctx: CommandContext) {
   }
 }
 
-function parseSwarmOptions(flags: any) {
+function parseSwarmOptions(flags: unknown) {
   // Handle boolean true value for strategy
   let strategy = flags.strategy;
   if (strategy === true || strategy === "true") {
@@ -860,7 +860,7 @@ function parseSwarmOptions(flags: any) {
 
   return {
     strategy: (strategy as SwarmStrategy) || "auto",
-    mode: mode,
+    mode,
     maxAgents: parseInt(flags.maxAgents || flags["max-agents"] || "5"),
     maxTasks: parseInt(flags.maxTasks || flags["max-tasks"] || "100"),
     timeout: parseInt(flags.timeout || "60"), // minutes
@@ -1128,7 +1128,7 @@ async function setupIncrementalUpdates(
               type: a.type,
               status: a.status,
               currentTask: a.currentTask,
-              tasksCompleted: (a as any).completedTasks?.length || 0,
+              tasksCompleted: (a as unknown).completedTasks?.length || 0,
             })),
           },
           tasks: {
@@ -1209,7 +1209,7 @@ Agents Summary:
                 type: a.type,
                 status: a.status,
                 currentTask: a.currentTask,
-                tasksCompleted: (a as any).completedTasks?.length || 0,
+                tasksCompleted: (a as unknown).completedTasks?.length || 0,
               })),
             },
             tasks: {
@@ -1294,7 +1294,7 @@ function setupSwarmMonitoring(
   console.log("\n📊 Monitoring enabled - collecting metrics...");
 
   const metricsFile = `${swarmDir}/metrics.json`;
-  const metricsHistory: any[] = [];
+  const metricsHistory: unknown[] = [];
 
   // Collect metrics every 10 seconds
   globalMetricsInterval = setInterval(async () => {
@@ -1345,7 +1345,7 @@ function setupSwarmMonitoring(
 async function waitForSwarmCompletion(
   coordinator: SwarmCoordinator,
   objectiveId: string,
-  options: any
+  options: Record<string, unknown>
 ): Promise<void> {
   const maxDuration = options.timeout * 60 * 1000;
   const startTime = Date.now();
@@ -1480,8 +1480,8 @@ async function showSwarmResults(
 
     // Check current directory and common output directories
     await checkDir(".");
-    await checkDir("./examples").catch(() => {});
-    await checkDir("./output").catch(() => {});
+    await checkDir("./examples").catch(() => { /* empty */ });
+    await checkDir("./output").catch(() => { /* empty */ });
 
     if (createdFiles.length > 0) {
       console.log(`\n📁 Files created:`);
@@ -1494,7 +1494,7 @@ async function showSwarmResults(
   }
 }
 
-async function launchSwarmUI(objective: string, options: any): Promise<void> {
+async function launchSwarmUI(objective: string, options: Record<string, unknown>): Promise<void> {
   try {
     const scriptPath = new URL(getImportMetaUrl()).pathname;
     const projectRoot = scriptPath.substring(0, scriptPath.indexOf("/src/"));
@@ -1527,7 +1527,7 @@ async function launchSwarmUI(objective: string, options: any): Promise<void> {
   }
 }
 
-function buildUIArgs(options: any): string[] {
+function buildUIArgs(options: Record<string, unknown>): string[] {
   const args: string[] = [];
 
   if (options.strategy !== "auto") args.push("--strategy", options.strategy);
@@ -1545,7 +1545,7 @@ function buildUIArgs(options: any): string[] {
   return args;
 }
 
-function buildBackgroundArgs(options: any): string[] {
+function buildBackgroundArgs(options: Record<string, unknown>): string[] {
   const args: string[] = [];
 
   if (options.strategy !== "auto") args.push("--strategy", options.strategy);
@@ -1575,7 +1575,7 @@ function buildBackgroundArgs(options: any): string[] {
 function showDryRunConfiguration(
   swarmId: string,
   objective: string,
-  options: any
+  options: Record<string, unknown>
 ): void {
   warning("DRY RUN - Advanced Swarm Configuration:");
   console.log(`🆔 Swarm ID: ${swarmId}`);
@@ -1691,7 +1691,7 @@ For more information, see: https://github.com/ruvnet/claude-flow
  */
 async function outputJsonResults(
   coordinator: SwarmCoordinator,
-  options: any
+  options: Record<string, unknown>
 ): Promise<void> {
   try {
     // Get the final status from coordinator

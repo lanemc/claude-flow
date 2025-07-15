@@ -5,31 +5,127 @@
  * @module shared-memory
  */
 
-import Database, { Statement } from 'better-sqlite3';
-import * as path from 'path';
-import { promises as fs } from 'fs';
+import Database from 'better-sqlite3';
+import path from 'path';
+import fs from 'fs/promises';
 import { EventEmitter } from 'events';
 import { performance } from 'perf_hooks';
-import type { 
-  SharedMemoryOptions, 
-  Migration, 
-  CacheEntry, 
-  CacheStats, 
-  PerformanceMetrics,
-  SharedMemoryStats,
-  DatabaseStats,
-  MemoryStoreOptions,
-  MemoryEntry,
-  MemoryListOptions,
-  MemorySearchOptions,
-  MemorySearchResult,
-  IMemoryStore
-} from './types';
+
+// Type definitions for SharedMemory
+export interface Migration {
+  version: number;
+  description: string;
+  sql: string;
+}
+
+export interface CacheEntry {
+  data: any;
+  size: number;
+  timestamp: number;
+}
+
+export interface CacheStats {
+  size: number;
+  memoryUsage: number;
+  memoryUsageMB: number;
+  hitRate: number;
+  evictions: number;
+  utilizationPercent: number;
+}
+
+export interface SharedMemoryOptions {
+  directory?: string;
+  filename?: string;
+  cacheSize?: number;
+  cacheMemoryMB?: number;
+  compressionThreshold?: number;
+  gcInterval?: number;
+  enableWAL?: boolean;
+  enableVacuum?: boolean;
+  [key: string]: any;
+}
+
+export interface MemoryEntry {
+  key: string;
+  namespace: string;
+  type: string;
+  size: number;
+  compressed: boolean;
+  tags: string[];
+  createdAt: Date;
+  updatedAt: Date;
+  accessedAt: Date;
+  accessCount: number;
+  expiresAt: Date | null;
+}
+
+export interface StoreResult {
+  success: boolean;
+  key: string;
+  namespace: string;
+  size: number;
+}
+
+export interface ListOptions {
+  limit?: number;
+  offset?: number;
+}
+
+export interface SearchOptions {
+  pattern?: string;
+  namespace?: string;
+  tags?: string[];
+  limit?: number;
+  offset?: number;
+}
+
+export interface StoreOptions {
+  ttl?: number;
+  tags?: string[];
+  metadata?: Record<string, any>;
+}
+
+export interface NamespaceStats {
+  count: number;
+  totalSize: number;
+  avgSize: number;
+  compressed: number;
+}
+
+export interface DatabaseStats {
+  namespaces: Record<string, NamespaceStats>;
+  cache: CacheStats;
+  metrics: MetricsSummary;
+  database: {
+    totalEntries: number;
+    totalSize: number;
+  };
+}
+
+export interface MetricsSummary {
+  [operation: string]: {
+    count: number;
+    avg: number;
+    min: number;
+    max: number;
+  };
+  totalOperations: number;
+  lastGC: string;
+}
+
+export interface BackupResult {
+  success: boolean;
+  filepath: string;
+}
+
+export interface ClearResult {
+  cleared: number;
+}
 
 /**
  * Migration definitions for schema evolution
  */
-const MIGRATIONS: Migration[] = [
+const MIGRATIONS = [
   {
     version: 1,
     description: 'Initial schema',
@@ -99,18 +195,25 @@ const MIGRATIONS: Migration[] = [
  * High-performance LRU cache implementation
  */
 class LRUCache {
-  private cache = new Map<string, CacheEntry>();
-  private currentMemory = 0;
-  private hits = 0;
-  private misses = 0;
-  private evictions = 0;
+  private maxSize: number;
+  private maxMemory: number;
+  private cache: Map<string, CacheEntry>;
+  private currentMemory: number;
+  private hits: number;
+  private misses: number;
+  private evictions: number;
 
-  constructor(
-    private maxSize: number = 1000,
-    private maxMemory: number = 50 * 1024 * 1024 // 50MB
-  ) {}
+  constructor(maxSize = 1000, maxMemoryMB = 50) {
+    this.maxSize = maxSize;
+    this.maxMemory = maxMemoryMB * 1024 * 1024;
+    this.cache = new Map();
+    this.currentMemory = 0;
+    this.hits = 0;
+    this.misses = 0;
+    this.evictions = 0;
+  }
 
-  get(key: string): any | null {
+  get(key: string): any {
     if (this.cache.has(key)) {
       const value = this.cache.get(key)!;
       // Move to end (most recently used)
@@ -123,7 +226,7 @@ class LRUCache {
     return null;
   }
 
-  set(key: string, data: any, size: number = 0): void {
+  set(key: string, data: any, size = 0): void {
     // Estimate size if not provided
     if (!size) {
       size = this._estimateSize(data);
@@ -194,14 +297,18 @@ class LRUCache {
 /**
  * SharedMemory class - Core implementation
  */
-class SharedMemory extends EventEmitter implements IMemoryStore {
-  private options: Required<SharedMemoryOptions>;
-  private db: Database.Database | null = null;
+export class SharedMemory extends EventEmitter {
+  private options: SharedMemoryOptions;
+  private db: Database.Database | null;
   private cache: LRUCache;
-  private statements = new Map<string, Statement>();
-  private gcTimer: NodeJS.Timeout | null = null;
-  private isInitialized = false;
-  private metrics: PerformanceMetrics;
+  private statements: Map<string, Database.Statement>;
+  private gcTimer: NodeJS.Timeout | null;
+  private isInitialized: boolean;
+  private metrics: {
+    operations: Map<string, number[]>;
+    lastGC: number;
+    totalOperations: number;
+  };
 
   constructor(options: SharedMemoryOptions = {}) {
     super();
@@ -218,7 +325,11 @@ class SharedMemory extends EventEmitter implements IMemoryStore {
       ...options
     };
     
-    this.cache = new LRUCache(this.options.cacheSize, this.options.cacheMemoryMB * 1024 * 1024);
+    this.db = null;
+    this.cache = new LRUCache(this.options.cacheSize, this.options.cacheMemoryMB);
+    this.statements = new Map();
+    this.gcTimer = null;
+    this.isInitialized = false;
     
     // Performance tracking
     this.metrics = {
@@ -265,19 +376,14 @@ class SharedMemory extends EventEmitter implements IMemoryStore {
       
     } catch (error) {
       this.emit('error', error);
-      throw new Error(`Failed to initialize SharedMemory: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(`Failed to initialize SharedMemory: ${error.message}`);
     }
   }
 
   /**
    * Store a value in memory
    */
-  async store(key: string, value: any, options: MemoryStoreOptions = {}): Promise<{
-    success: boolean;
-    key: string;
-    namespace: string;
-    size: number;
-  }> {
+  async store(key: string, value: any, options: StoreOptions = {}): Promise<StoreResult> {
     this._ensureInitialized();
     
     const startTime = performance.now();
@@ -310,10 +416,7 @@ class SharedMemory extends EventEmitter implements IMemoryStore {
       const expiresAt = ttl ? Math.floor(Date.now() / 1000) + ttl : null;
       
       // Store in database
-      const stmt = this.statements.get('upsert');
-      if (!stmt) throw new Error('Upsert statement not prepared');
-      
-      stmt.run(
+      this.statements.get('upsert').run(
         key,
         namespace,
         serialized,
@@ -346,10 +449,9 @@ class SharedMemory extends EventEmitter implements IMemoryStore {
   /**
    * Retrieve a value from memory
    */
-  async retrieve(key: string, options: { namespace?: string } = {}): Promise<any> {
+  async retrieve(key: string, namespace = 'default'): Promise<any> {
     this._ensureInitialized();
     
-    const namespace = options.namespace || 'default';
     const startTime = performance.now();
     
     try {
@@ -363,10 +465,7 @@ class SharedMemory extends EventEmitter implements IMemoryStore {
       }
       
       // Get from database
-      const stmt = this.statements.get('select');
-      if (!stmt) throw new Error('Select statement not prepared');
-      
-      const row = stmt.get(key, namespace) as any;
+      const row = this.statements.get('select').get(key, namespace);
       
       if (!row) {
         this._recordMetric('retrieve_miss', performance.now() - startTime);
@@ -376,15 +475,13 @@ class SharedMemory extends EventEmitter implements IMemoryStore {
       // Check expiry
       if (row.expires_at && row.expires_at < Math.floor(Date.now() / 1000)) {
         // Delete expired entry
-        const deleteStmt = this.statements.get('delete');
-        if (deleteStmt) deleteStmt.run(key, namespace);
+        this.statements.get('delete').run(key, namespace);
         this._recordMetric('retrieve_expired', performance.now() - startTime);
         return null;
       }
       
       // Update access stats
-      const updateStmt = this.statements.get('updateAccess');
-      if (updateStmt) updateStmt.run(key, namespace);
+      this.statements.get('updateAccess').run(key, namespace);
       
       // Deserialize value
       let value = row.value;
@@ -409,29 +506,26 @@ class SharedMemory extends EventEmitter implements IMemoryStore {
   /**
    * List entries in a namespace
    */
-  async list(options: MemoryListOptions = {}): Promise<MemoryEntry[]> {
+  async list(namespace = 'default', options: ListOptions = {}): Promise<MemoryEntry[]> {
     this._ensureInitialized();
     
-    const namespace = options.namespace || 'default';
     const limit = options.limit || 100;
     const offset = options.offset || 0;
     
     try {
-      const stmt = this.statements.get('list');
-      if (!stmt) throw new Error('List statement not prepared');
-      
-      const rows = stmt.all(namespace, limit, offset) as any[];
+      const rows = this.statements.get('list').all(namespace, limit, offset);
       
       return rows.map(row => ({
         key: row.key,
-        value: row.type === 'json' ? JSON.parse(row.value) : row.value,
         namespace: row.namespace,
-        metadata: row.metadata ? JSON.parse(row.metadata) : null,
+        type: row.type,
+        size: row.size,
+        compressed: !!row.compressed,
+        tags: row.tags ? JSON.parse(row.tags) : [],
         createdAt: new Date(row.created_at * 1000),
         updatedAt: new Date(row.updated_at * 1000),
         accessedAt: new Date(row.accessed_at * 1000),
         accessCount: row.access_count,
-        ttl: row.ttl,
         expiresAt: row.expires_at ? new Date(row.expires_at * 1000) : null
       }));
       
@@ -444,10 +538,8 @@ class SharedMemory extends EventEmitter implements IMemoryStore {
   /**
    * Delete an entry
    */
-  async delete(key: string, options: { namespace?: string } = {}): Promise<boolean> {
+  async delete(key: string, namespace = 'default'): Promise<boolean> {
     this._ensureInitialized();
-    
-    const namespace = options.namespace || 'default';
     
     try {
       // Remove from cache
@@ -455,10 +547,7 @@ class SharedMemory extends EventEmitter implements IMemoryStore {
       this.cache.delete(cacheKey);
       
       // Remove from database
-      const stmt = this.statements.get('delete');
-      if (!stmt) throw new Error('Delete statement not prepared');
-      
-      const result = stmt.run(key, namespace);
+      const result = this.statements.get('delete').run(key, namespace);
       
       if (result.changes > 0) {
         this.emit('deleted', { key, namespace });
@@ -476,18 +565,19 @@ class SharedMemory extends EventEmitter implements IMemoryStore {
   /**
    * Clear all entries in a namespace
    */
-  async clear(namespace: string = 'default'): Promise<{ cleared: number }> {
+  async clear(namespace = 'default'): Promise<ClearResult> {
     this._ensureInitialized();
     
     try {
       // Clear cache entries for namespace
-      // Note: Direct access to cache internals not available, this is handled by the cache class
+      for (const [key] of this.cache.cache) {
+        if (key.startsWith(`${namespace}:`)) {
+          this.cache.delete(key);
+        }
+      }
       
       // Clear database entries
-      const stmt = this.statements.get('clearNamespace');
-      if (!stmt) throw new Error('ClearNamespace statement not prepared');
-      
-      const result = stmt.run(namespace);
+      const result = this.statements.get('clearNamespace').run(namespace);
       
       this.emit('cleared', { namespace, count: result.changes });
       
@@ -500,12 +590,50 @@ class SharedMemory extends EventEmitter implements IMemoryStore {
   }
 
   /**
+   * Get statistics
+   */
+  async getStats(): Promise<DatabaseStats> {
+    this._ensureInitialized();
+    
+    try {
+      const dbStats = this.statements.get('stats').all();
+      const cacheStats = this.cache.getStats();
+      
+      // Transform database stats
+      const namespaceStats = {};
+      for (const row of dbStats) {
+        namespaceStats[row.namespace] = {
+          count: row.count,
+          totalSize: row.total_size,
+          avgSize: row.avg_size,
+          compressed: row.compressed_count
+        };
+      }
+      
+      return {
+        namespaces: namespaceStats,
+        cache: cacheStats,
+        metrics: this._getMetricsSummary(),
+        database: {
+          totalEntries: Object.values(namespaceStats).reduce((sum, ns) => sum + ns.count, 0),
+          totalSize: Object.values(namespaceStats).reduce((sum, ns) => sum + ns.totalSize, 0)
+        }
+      };
+      
+    } catch (error) {
+      this.emit('error', error);
+      throw error;
+    }
+  }
+
+  /**
    * Search entries by pattern or tags
    */
-  async search(pattern: string, options: MemorySearchOptions = {}): Promise<MemorySearchResult[]> {
+  async search(options: SearchOptions = {}): Promise<any[]> {
     this._ensureInitialized();
     
     const {
+      pattern,
       namespace,
       tags,
       limit = 50,
@@ -514,7 +642,7 @@ class SharedMemory extends EventEmitter implements IMemoryStore {
     
     try {
       let query = 'SELECT * FROM memory_store WHERE 1=1';
-      const params: any[] = [];
+      const params = [];
       
       if (namespace) {
         query += ' AND namespace = ?';
@@ -534,59 +662,16 @@ class SharedMemory extends EventEmitter implements IMemoryStore {
       query += ' ORDER BY accessed_at DESC LIMIT ? OFFSET ?';
       params.push(limit, offset);
       
-      if (!this.db) throw new Error('Database not initialized');
       const stmt = this.db.prepare(query);
-      const rows = stmt.all(...params) as any[];
+      const rows = stmt.all(...params);
       
       return rows.map(row => ({
         key: row.key,
-        value: row.type === 'json' ? JSON.parse(row.value) : row.value,
         namespace: row.namespace,
+        value: row.type === 'json' ? JSON.parse(row.value) : row.value,
         metadata: row.metadata ? JSON.parse(row.metadata) : null,
-        tags: row.tags ? JSON.parse(row.tags) : [],
-        score: row.access_count,
-        updatedAt: new Date(row.updated_at * 1000)
+        tags: row.tags ? JSON.parse(row.tags) : []
       }));
-      
-    } catch (error) {
-      this.emit('error', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Get statistics
-   */
-  async getStats(): Promise<SharedMemoryStats> {
-    this._ensureInitialized();
-    
-    try {
-      const stmt = this.statements.get('stats');
-      if (!stmt) throw new Error('Stats statement not prepared');
-      
-      const dbStats = stmt.all() as DatabaseStats[];
-      const cacheStats = this.cache.getStats();
-      
-      // Transform database stats
-      const namespaceStats: Record<string, any> = {};
-      for (const row of dbStats) {
-        namespaceStats[row.namespace] = {
-          count: row.count,
-          totalSize: row.total_size,
-          avgSize: row.avg_size,
-          compressed: row.compressed_count
-        };
-      }
-      
-      return {
-        namespaces: namespaceStats,
-        cache: cacheStats,
-        metrics: this._getMetricsSummary(),
-        database: {
-          totalEntries: Object.values(namespaceStats).reduce((sum: number, ns: any) => sum + ns.count, 0),
-          totalSize: Object.values(namespaceStats).reduce((sum: number, ns: any) => sum + ns.totalSize, 0)
-        }
-      };
       
     } catch (error) {
       this.emit('error', error);
@@ -597,11 +682,10 @@ class SharedMemory extends EventEmitter implements IMemoryStore {
   /**
    * Backup the database
    */
-  async backup(filepath: string): Promise<{ success: boolean; filepath: string }> {
+  async backup(filepath: string): Promise<BackupResult> {
     this._ensureInitialized();
     
     try {
-      if (!this.db) throw new Error('Database not initialized');
       await this.db.backup(filepath);
       this.emit('backup', { filepath });
       return { success: true, filepath };
@@ -625,25 +709,19 @@ class SharedMemory extends EventEmitter implements IMemoryStore {
       }
       
       // Final optimization
-      if (this.options.enableVacuum && this.db) {
+      if (this.options.enableVacuum) {
         this.db.pragma('optimize');
       }
       
       // Close statements
       for (const stmt of this.statements.values()) {
-        try {
-          // Better-sqlite3 statements don't have finalize, they're cleaned up automatically
-        } catch (error) {
-          // Ignore cleanup errors
-        }
+        stmt.finalize();
       }
       this.statements.clear();
       
       // Close database
-      if (this.db) {
-        this.db.close();
-        this.db = null;
-      }
+      this.db.close();
+      this.db = null;
       
       // Clear cache
       this.cache.clear();
@@ -652,21 +730,6 @@ class SharedMemory extends EventEmitter implements IMemoryStore {
       
       this.emit('closed');
       
-    } catch (error) {
-      this.emit('error', error);
-      throw error;
-    }
-  }
-
-  async cleanup(): Promise<number> {
-    this._ensureInitialized();
-    
-    try {
-      const stmt = this.statements.get('gc');
-      if (!stmt) throw new Error('GC statement not prepared');
-      
-      const result = stmt.run();
-      return result.changes;
     } catch (error) {
       this.emit('error', error);
       throw error;
@@ -684,23 +747,19 @@ class SharedMemory extends EventEmitter implements IMemoryStore {
   }
 
   private _configureDatabase(): void {
-    if (!this.db) throw new Error('Database not initialized');
-    
     // Performance optimizations
     if (this.options.enableWAL) {
-      this.db.pragma('journal_mode = WAL');
+      this.db!.pragma('journal_mode = WAL');
     }
-    this.db.pragma('synchronous = NORMAL');
-    this.db.pragma('cache_size = -64000'); // 64MB
-    this.db.pragma('temp_store = MEMORY');
-    this.db.pragma('mmap_size = 268435456'); // 256MB
+    this.db!.pragma('synchronous = NORMAL');
+    this.db!.pragma('cache_size = -64000'); // 64MB
+    this.db!.pragma('temp_store = MEMORY');
+    this.db!.pragma('mmap_size = 268435456'); // 256MB
   }
 
   private _runMigrations(): void {
-    if (!this.db) throw new Error('Database not initialized');
-    
     // Create migrations table if needed
-    this.db.exec(`
+    this.db!.exec(`
       CREATE TABLE IF NOT EXISTS migrations (
         version INTEGER PRIMARY KEY,
         description TEXT,
@@ -709,17 +768,15 @@ class SharedMemory extends EventEmitter implements IMemoryStore {
     `);
     
     // Get current version
-    const currentVersion = this.db.prepare(
+    const currentVersion = this.db!.prepare(
       'SELECT MAX(version) as version FROM migrations'
-    ).get() as { version: number | null };
-    
-    const version = currentVersion?.version || 0;
+    ).get().version || 0;
     
     // Run pending migrations
-    const pending = MIGRATIONS.filter(m => m.version > version);
+    const pending = MIGRATIONS.filter(m => m.version > currentVersion);
     
     if (pending.length > 0) {
-      const transaction = this.db.transaction((migrations: Migration[]) => {
+      const transaction = this.db!.transaction((migrations: Migration[]) => {
         for (const migration of migrations) {
           this.db!.exec(migration.sql);
           this.db!.prepare(
@@ -729,13 +786,11 @@ class SharedMemory extends EventEmitter implements IMemoryStore {
       });
       
       transaction(pending);
-      this.emit('migrated', { from: version, to: pending[pending.length - 1].version });
+      this.emit('migrated', { from: currentVersion, to: pending[pending.length - 1].version });
     }
   }
 
   private _prepareStatements(): void {
-    if (!this.db) throw new Error('Database not initialized');
-    
     // Upsert statement
     this.statements.set('upsert', this.db.prepare(`
       INSERT INTO memory_store (key, namespace, value, type, metadata, tags, ttl, expires_at, compressed, size)
@@ -805,15 +860,12 @@ class SharedMemory extends EventEmitter implements IMemoryStore {
   private _startGarbageCollection(): void {
     this.gcTimer = setInterval(() => {
       this._runGarbageCollection();
-    }, this.options.gcInterval);
+    }, this.options.gcInterval!);
   }
 
   private _runGarbageCollection(): void {
     try {
-      const stmt = this.statements.get('gc');
-      if (!stmt) return;
-      
-      const result = stmt.run();
+      const result = this.statements.get('gc')!.run();
       
       if (result.changes > 0) {
         this.emit('gc', { expired: result.changes });
@@ -846,8 +898,11 @@ class SharedMemory extends EventEmitter implements IMemoryStore {
     this.metrics.totalOperations++;
   }
 
-  private _getMetricsSummary(): any {
-    const summary: any = {};
+  private _getMetricsSummary(): MetricsSummary {
+    const summary: MetricsSummary = {
+      totalOperations: this.metrics.totalOperations,
+      lastGC: new Date(this.metrics.lastGC).toISOString()
+    };
     
     for (const [operation, durations] of this.metrics.operations) {
       if (durations.length > 0) {
@@ -860,13 +915,9 @@ class SharedMemory extends EventEmitter implements IMemoryStore {
       }
     }
     
-    summary.totalOperations = this.metrics.totalOperations;
-    summary.lastGC = new Date(this.metrics.lastGC).toISOString();
-    
     return summary;
   }
 }
 
 // Export for backwards compatibility
-export { SharedMemory };
 export default SharedMemory;

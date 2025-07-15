@@ -55,7 +55,7 @@ export class AutoStrategy extends BaseStrategy {
   private patternCache: Map<string, TaskPattern[]>;
   private performanceHistory: Map<string, number[]>;
 
-  constructor(config: any) {
+  constructor(config: Record<string, unknown>) {
     super(config);
     this.mlHeuristics = this.initializeMLHeuristics();
     this.decompositionCache = new Map();
@@ -355,7 +355,7 @@ export class AutoStrategy extends BaseStrategy {
       // Create multiple parallel implementation tasks
       const components = this.identifyComponents(objective.description);
       
-      components.forEach((component, index) => {
+      components.forEach((component, _index) => {
         tasks.push(this.createTaskDefinition({
           id: `${baseId}-impl-${index}`,
           type: 'coding' as TaskType,
@@ -579,7 +579,7 @@ export class AutoStrategy extends BaseStrategy {
     };
   }
 
-  private createOptimalImplementationTasks(objective: SwarmObjective, structure: any, baseId: string): TaskDefinition[] {
+  private createOptimalImplementationTasks(objective: SwarmObjective, structure: unknown, baseId: string): TaskDefinition[] {
     return [this.createTaskDefinition({
       id: `${baseId}-implementation`,
       type: 'coding' as TaskType,
@@ -786,7 +786,7 @@ export class AutoStrategy extends BaseStrategy {
           tasks: suitableTasks.slice(0, 3).map(t => t.id.id), // Limit to 3 tasks per agent
           estimatedWorkload: suitableTasks.length * 0.3,
           capabilities: Object.keys(agent.capabilities).filter(cap => 
-            (agent.capabilities as any)[cap] === true
+            (agent.capabilities as unknown)[cap] === true
           )
         });
       }

@@ -1,10 +1,10 @@
-import { getErrorMessage } from '../utils/error-handler';
+// import { getErrorMessage } from '../utils/error-handler';
 /**
  * Comprehensive MCP Integration Tests
  */
 
 import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
-type Mock = jest.MockedFunction<any>;
+type Mock = jest.MockedFunction<unknown>;
 import { MCPServer } from '../server';
 import { MCPLifecycleManager, LifecycleState } from '../lifecycle-manager';
 import { MCPPerformanceMonitor } from '../performance-monitor';
@@ -86,10 +86,10 @@ describe('MCP Server', () => {
       };
 
       // Mock transport handler
-      const transport = (server as any).transport;
+      const transport = (server as unknown).transport;
       transport.onRequest = jest.fn();
       
-      const response = await (server as any).handleRequest(request);
+      const response = await (server as unknown).handleRequest(request);
       
       expect(response.jsonrpc).toBe('2.0');
       expect(response.id).toBe('test-init');
@@ -125,23 +125,23 @@ describe('MCP Server', () => {
         name: 'test/tool1',
         description: 'Test tool 1',
         inputSchema: { type: 'object', properties: {} },
-        handler: jest.fn(),
+        handler: jest.fn().mockResolvedValue({}),
       };
 
       const tool2 = {
         name: 'test/tool2',
         description: 'Test tool 2',
         inputSchema: { type: 'object', properties: {} },
-        handler: jest.fn(),
+        handler: jest.fn().mockResolvedValue({}),
       };
 
       server.registerTool(tool1);
       server.registerTool(tool2);
 
-      const tools = (server as any).toolRegistry.listTools();
+      const tools = (server as unknown).toolRegistry.listTools();
       expect(tools).toHaveLength(2 + 4); // 2 custom + 4 built-in tools
-      expect(tools.some((t: any) => t.name === 'test/tool1')).toBe(true);
-      expect(tools.some((t: any) => t.name === 'test/tool2')).toBe(true);
+      expect(tools.some((t: unknown) => t.name === 'test/tool1')).toBe(true);
+      expect(tools.some((t: unknown) => t.name === 'test/tool2')).toBe(true);
     });
   });
 
@@ -211,7 +211,7 @@ describe('MCP Lifecycle Manager', () => {
     });
 
     it('should emit state change events', async () => {
-      const stateChanges: any[] = [];
+      const stateChanges: unknown[] = [];
       lifecycleManager.on('stateChange', (event) => {
         stateChanges.push(event);
       });
@@ -404,14 +404,14 @@ describe('Tool Registry', () => {
         name: 'file/read',
         description: 'Read files',
         inputSchema: { type: 'object', properties: {} },
-        handler: jest.fn(),
+        handler: jest.fn().mockResolvedValue({}),
       };
 
       const tool2 = {
         name: 'memory/query',
         description: 'Query memory',
         inputSchema: { type: 'object', properties: {} },
-        handler: jest.fn(),
+        handler: jest.fn().mockResolvedValue({}),
       };
 
       toolRegistry.register(tool1);
@@ -431,7 +431,7 @@ describe('Tool Registry', () => {
         name: 'test/metric-tool',
         description: 'Tool for metrics testing',
         inputSchema: { type: 'object', properties: {} },
-        handler: jest.fn().mockResolvedValue('success'),
+        handler: jest.fn().mockResolvedValue({ result: 'success' }),
       };
 
       toolRegistry.register(tool);
@@ -449,7 +449,7 @@ describe('Tool Registry', () => {
 
 describe('MCP Orchestration Integration', () => {
   let integration: MCPOrchestrationIntegration;
-  let mockComponents: any;
+  let mockComponents: unknown;
 
   beforeEach(() => {
     mockComponents = {
@@ -508,8 +508,8 @@ describe('MCP Orchestration Integration', () => {
       expect(server).toBeDefined();
       
       // Check that orchestrator tools are registered
-      const tools = (server as any).toolRegistry.listTools();
-      const orchestratorTools = tools.filter((t: any) => t.name.startsWith('orchestrator/'));
+      const tools = (server as unknown).toolRegistry.listTools();
+      const orchestratorTools = tools.filter((t: unknown) => t.name.startsWith('orchestrator/'));
       expect(orchestratorTools.length).toBeGreaterThan(0);
     });
 

@@ -25,7 +25,7 @@ sessionCommand
   .description('List all saved sessions')
   .option('-a, --active', 'Show only active sessions')
   .option('--format <format>', 'Output format (table, json)', 'table')
-  .action(async (options: any) => {
+  .action(async (_options: Record<string, unknown>) => {
     await listSessions(options);
   });
 
@@ -37,7 +37,7 @@ sessionCommand
   .option('-d, --description <desc>', 'Session description')
   .option('-t, --tags <tags>', 'Comma-separated tags')
   .option('--auto', 'Auto-generate session name')
-  .action(async (name: string | undefined, options: any) => {
+  .action(async (name: string | undefined, options: Record<string, unknown>) => {
     await saveSession(name, options);
   });
 
@@ -48,7 +48,7 @@ sessionCommand
   .arguments('<session-id>')
   .option('-f, --force', 'Force restore without confirmation')
   .option('--merge', 'Merge with current session instead of replacing')
-  .action(async (sessionId: string, options: any) => {
+  .action(async (sessionId: string, options: Record<string, unknown>) => {
     await restoreSession(sessionId, options);
   });
 
@@ -58,7 +58,7 @@ sessionCommand
   .description('Delete a saved session')
   .arguments('<session-id>')
   .option('-f, --force', 'Skip confirmation prompt')
-  .action(async (sessionId: string, options: any) => {
+  .action(async (sessionId: string, options: Record<string, unknown>) => {
     await deleteSession(sessionId, options);
   });
 
@@ -69,7 +69,7 @@ sessionCommand
   .arguments('<session-id> <output-file>')
   .option('--format <format>', 'Export format (json, yaml)', 'json')
   .option('--include-memory', 'Include agent memory in export')
-  .action(async (sessionId: string, outputFile: string, options: any) => {
+  .action(async (sessionId: string, outputFile: string, options: Record<string, unknown>) => {
     await exportSession(sessionId, outputFile, options);
   });
 
@@ -80,7 +80,7 @@ sessionCommand
   .arguments('<input-file>')
   .option('-n, --name <name>', 'Custom session name')
   .option('--overwrite', 'Overwrite existing session with same ID')
-  .action(async (inputFile: string, options: any) => {
+  .action(async (inputFile: string, options: Record<string, unknown>) => {
     await importSession(inputFile, options);
   });
 
@@ -89,7 +89,7 @@ sessionCommand
   .command('info')
   .description('Show detailed session information')
   .arguments('<session-id>')
-  .action(async (sessionId: string, options: any) => {
+  .action(async (sessionId: string, options: Record<string, unknown>) => {
     await showSessionInfo(sessionId);
   });
 
@@ -100,7 +100,7 @@ sessionCommand
   .option('--older-than <days>', 'Delete sessions older than N days', '30')
   .option('--dry-run', 'Show what would be deleted without deleting')
   .option('--orphaned', 'Only clean orphaned sessions')
-  .action(async (options: any) => {
+  .action(async (_options: Record<string, unknown>) => {
     await cleanSessions(options);
   });
 
@@ -112,10 +112,10 @@ interface SessionData {
   createdAt: Date;
   updatedAt: Date;
   state: {
-    agents: any[];
-    tasks: any[];
-    memory: any[];
-    configuration: any;
+    agents: unknown[];
+    tasks: unknown[];
+    memory: unknown[];
+    configuration: unknown;
   };
   metadata: {
     version: string;
@@ -130,13 +130,13 @@ async function ensureSessionDir(): Promise<void> {
   try {
     await fs.mkdir(SESSION_DIR, { recursive: true });
   } catch (error) {
-    if ((error as any).code !== 'EEXIST') {
+    if ((error as unknown).code !== 'EEXIST') {
       throw error;
     }
   }
 }
 
-async function listSessions(options: any): Promise<void> {
+async function listSessions(options: Record<string, unknown>): Promise<void> {
   try {
     await ensureSessionDir();
     const sessions = await loadAllSessions();
@@ -144,7 +144,7 @@ async function listSessions(options: any): Promise<void> {
     let filteredSessions = sessions;
     if (options.active) {
       // In production, this would check if the session is currently active
-      filteredSessions = sessions.filter(s => (s.metadata as any).active);
+      filteredSessions = sessions.filter(s => (s.metadata as unknown).active);
     }
 
     if (options.format === 'json') {
@@ -184,7 +184,7 @@ async function listSessions(options: any): Promise<void> {
   }
 }
 
-async function saveSession(name: string | undefined, options: any): Promise<void> {
+async function saveSession(name: string | undefined, options: Record<string, unknown>): Promise<void> {
   try {
     // Get current session state (mock for now)
     const currentState = await getCurrentSessionState();
@@ -238,7 +238,7 @@ async function saveSession(name: string | undefined, options: any): Promise<void
   }
 }
 
-async function restoreSession(sessionId: string, options: any): Promise<void> {
+async function restoreSession(sessionId: string, options: Record<string, unknown>): Promise<void> {
   try {
     const session = await loadSession(sessionId);
     
@@ -320,7 +320,7 @@ async function restoreSession(sessionId: string, options: any): Promise<void> {
   }
 }
 
-async function deleteSession(sessionId: string, options: any): Promise<void> {
+async function deleteSession(sessionId: string, options: Record<string, unknown>): Promise<void> {
   try {
     const session = await loadSession(sessionId);
     
@@ -357,7 +357,7 @@ async function deleteSession(sessionId: string, options: any): Promise<void> {
   }
 }
 
-async function exportSession(sessionId: string, outputFile: string, options: any): Promise<void> {
+async function exportSession(sessionId: string, outputFile: string, options: Record<string, unknown>): Promise<void> {
   try {
     const session = await loadSession(sessionId);
     
@@ -398,7 +398,7 @@ async function exportSession(sessionId: string, outputFile: string, options: any
   }
 }
 
-async function importSession(inputFile: string, options: any): Promise<void> {
+async function importSession(inputFile: string, options: Record<string, unknown>): Promise<void> {
   try {
     const content = await fs.readFile(inputFile, 'utf-8');
     const sessionData = JSON.parse(content) as SessionData;
@@ -503,7 +503,7 @@ async function showSessionInfo(sessionId: string): Promise<void> {
   }
 }
 
-async function cleanSessions(options: any): Promise<void> {
+async function cleanSessions(options: Record<string, unknown>): Promise<void> {
   try {
     await ensureSessionDir();
     const sessions = await loadAllSessions();
@@ -515,7 +515,7 @@ async function cleanSessions(options: any): Promise<void> {
     
     if (options.orphaned) {
       // In production, check if sessions have valid references
-      toDelete = toDelete.filter(session => (session.metadata as any).orphaned);
+      toDelete = toDelete.filter(session => (session.metadata as unknown).orphaned);
     }
 
     if (toDelete.length === 0) {
@@ -589,7 +589,7 @@ async function loadAllSessions(): Promise<SessionData[]> {
       }
     }
   } catch (error) {
-    if ((error as any).code !== 'ENOENT') {
+    if ((error as unknown).code !== 'ENOENT') {
       throw error;
     }
   }
@@ -602,7 +602,7 @@ async function loadSession(sessionId: string): Promise<SessionData | null> {
   return sessions.find(s => s.id === sessionId || s.id.startsWith(sessionId)) || null;
 }
 
-async function getCurrentSessionState(): Promise<any> {
+async function getCurrentSessionState(): Promise<unknown> {
   // Mock current session state - in production, this would connect to the orchestrator
   return {
     agents: [
@@ -624,7 +624,7 @@ async function getCurrentSessionState(): Promise<any> {
   };
 }
 
-async function calculateChecksum(data: any): Promise<string> {
+async function calculateChecksum(data: Record<string, unknown>): Promise<string> {
   const content = JSON.stringify(data, null, 0);
   const encoder = new TextEncoder();
   const dataBuffer = encoder.encode(content);

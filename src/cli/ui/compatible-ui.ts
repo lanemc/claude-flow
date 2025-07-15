@@ -141,7 +141,7 @@ export class CompatibleUI {
     if (this.processes.length === 0) {
       console.log(chalk.gray('No processes configured'));
     } else {
-      this.processes.forEach((process, index) => {
+      this.processes.forEach((process, _index) => {
         const num = `[${index + 1}]`.padEnd(4);
         const status = this.getStatusDisplay(process.status);
         const name = process.name.padEnd(25);
@@ -183,7 +183,7 @@ export class CompatibleUI {
       return;
     }
 
-    this.processes.forEach((process, index) => {
+    this.processes.forEach((process, _index) => {
       console.log(`${chalk.gray(`[${index + 1}]`)} ${this.getStatusDisplay(process.status)} ${chalk.white.bold(process.name)}`);
       console.log(chalk.gray(`    Type: ${process.type}`));
       

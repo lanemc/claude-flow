@@ -524,7 +524,7 @@ export default class NeuralNetworkView {
       // Emit tool execution event
       this.eventBus.emit('tool:execute', {
         tool: toolName,
-        params: params,
+        params,
         source: 'neural-view'
       });
       

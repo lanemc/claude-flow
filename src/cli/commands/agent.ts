@@ -86,7 +86,7 @@ export function createAgentCommand(): Command {
     .option('--json', 'Output in JSON format')
     .option('--detailed', 'Show detailed resource usage and metrics')
     .option('--sort <field>', 'Sort by field (name, type, status, health, workload)', 'name')
-    .action(async (options: any) => {
+    .action(async (_options: Record<string, unknown>) => {
       try {
         const manager = await initializeAgentManager();
         let agents = manager.getAllAgents();
@@ -161,7 +161,7 @@ export function createAgentCommand(): Command {
     .option('--interactive', 'Interactive configuration')
     .option('--start', 'Automatically start the agent after creation')
     .option('--config <path>', 'Load configuration from JSON file')
-    .action(async (template: string, options: any) => {
+    .action(async (template: string, options: Record<string, unknown>) => {
       try {
         const manager = await initializeAgentManager();
         
@@ -270,7 +270,7 @@ export const agentCommand = createAgentCommand();
 
 // === HELPER FUNCTIONS ===
 
-async function interactiveAgentConfiguration(manager: AgentManager): Promise<any> {
+async function interactiveAgentConfiguration(manager: AgentManager): Promise<unknown> {
   console.log(chalk.cyan('\n🛠️  Interactive Agent Configuration'));
   
   const templates = manager.getAgentTemplates();
@@ -335,7 +335,7 @@ async function interactiveAgentConfiguration(manager: AgentManager): Promise<any
   };
 }
 
-function displayCompactAgentList(agents: any[]): void {
+function displayCompactAgentList(agents: unknown[]): void {
   const table = new Table({
     head: ['ID', 'Name', 'Type', 'Status', 'Health', 'Workload', 'Last Activity'],
     colWidths: [10, 20, 15, 12, 10, 10, 20]
@@ -356,8 +356,8 @@ function displayCompactAgentList(agents: any[]): void {
   console.log(table.toString());
 }
 
-function displayDetailedAgentList(agents: any[], manager: AgentManager): void {
-  agents.forEach((agent, index) => {
+function displayDetailedAgentList(agents: unknown[], manager: AgentManager): void {
+  agents.forEach((agent, _index) => {
     if (index > 0) console.log('\n' + '-'.repeat(60));
     
     console.log(`\n${chalk.bold(agent.name)} (${agent.id.id.slice(-8)})`);
@@ -377,7 +377,7 @@ function displayDetailedAgentList(agents: any[], manager: AgentManager): void {
   });
 }
 
-function displayAgentSummary(agent: any): void {
+function displayAgentSummary(agent: unknown): void {
   console.log('\n' + chalk.dim('Agent Summary:'));
   console.log(`  Name: ${agent.name}`);
   console.log(`  Type: ${agent.type}`);
@@ -387,7 +387,7 @@ function displayAgentSummary(agent: any): void {
 
 // === UTILITY FUNCTIONS ===
 
-function getStatusColor(status: string): any {
+function getStatusColor(status: string): unknown {
   switch (status) {
     case 'idle': return chalk.green;
     case 'busy': return chalk.blue;

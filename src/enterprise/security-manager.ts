@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../utils/error-handler';
+// import { getErrorMessage } from '../utils/error-handler';
 import { EventEmitter } from 'events';
 import { writeFile, readFile, mkdir, readdir } from 'fs/promises';
 import { join } from 'path';
@@ -112,7 +112,7 @@ export interface SecurityFinding {
   assignedTo?: string;
   dueDate?: Date;
   tags: string[];
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
   firstSeen: Date;
   lastSeen: Date;
   occurrences: number;
@@ -189,7 +189,7 @@ export interface SecurityRule {
   condition: string; // Query or condition syntax
   action: 'allow' | 'deny' | 'alert' | 'audit';
   severity: SecuritySeverity;
-  parameters: Record<string, any>;
+  parameters: Record<string, unknown>;
   enabled: boolean;
 }
 
@@ -202,7 +202,7 @@ export interface SecurityIncident {
   type: 'security-breach' | 'vulnerability-exploit' | 'policy-violation' | 'suspicious-activity' | 'compliance-violation';
   source: {
     type: 'scan' | 'alert' | 'user-report' | 'automated-detection';
-    details: Record<string, any>;
+    details: Record<string, unknown>;
   };
   affected: {
     systems: string[];
@@ -282,7 +282,7 @@ export interface SecurityAuditEntry {
   userId: string;
   action: string;
   target: string;
-  details: Record<string, any>;
+  details: Record<string, unknown>;
   ipAddress?: string;
   userAgent?: string;
 }
@@ -295,7 +295,7 @@ export interface VulnerabilityDatabase {
   updateFrequency: 'hourly' | 'daily' | 'weekly';
   lastUpdate: Date;
   status: 'active' | 'inactive' | 'error';
-  configuration: Record<string, any>;
+  configuration: Record<string, unknown>;
 }
 
 export interface SecurityMetrics {
@@ -788,7 +788,7 @@ export class SecurityManager extends EventEmitter {
 
     // Calculate compliance metrics
     const allComplianceChecks = scans.flatMap(s => s.compliance.requirements);
-    const complianceFrameworks: Record<string, any> = {};
+    const complianceFrameworks: Record<string, unknown> = {};
     
     for (const check of allComplianceChecks) {
       if (!complianceFrameworks[check.framework]) {
@@ -815,7 +815,7 @@ export class SecurityManager extends EventEmitter {
     }
 
     const overallComplianceScore = Object.values(complianceFrameworks).length > 0 ?
-      Object.values(complianceFrameworks).reduce((sum: number, fw: any) => sum + fw.score, 0) / 
+      Object.values(complianceFrameworks).reduce((sum: number, fw: unknown) => sum + fw.score, 0) / 
       Object.values(complianceFrameworks).length : 0;
 
     // Calculate incident metrics
@@ -1139,12 +1139,12 @@ export class SecurityManager extends EventEmitter {
     return [];
   }
 
-  private parseNpmAuditResults(auditResult: any): SecurityFinding[] {
+  private parseNpmAuditResults(auditResult: unknown): SecurityFinding[] {
     const findings: SecurityFinding[] = [];
     
     if (auditResult.vulnerabilities) {
       for (const [packageName, vulnData] of Object.entries(auditResult.vulnerabilities)) {
-        const vuln = vulnData as any;
+        const vuln = vulnData as unknown;
         
         findings.push({
           id: `finding-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -1211,7 +1211,7 @@ export class SecurityManager extends EventEmitter {
       (scan.compliance.passedChecks / scan.compliance.requirements.length) * 100 : 0;
   }
 
-  private async runFrameworkChecks(framework: string, scope?: any): Promise<ComplianceCheck[]> {
+  private async runFrameworkChecks(framework: string, scope?: unknown): Promise<ComplianceCheck[]> {
     // Mock compliance checks for different frameworks
     const mockChecks: ComplianceCheck[] = [
       {
@@ -1362,7 +1362,7 @@ export class SecurityManager extends EventEmitter {
     userId: string,
     action: string,
     targetType: string,
-    details: Record<string, any>
+    details: Record<string, unknown>
   ): void {
     const entry: SecurityAuditEntry = {
       id: `audit-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,

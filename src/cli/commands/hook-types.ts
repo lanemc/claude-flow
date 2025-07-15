@@ -4,7 +4,7 @@
 
 export interface BaseHookOptions {
   description?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   verbose?: boolean;
 }
 
@@ -94,7 +94,7 @@ export interface MemorySyncOptions extends BaseHookOptions {
 
 export interface TelemetryOptions extends BaseHookOptions {
   event: string;
-  data?: Record<string, any>;
+  data?: Record<string, unknown>;
   tags?: string[];
 }
 
@@ -117,7 +117,7 @@ export type HookType =
 export interface HookResult {
   success: boolean;
   message?: string;
-  data?: any;
+  data?: unknown;
   error?: Error;
 }
 

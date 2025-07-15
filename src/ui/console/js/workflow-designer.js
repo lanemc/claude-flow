@@ -276,9 +276,9 @@ class WorkflowDesigner {
         const nodeId = 'node_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
         const node = {
             id: nodeId,
-            type: type,
-            x: x,
-            y: y,
+            type,
+            x,
+            y,
             width: 150,
             height: 80,
             inputs: this.getNodeInputs(type),
@@ -462,7 +462,7 @@ class WorkflowDesigner {
     }
 
     getNodeAt(x, y) {
-        for (let node of this.nodes.values()) {
+        for (const node of this.nodes.values()) {
             if (x >= node.x && x <= node.x + node.width &&
                 y >= node.y && y <= node.y + node.height) {
                 return node;
@@ -472,7 +472,7 @@ class WorkflowDesigner {
     }
 
     getConnectionPointAt(x, y) {
-        for (let node of this.nodes.values()) {
+        for (const node of this.nodes.values()) {
             // Check input points
             const inputPoints = this.getInputPoints(node);
             for (let i = 0; i < inputPoints.length; i++) {
@@ -579,7 +579,7 @@ class WorkflowDesigner {
     }
 
     drawNodes() {
-        for (let node of this.nodes.values()) {
+        for (const node of this.nodes.values()) {
             this.drawNode(node);
         }
     }
@@ -665,7 +665,7 @@ class WorkflowDesigner {
     }
 
     drawConnections() {
-        for (let connection of this.connections.values()) {
+        for (const connection of this.connections.values()) {
             const fromNode = this.nodes.get(connection.from);
             const toNode = this.nodes.get(connection.to);
 
@@ -824,12 +824,12 @@ class WorkflowDesigner {
 
         // Check for isolated nodes
         const connectedNodes = new Set();
-        for (let connection of this.connections.values()) {
+        for (const connection of this.connections.values()) {
             connectedNodes.add(connection.from);
             connectedNodes.add(connection.to);
         }
 
-        for (let node of this.nodes.values()) {
+        for (const node of this.nodes.values()) {
             if (!connectedNodes.has(node.id) && this.nodes.size > 1) {
                 results.warnings.push(`Node "${this.getNodeTitle(node.type)}" is not connected`);
             }
@@ -841,9 +841,9 @@ class WorkflowDesigner {
         }
 
         // Check required properties
-        for (let node of this.nodes.values()) {
+        for (const node of this.nodes.values()) {
             const required = this.getRequiredProperties(node.type);
-            for (let prop of required) {
+            for (const prop of required) {
                 if (!node.properties[prop] || node.properties[prop] === '') {
                     results.errors.push(`Node "${this.getNodeTitle(node.type)}" missing required property: ${prop}`);
                 }
@@ -864,7 +864,7 @@ class WorkflowDesigner {
 
             visiting.add(nodeId);
             
-            for (let connection of this.connections.values()) {
+            for (const connection of this.connections.values()) {
                 if (connection.from === nodeId) {
                     if (visit(connection.to)) return true;
                 }
@@ -875,7 +875,7 @@ class WorkflowDesigner {
             return false;
         };
 
-        for (let nodeId of this.nodes.keys()) {
+        for (const nodeId of this.nodes.keys()) {
             if (visit(nodeId)) return true;
         }
 
@@ -979,7 +979,7 @@ class WorkflowDesigner {
 
     getStartNodes() {
         const hasInput = new Set();
-        for (let connection of this.connections.values()) {
+        for (const connection of this.connections.values()) {
             hasInput.add(connection.to);
         }
         
@@ -1003,7 +1003,7 @@ class WorkflowDesigner {
 
             // Execute connected nodes
             const connectedNodes = this.getConnectedNodes(node.id);
-            for (let connectedNode of connectedNodes) {
+            for (const connectedNode of connectedNodes) {
                 await this.executeNode(connectedNode);
             }
         } catch (error) {
@@ -1033,7 +1033,7 @@ class WorkflowDesigner {
 
     getConnectedNodes(nodeId) {
         const connected = [];
-        for (let connection of this.connections.values()) {
+        for (const connection of this.connections.values()) {
             if (connection.from === nodeId) {
                 const node = this.nodes.get(connection.to);
                 if (node) connected.push(node);
@@ -1058,7 +1058,7 @@ class WorkflowDesigner {
         this.isExecuting = false;
         
         // Reset all node statuses
-        for (let node of this.nodes.values()) {
+        for (const node of this.nodes.values()) {
             if (node.status === 'executing') {
                 node.status = 'idle';
             }
@@ -1350,7 +1350,7 @@ class WorkflowDesigner {
     deleteNode(node) {
         // Remove connections
         const connectionsToRemove = [];
-        for (let [id, connection] of this.connections) {
+        for (const [id, connection] of this.connections) {
             if (connection.from === node.id || connection.to === node.id) {
                 connectionsToRemove.push(id);
             }

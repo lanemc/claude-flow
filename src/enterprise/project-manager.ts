@@ -571,8 +571,12 @@ export class ProjectManager extends EventEmitter {
         break;
 
       case 'quality':
-        const qualityMetrics = this.calculateQualityMetrics(project);
-        report.summary = `Overall quality score: ${qualityMetrics.overall.toFixed(1)}%`;
+        {
+const qualityMetrics = this.calculateQualityMetrics(project);
+        report.summary = `Overall quality score: ${qualityMetrics.overall.toFixed(1)
+
+
+      }}%`;
         report.details = {
           qualityMetrics,
           qualityGates: project.qualityGates,
@@ -581,13 +585,15 @@ export class ProjectManager extends EventEmitter {
         break;
 
       case 'risk':
-        const risks = this.getAllRisks(project);
-        report.summary = `${risks.filter(r => r.status === 'open').length} open risks identified`;
-        report.details = {
-          risks,
-          riskMatrix: this.generateRiskMatrix(risks),
-          mitigation: this.generateRiskMitigation(risks)
+        {
+          const risks = this.getAllRisks(project);
+          report.summary = `${risks.filter(r => r.status === 'open').length} open risks identified`;
+          report.details = {
+            risks,
+            riskMatrix: this.generateRiskMatrix(risks),
+            mitigation: this.generateRiskMitigation(risks)
         };
+        }
         break;
 
       case 'resource':
@@ -601,8 +607,12 @@ export class ProjectManager extends EventEmitter {
         break;
 
       case 'compliance':
-        const compliance = this.calculateComplianceStatus(project);
-        report.summary = `${compliance.compliant} of ${compliance.total} requirements met`;
+        {
+const compliance = this.calculateComplianceStatus(project);
+        report.summary = `${compliance.compliant
+
+
+      }} of ${compliance.total} requirements met`;
         report.details = {
           requirements: project.complianceRequirements,
           status: compliance,

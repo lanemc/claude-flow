@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../utils/error-handler';
+// import { getErrorMessage } from '../utils/error-handler';
 /**
  * SPARC-Enhanced Task Executor for Swarm
  * Implements the full SPARC methodology with TDD
@@ -201,7 +201,7 @@ export class SparcTaskExecutor {
     task: TaskDefinition,
     agent: AgentState,
     targetDir?: string
-  ): Promise<any> {
+  ): Promise<unknown> {
     const objective = task.description.toLowerCase();
     
     // Map agent types to SPARC phases
@@ -242,7 +242,7 @@ export class SparcTaskExecutor {
     }
   }
 
-  private async executeSpecificationPhase(task: TaskDefinition, targetDir?: string): Promise<any> {
+  private async executeSpecificationPhase(task: TaskDefinition, targetDir?: string): Promise<unknown> {
     this.logger.info('Executing Specification phase', { taskName: task.name });
     
     const objective = task.description;
@@ -281,7 +281,7 @@ export class SparcTaskExecutor {
     return specifications;
   }
 
-  private async executePseudocodePhase(task: TaskDefinition, targetDir?: string): Promise<any> {
+  private async executePseudocodePhase(task: TaskDefinition, targetDir?: string): Promise<unknown> {
     this.logger.info('Executing Pseudocode phase', { taskName: task.name });
     
     const appType = this.determineAppType(task.description);
@@ -313,7 +313,7 @@ export class SparcTaskExecutor {
     return pseudocode;
   }
 
-  private async executeArchitecturePhase(task: TaskDefinition, targetDir?: string): Promise<any> {
+  private async executeArchitecturePhase(task: TaskDefinition, targetDir?: string): Promise<unknown> {
     this.logger.info('Executing Architecture phase', { taskName: task.name });
     
     const appType = this.determineAppType(task.description);
@@ -346,7 +346,7 @@ export class SparcTaskExecutor {
     return architecture;
   }
 
-  private async executeTDDPhase(task: TaskDefinition, targetDir?: string): Promise<any> {
+  private async executeTDDPhase(task: TaskDefinition, targetDir?: string): Promise<unknown> {
     this.logger.info('Executing TDD phase (Red-Green-Refactor)', { taskName: task.name });
     
     const appType = this.determineAppType(task.description);
@@ -388,7 +388,7 @@ export class SparcTaskExecutor {
     return tddResult;
   }
 
-  private async executeTestingPhase(task: TaskDefinition, targetDir?: string): Promise<any> {
+  private async executeTestingPhase(task: TaskDefinition, targetDir?: string): Promise<unknown> {
     this.logger.info('Executing Testing phase', { taskName: task.name });
     
     const testPlan = {
@@ -415,7 +415,7 @@ export class SparcTaskExecutor {
     return testPlan;
   }
 
-  private async executeReviewPhase(task: TaskDefinition, targetDir?: string): Promise<any> {
+  private async executeReviewPhase(task: TaskDefinition, targetDir?: string): Promise<unknown> {
     this.logger.info('Executing Review phase', { taskName: task.name });
     
     const review = {
@@ -439,7 +439,7 @@ export class SparcTaskExecutor {
     return review;
   }
 
-  private async executeDocumentationPhase(task: TaskDefinition, targetDir?: string): Promise<any> {
+  private async executeDocumentationPhase(task: TaskDefinition, targetDir?: string): Promise<unknown> {
     this.logger.info('Executing Documentation phase', { taskName: task.name });
     
     const documentation = {
@@ -497,7 +497,7 @@ export class SparcTaskExecutor {
     return 'javascript';
   }
 
-  private generateRequirements(objective: string, appType: string): any {
+  private generateRequirements(objective: string, appType: string): unknown {
     return {
       functional: this.getFunctionalRequirements(appType),
       nonFunctional: this.getNonFunctionalRequirements(appType),
@@ -506,7 +506,7 @@ export class SparcTaskExecutor {
     };
   }
 
-  private generateUserStories(appType: string): any[] {
+  private generateUserStories(appType: string): unknown[] {
     const stories: Record<string, any[]> = {
       'rest-api': [
         { id: 'US001', story: 'As a developer, I want to create resources via POST endpoints', priority: 'high' },
@@ -532,8 +532,8 @@ export class SparcTaskExecutor {
     ];
   }
 
-  private generateAcceptanceCriteria(appType: string): any {
-    const criteria: Record<string, any> = {
+  private generateAcceptanceCriteria(appType: string): unknown {
+    const criteria: Record<string, unknown> = {
       'rest-api': {
         endpoints: ['All CRUD operations return appropriate status codes', 'API responses follow consistent format'],
         performance: ['Response time < 200ms for simple queries', 'Can handle 100 concurrent requests'],
@@ -552,7 +552,7 @@ export class SparcTaskExecutor {
     };
   }
 
-  private async generateFailingTests(appType: string, language: string): Promise<any> {
+  private async generateFailingTests(appType: string, language: string): Promise<unknown> {
     const testFramework = this.getTestFramework(language);
     
     const tests = {
@@ -565,7 +565,7 @@ export class SparcTaskExecutor {
     return tests;
   }
 
-  private async generateMinimalImplementation(appType: string, language: string, tests: any): Promise<any> {
+  private async generateMinimalImplementation(appType: string, language: string, tests: unknown): Promise<unknown> {
     return {
       modules: this.generateModules(appType, language),
       classes: this.generateClasses(appType, language),
@@ -574,7 +574,7 @@ export class SparcTaskExecutor {
     };
   }
 
-  private async refactorImplementation(implementation: any, tests: any): Promise<any> {
+  private async refactorImplementation(implementation: unknown, tests: unknown): Promise<unknown> {
     return {
       ...implementation,
       optimized: true,
@@ -592,7 +592,7 @@ export class SparcTaskExecutor {
     }
   }
 
-  private async writeTestFiles(targetDir: string, tests: any, language: string): Promise<void> {
+  private async writeTestFiles(targetDir: string, tests: unknown, language: string): Promise<void> {
     const testDir = path.join(targetDir, this.getTestDirectory(language));
     await fs.mkdir(testDir, { recursive: true });
     
@@ -603,7 +603,7 @@ export class SparcTaskExecutor {
     }
   }
 
-  private async writeImplementationFiles(targetDir: string, implementation: any, language: string): Promise<void> {
+  private async writeImplementationFiles(targetDir: string, implementation: unknown, language: string): Promise<void> {
     const srcDir = path.join(targetDir, this.getSourceDirectory(language));
     await fs.mkdir(srcDir, { recursive: true });
     
@@ -634,7 +634,7 @@ export class SparcTaskExecutor {
     return frameworks[language] || 'generic';
   }
 
-  private getProjectStructure(appType: string, language: string): any {
+  private getProjectStructure(appType: string, language: string): unknown {
     const structures: { [key: string]: any } = {
       'python-rest-api': {
         directories: ['src', 'tests', 'docs', 'config', 'migrations', 'scripts'],
@@ -746,7 +746,7 @@ export class SparcTaskExecutor {
     ];
   }
 
-  private generateUnitTestCases(appType: string, language: string, framework: string): any {
+  private generateUnitTestCases(appType: string, language: string, framework: string): unknown {
     if (language === 'python' && appType === 'rest-api') {
       return {
         'test_models': `import pytest
@@ -813,7 +813,7 @@ class TestUserService:
     };
   }
 
-  private generateIntegrationTestCases(appType: string, language: string, framework: string): any {
+  private generateIntegrationTestCases(appType: string, language: string, framework: string): unknown {
     if (language === 'python' && appType === 'rest-api') {
       return {
         'test_api': `import pytest
@@ -858,7 +858,7 @@ class TestAPI:
     };
   }
 
-  private generateTestFixtures(appType: string): any {
+  private generateTestFixtures(appType: string): unknown {
     return {
       users: [
         { id: 1, username: 'user1', email: 'user1@example.com' },
@@ -871,7 +871,7 @@ class TestAPI:
     };
   }
 
-  private generateMocks(appType: string): any {
+  private generateMocks(appType: string): unknown {
     return {
       database: 'Mock database connection',
       externalAPI: 'Mock external API calls',
@@ -879,7 +879,7 @@ class TestAPI:
     };
   }
 
-  private generateModules(appType: string, language: string): any {
+  private generateModules(appType: string, language: string): unknown {
     if (language === 'python' && appType === 'rest-api') {
       return {
         'app': `from flask import Flask
@@ -1120,21 +1120,21 @@ Config = {
     };
   }
 
-  private generateClasses(appType: string, language: string): any {
+  private generateClasses(appType: string, language: string): unknown {
     return {
       'BaseClass': 'Base class implementation',
       'ServiceClass': 'Service class implementation'
     };
   }
 
-  private generateFunctions(appType: string, language: string): any {
+  private generateFunctions(appType: string, language: string): unknown {
     return {
       'helpers': 'Helper functions',
       'validators': 'Validation functions'
     };
   }
 
-  private generateConfig(appType: string, language: string): any {
+  private generateConfig(appType: string, language: string): unknown {
     return {
       database: 'Database configuration',
       api: 'API configuration',
@@ -1142,7 +1142,7 @@ Config = {
     };
   }
 
-  private async getProjectFiles(appType: string, language: string): Promise<any> {
+  private async getProjectFiles(appType: string, language: string): Promise<unknown> {
     if (language === 'python') {
       return {
         'requirements.txt': `flask==2.3.2
@@ -1242,7 +1242,7 @@ volumes:
     };
   }
 
-  private calculateCoverage(tests: any, implementation: any): any {
+  private calculateCoverage(tests: unknown, implementation: unknown): unknown {
     return {
       overall: 85,
       unit: 90,
@@ -1253,7 +1253,7 @@ volumes:
 
   // Formatting methods
 
-  private formatRequirements(requirements: any): string {
+  private formatRequirements(requirements: unknown): string {
     return `# Requirements
 
 ## Functional Requirements
@@ -1270,7 +1270,7 @@ ${requirements.business.map((r: string) => `- ${r}`).join('\n')}
 `;
   }
 
-  private formatUserStories(stories: any[]): string {
+  private formatUserStories(stories: unknown[]): string {
     return `# User Stories
 
 ${stories.map(s => `## ${s.id}: ${s.story}
@@ -1278,7 +1278,7 @@ Priority: ${s.priority}
 `).join('\n')}`;
   }
 
-  private formatAcceptanceCriteria(criteria: any): string {
+  private formatAcceptanceCriteria(criteria: unknown): string {
     return `# Acceptance Criteria
 
 ${Object.entries(criteria).map(([category, items]) => `## ${category}
@@ -1286,21 +1286,21 @@ ${(items as string[]).map(item => `- ${item}`).join('\n')}
 `).join('\n')}`;
   }
 
-  private formatAlgorithms(algorithms: any): string {
+  private formatAlgorithms(algorithms: unknown): string {
     return `# Algorithms
 
 ${JSON.stringify(algorithms, null, 2)}
 `;
   }
 
-  private formatDataStructures(structures: any): string {
+  private formatDataStructures(structures: unknown): string {
     return `# Data Structures
 
 ${JSON.stringify(structures, null, 2)}
 `;
   }
 
-  private formatArchitecture(architecture: any): string {
+  private formatArchitecture(architecture: unknown): string {
     return `# System Architecture
 
 ## Components
@@ -1317,7 +1317,7 @@ ${JSON.stringify(architecture.infrastructure, null, 2)}
 `;
   }
 
-  private formatComponentDiagram(components: any): string {
+  private formatComponentDiagram(components: unknown): string {
     return `# Component Diagram
 
 \`\`\`mermaid
@@ -1331,7 +1331,7 @@ graph TD
 `;
   }
 
-  private formatTestPlan(plan: any): string {
+  private formatTestPlan(plan: unknown): string {
     return `# Test Plan
 
 ## Test Strategy
@@ -1346,7 +1346,7 @@ Current: ${plan.coverage.current}%
 `;
   }
 
-  private formatReviewReport(review: any): string {
+  private formatReviewReport(review: unknown): string {
     return `# Code Review Report
 
 ## Code Quality
@@ -1472,7 +1472,7 @@ Please follow our contribution guidelines...
 
   // Additional helper methods
 
-  private assessCodeQuality(task: TaskDefinition): any {
+  private assessCodeQuality(task: TaskDefinition): unknown {
     return {
       complexity: 'Low to Medium',
       duplication: 'Minimal',
@@ -1481,7 +1481,7 @@ Please follow our contribution guidelines...
     };
   }
 
-  private assessSecurity(task: TaskDefinition): any {
+  private assessSecurity(task: TaskDefinition): unknown {
     return {
       authentication: 'Implemented',
       authorization: 'Role-based',
@@ -1490,7 +1490,7 @@ Please follow our contribution guidelines...
     };
   }
 
-  private assessPerformance(task: TaskDefinition): any {
+  private assessPerformance(task: TaskDefinition): unknown {
     return {
       responseTime: 'Average 150ms',
       throughput: '1000 req/s',
@@ -1499,7 +1499,7 @@ Please follow our contribution guidelines...
     };
   }
 
-  private assessMaintainability(task: TaskDefinition): any {
+  private assessMaintainability(task: TaskDefinition): unknown {
     return {
       readability: 'High',
       modularity: 'Well-structured',
@@ -1518,19 +1518,19 @@ Please follow our contribution guidelines...
     ];
   }
 
-  private generateUnitTests(task: TaskDefinition): any {
+  private generateUnitTests(task: TaskDefinition): unknown {
     return 'Comprehensive unit test suite';
   }
 
-  private generateIntegrationTests(task: TaskDefinition): any {
+  private generateIntegrationTests(task: TaskDefinition): unknown {
     return 'Integration test scenarios';
   }
 
-  private generateE2ETests(task: TaskDefinition): any {
+  private generateE2ETests(task: TaskDefinition): unknown {
     return 'End-to-end test scenarios';
   }
 
-  private generatePerformanceTests(task: TaskDefinition): any {
+  private generatePerformanceTests(task: TaskDefinition): unknown {
     return 'Performance test suite';
   }
 
@@ -1543,7 +1543,7 @@ Please follow our contribution guidelines...
     ];
   }
 
-  private designComponents(appType: string): any {
+  private designComponents(appType: string): unknown {
     return {
       frontend: 'UI Components',
       backend: 'API Services',
@@ -1552,7 +1552,7 @@ Please follow our contribution guidelines...
     };
   }
 
-  private designInterfaces(appType: string): any {
+  private designInterfaces(appType: string): unknown {
     return {
       api: 'REST/GraphQL interfaces',
       database: 'Data access interfaces',
@@ -1569,7 +1569,7 @@ Please follow our contribution guidelines...
     ];
   }
 
-  private designInfrastructure(appType: string): any {
+  private designInfrastructure(appType: string): unknown {
     return {
       hosting: 'Cloud platform',
       database: 'Managed database service',
@@ -1578,7 +1578,7 @@ Please follow our contribution guidelines...
     };
   }
 
-  private generateAlgorithms(appType: string): any {
+  private generateAlgorithms(appType: string): unknown {
     return {
       dataProcessing: 'Data processing algorithms',
       businessLogic: 'Core business logic',
@@ -1586,7 +1586,7 @@ Please follow our contribution guidelines...
     };
   }
 
-  private generateDataStructures(appType: string): any {
+  private generateDataStructures(appType: string): unknown {
     return {
       models: 'Data models',
       schemas: 'Database schemas',
@@ -1594,7 +1594,7 @@ Please follow our contribution guidelines...
     };
   }
 
-  private generateFlowDiagrams(appType: string): any {
+  private generateFlowDiagrams(appType: string): unknown {
     return {
       userFlow: 'User interaction flow',
       dataFlow: 'Data processing flow',
@@ -1602,27 +1602,27 @@ Please follow our contribution guidelines...
     };
   }
 
-  private executeAnalysisPhase(task: TaskDefinition, targetDir?: string): Promise<any> {
+  private executeAnalysisPhase(task: TaskDefinition, targetDir?: string): Promise<unknown> {
     return this.executeAnalyzerTask(task, targetDir);
   }
 
-  private executeImplementationPhase(task: TaskDefinition, targetDir?: string): Promise<any> {
+  private executeImplementationPhase(task: TaskDefinition, targetDir?: string): Promise<unknown> {
     return this.executeTDDPhase(task, targetDir);
   }
 
-  private executeCoordinationPhase(task: TaskDefinition, targetDir?: string): Promise<any> {
+  private executeCoordinationPhase(task: TaskDefinition, targetDir?: string): Promise<unknown> {
     return this.executeCoordinationTask(task, targetDir);
   }
 
-  private executeGenericPhase(task: TaskDefinition, targetDir?: string): Promise<any> {
+  private executeGenericPhase(task: TaskDefinition, targetDir?: string): Promise<unknown> {
     return this.executeGenericTask(task, targetDir);
   }
 
-  private async executeAnalyzerTask(task: TaskDefinition, targetDir?: string): Promise<any> {
+  private async executeAnalyzerTask(task: TaskDefinition, targetDir?: string): Promise<unknown> {
     return this.executeSpecificationPhase(task, targetDir);
   }
 
-  private async executeCoordinationTask(task: TaskDefinition, targetDir?: string): Promise<any> {
+  private async executeCoordinationTask(task: TaskDefinition, targetDir?: string): Promise<unknown> {
     return {
       phase: 'coordination',
       status: 'Task coordinated',
@@ -1631,7 +1631,7 @@ Please follow our contribution guidelines...
     };
   }
 
-  private async executeGenericTask(task: TaskDefinition, targetDir?: string): Promise<any> {
+  private async executeGenericTask(task: TaskDefinition, targetDir?: string): Promise<unknown> {
     return {
       phase: 'generic',
       status: 'Task completed',

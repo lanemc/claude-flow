@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../utils/error-handler';
+// import { getErrorMessage } from '../utils/error-handler';
 /**
  * Advanced Task Executor with timeout handling and process management
  */
@@ -41,8 +41,8 @@ export interface ExecutionResult {
   exitCode: number;
   duration: number;
   resourcesUsed: ResourceUsage;
-  artifacts: Record<string, any>;
-  metadata: Record<string, any>;
+  artifacts: Record<string, unknown>;
+  metadata: Record<string, unknown>;
 }
 
 export interface ResourceUsage {
@@ -543,7 +543,7 @@ export class TaskExecutor extends EventEmitter {
     // Examples if provided
     if (task.examples && task.examples.length > 0) {
       sections.push('EXAMPLES:');
-      task.examples.forEach((example, index) => {
+      task.examples.forEach((example, _index) => {
         sections.push(`Example ${index + 1}:`);
         sections.push(JSON.stringify(example, null, 2));
         sections.push('');
@@ -662,8 +662,8 @@ export class TaskExecutor extends EventEmitter {
     return this.resourceMonitor.getUsage(sessionId);
   }
 
-  protected async collectArtifacts(context: ExecutionContext): Promise<Record<string, any>> {
-    const artifacts: Record<string, any> = {};
+  protected async collectArtifacts(context: ExecutionContext): Promise<Record<string, unknown>> {
+    const artifacts: Record<string, unknown> = {};
 
     try {
       // Scan working directory for artifacts
@@ -724,8 +724,8 @@ export class TaskExecutor extends EventEmitter {
     return logs;
   }
 
-  private async collectOutputs(workingDir: string): Promise<Record<string, any>> {
-    const outputs: Record<string, any> = {};
+  private async collectOutputs(workingDir: string): Promise<Record<string, unknown>> {
+    const outputs: Record<string, unknown> = {};
 
     try {
       // Look for common output files
@@ -783,7 +783,7 @@ export class TaskExecutor extends EventEmitter {
 
   private setupEventHandlers(): void {
     // Handle resource limit violations
-    this.resourceMonitor.on('limit-violation', (data: any) => {
+    this.resourceMonitor.on('limit-violation', (data: Record<string, unknown>) => {
       this.logger.warn('Resource limit violation', data);
       
       const session = this.activeExecutions.get(data.sessionId);
@@ -798,7 +798,7 @@ export class TaskExecutor extends EventEmitter {
     });
 
     // Handle process pool events
-    this.processPool.on('process-failed', (data: any) => {
+    this.processPool.on('process-failed', (data: Record<string, unknown>) => {
       this.logger.error('Process failed in pool', data);
     });
   }

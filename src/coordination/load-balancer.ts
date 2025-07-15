@@ -230,7 +230,7 @@ export class LoadBalancer extends EventEmitter {
 
     try {
       // Filter agents based on constraints
-      let candidates = this.filterAgentsByConstraints(availableAgents, task, constraints);
+      const candidates = this.filterAgentsByConstraints(availableAgents, task, constraints);
       
       if (candidates.length === 0) {
         throw new Error('No suitable agents available for task');
@@ -761,7 +761,7 @@ export class LoadBalancer extends EventEmitter {
     });
   }
 
-  private updatePerformanceBaseline(agentId: string, metrics: any): void {
+  private updatePerformanceBaseline(agentId: string, metrics: unknown): void {
     const baseline = this.performanceBaselines.get(agentId) || {
       expectedThroughput: 10,
       expectedResponseTime: 5000,
@@ -952,7 +952,7 @@ class SimpleLinearModel {
 
     // Convert timestamps to relative time points
     const startTime = data[0].timestamp.getTime();
-    const points = data.map((point, index) => ({
+    const points = data.map((point, _index) => ({
       x: index, // Use index as x for simplicity
       y: point.load
     }));

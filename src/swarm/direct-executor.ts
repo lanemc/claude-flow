@@ -1,17 +1,28 @@
 import { dirname } from 'node:path';
 import { getDirname } from '../utils/import-meta-shim';
-const __dirname = getDirname();
 import { getErrorMessage } from '../utils/error-handler';
+import type { TaskDefinition, AgentState, TaskResult } from './types';
+import * as fs from 'node:fs/promises';
+import * as path from 'node:path';
+import { Logger } from '../core/logger';
+import Calculator from './calculator';
+import readline from 'readline';
+import assert from 'assert';
+import cors from 'cors';
+import { program } from 'commander';
+import chalk from 'chalk';
+import http from 'http';
+import socketIo from 'socket.io';
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcrypt';
+
+const __dirname = getDirname();
+
 /**
  * Direct Task Executor for Swarm
  * Executes tasks directly without relying on Claude CLI
  * Works in both local development and npm installed environments
  */
-
-import type { TaskDefinition, AgentState, TaskResult } from './types';
-import * as fs from 'node:fs/promises';
-import * as path from 'node:path';
-import { Logger } from '../core/logger';
 
 export interface DirectExecutorConfig {
   logger?: Logger;
@@ -317,8 +328,6 @@ export class DirectTaskExecutor {
 module.exports = Calculator;
 `,
       'cli.js': `#!/usr/bin/env node
-const Calculator = require('./calculator');
-const readline = require('readline');
 
 const calc = new Calculator();
 const rl = readline.createInterface({
@@ -390,8 +399,7 @@ function prompt() {
 
 prompt();
 `,
-      'test.js': `const Calculator = require('./calculator');
-const assert = require('assert');
+      'test.js': `import Calculator from './calculator';
 
 const calc = new Calculator();
 
@@ -454,7 +462,6 @@ node cli.js
 
 ### Programmatic Usage
 \`\`\`javascript
-const Calculator = require('./calculator');
 const calc = new Calculator();
 
 console.log(calc.add(5, 3)); // 8
@@ -659,8 +666,7 @@ See the generated API documentation.
 
   // Helper methods for generating code
   private generateRestAPIServer(task: TaskDefinition): string {
-    return `const express = require('express');
-const cors = require('cors');
+    return `import express from 'express';
 require('dotenv').config();
 
 const app = express();
@@ -694,7 +700,7 @@ module.exports = app;
   }
 
   private generateUserRoutes(): string {
-    return `const express = require('express');
+    return `import express from 'express';
 const router = express.Router();
 
 // In-memory storage (replace with database)
@@ -752,10 +758,6 @@ module.exports = router;
 
   private generateTodoApp(task: TaskDefinition): string {
     return `#!/usr/bin/env node
-const { program } = require('commander');
-const chalk = require('chalk');
-const fs = require('fs').promises;
-const path = require('path');
 
 const TODO_FILE = path.join(__dirname, 'todos.json');
 
@@ -802,7 +804,7 @@ program
       return;
     }
     
-    todos.forEach((todo, index) => {
+    todos.forEach((todo, _index) => {
       const status = todo.completed ? chalk.green('✓') : chalk.red('✗');
       console.log(\`\${index + 1}. \${status} \${todo.task}\`);
     });
@@ -848,10 +850,7 @@ program.parse(process.argv);
   }
 
   private generateChatServer(task: TaskDefinition): string {
-    return `const express = require('express');
-const http = require('http');
-const socketIo = require('socket.io');
-const path = require('path');
+    return `import express from 'express';
 
 const app = express();
 const server = http.createServer(app);
@@ -994,9 +993,7 @@ function updateUserCount(count) {
   }
 
   private generateAuthServer(task: TaskDefinition): string {
-    return `const express = require('express');
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt');
+    return `import express from 'express';
 require('dotenv').config();
 
 const app = express();
@@ -1084,7 +1081,7 @@ app.listen(port, () => {
   }
 
   private generateAuthMiddleware(): string {
-    return `const jwt = require('jsonwebtoken');
+    return `import jwt from 'jsonwebtoken';
 
 module.exports = (req, res, next) => {
   const token = req.header('Authorization')?.replace('Bearer ', '');

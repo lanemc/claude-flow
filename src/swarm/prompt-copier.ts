@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../utils/error-handler';
+// import { getErrorMessage } from '../utils/error-handler';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { createHash } from 'crypto';
@@ -78,7 +78,7 @@ export class PromptCopier extends EventEmitter {
       maxWorkers: options.maxWorkers ?? 4,
       dryRun: options.dryRun ?? false,
       conflictResolution: options.conflictResolution ?? 'backup',
-      progressCallback: options.progressCallback ?? (() => {})
+      progressCallback: options.progressCallback ?? (() => { /* empty */ })
     };
   }
 

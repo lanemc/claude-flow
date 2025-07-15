@@ -1,6 +1,6 @@
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { getErrorMessage } from '../utils/error-handler';
+// import { getErrorMessage } from '../utils/error-handler';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { Worker } from 'worker_threads';
@@ -16,7 +16,7 @@ interface WorkerPool {
 
 export class EnhancedPromptCopier extends PromptCopier {
   private workerPool?: WorkerPool;
-  private workerResults: Map<string, any> = new Map();
+  private workerResults: Map<string, unknown> = new Map();
 
   constructor(options: CopyOptions) {
     super(options);
@@ -63,7 +63,7 @@ export class EnhancedPromptCopier extends PromptCopier {
       
       worker.on('error', (error) => {
         logger.error(`Worker ${i} error:`, error);
-        (this as any).errors.push({
+        (this as unknown).errors.push({
           file: 'worker',
           error: (error instanceof Error ? error.message : String(error)),
           phase: 'write'
@@ -124,10 +124,10 @@ export class EnhancedPromptCopier extends PromptCopier {
         };
         
         let remainingFiles = chunk.length;
-        const chunkResults: any[] = [];
+        const chunkResults: unknown[] = [];
         
         // Setup temporary message handler for this chunk
-        const messageHandler = (result: any) => {
+        const messageHandler = (result: unknown) => {
           chunkResults.push(result);
           remainingFiles--;
           
@@ -156,7 +156,7 @@ export class EnhancedPromptCopier extends PromptCopier {
     });
   }
 
-  private processChunkResults(chunk: FileInfo[], results: any[]): void {
+  private processChunkResults(chunk: FileInfo[], results: unknown[]): void {
     for (const result of results) {
       if (result.success) {
         this.copiedFiles.add(result.file);
@@ -175,7 +175,7 @@ export class EnhancedPromptCopier extends PromptCopier {
     this.reportProgress(this.copiedFiles.size);
   }
 
-  private handleWorkerResult(result: any, workerId: number, pool: WorkerPool): void {
+  private handleWorkerResult(result: unknown, workerId: number, pool: WorkerPool): void {
     // This is a fallback handler, actual handling happens in processChunkWithWorker
     logger.debug(`Worker ${workerId} result:`, result);
   }

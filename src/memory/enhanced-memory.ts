@@ -3,54 +3,44 @@
  * Version 2: Works with both SQLite and in-memory fallback stores
  */
 
-import { FallbackMemoryStore } from './fallback-store';
-import type {
-  SessionState,
-  WorkflowData,
+import { FallbackMemoryStore } from './fallback-store.js';
+import type { 
+  SessionData, 
+  WorkflowData, 
+  AgentData, 
   MetricData,
-  AgentData,
+  KnowledgeData,
   LearningData,
   PerformanceData,
-  ExportData,
-  FallbackMemoryStoreOptions,
-  MemoryStoreOptions
-} from './types';
+  EnhancedMemoryOptions
+} from './types.js';
 
-class EnhancedMemory extends FallbackMemoryStore {
-  constructor(options: FallbackMemoryStoreOptions = {}) {
+export class EnhancedMemory extends FallbackMemoryStore {
+  constructor(options: EnhancedMemoryOptions = {}) {
     super(options);
   }
 
-  override async initialize(): Promise<void> {
+  async initialize() {
     await super.initialize();
     
     // If using SQLite, try to apply enhanced schema
-    if (!this.isUsingFallback() && this.primaryStore) {
+    if (!this.isUsingFallback() && this.primaryStore?.db) {
       try {
         const { readFileSync } = await import('fs');
-        const path = await import('path');
-        const { getFilename, getDirname } = await import('../utils/import-meta-shim');
-        const __filename = getFilename();
-        const __dirname = getDirname();
-        const schemaPath = path.join(__dirname, 'enhanced-schema.sql');
+        const schemaPath = new URL('./enhanced-schema.sql', import.meta.url);
         const schema = readFileSync(schemaPath, 'utf-8');
-        // Note: Cannot access private db property directly, this would need to be handled differently
-        console.error(`[${new Date().toISOString()}] INFO [enhanced-memory] Enhanced schema would be applied here`);
+        this.primaryStore.db.exec(schema);
+        console.error(`[${new Date().toISOString()}] INFO [enhanced-memory] Applied enhanced schema to SQLite`);
       } catch (error) {
-        console.error(`[${new Date().toISOString()}] WARN [enhanced-memory] Could not apply enhanced schema:`, 
-          error instanceof Error ? error.message : 'Unknown error');
+        console.error(`[${new Date().toISOString()}] WARN [enhanced-memory] Could not apply enhanced schema:`, error.message);
       }
     }
   }
 
   // === SESSION MANAGEMENT ===
   
-  async saveSessionState(sessionId: string, state: Partial<SessionState>): Promise<{
-    success: boolean;
-    id?: string | number;
-    size?: number;
-  }> {
-    const sessionData: SessionState = {
+  async saveSessionState(sessionId: string, state: Partial<SessionData>): Promise<any> {
+    const sessionData: SessionData = {
       sessionId,
       userId: state.userId || process.env.USER || 'unknown',
       projectPath: state.projectPath || process.cwd(),
@@ -58,7 +48,7 @@ class EnhancedMemory extends FallbackMemoryStore {
       lastActivity: Date.now(),
       state: state.state || 'active',
       context: state.context || {},
-      environment: state.environment || process.env as Record<string, string>
+      environment: state.environment || process.env
     };
 
     return this.store(`session:${sessionId}`, sessionData, {
@@ -67,27 +57,23 @@ class EnhancedMemory extends FallbackMemoryStore {
     });
   }
 
-  async resumeSession(sessionId: string): Promise<SessionState | null> {
+  async resumeSession(sessionId: string): Promise<SessionData | null> {
     return this.retrieve(`session:${sessionId}`, { namespace: 'sessions' });
   }
 
-  async getActiveSessions(): Promise<SessionState[]> {
+  async getActiveSessions(): Promise<SessionData[]> {
     const sessions = await this.list({ namespace: 'sessions', limit: 100 });
     return sessions
-      .map(item => item.value as SessionState)
+      .map(item => item.value as SessionData)
       .filter(session => session.state === 'active');
   }
 
   // === WORKFLOW TRACKING ===
   
-  async trackWorkflow(workflowId: string, data: Partial<WorkflowData>): Promise<{
-    success: boolean;
-    id?: string | number;
-    size?: number;
-  }> {
+  async trackWorkflow(workflowId: string, data: Partial<WorkflowData>): Promise<any> {
     const workflowData: WorkflowData = {
       workflowId,
-      name: data.name || 'Unnamed Workflow',
+      name: data.name || '',
       steps: data.steps || [],
       status: data.status || 'pending',
       progress: data.progress || 0,
@@ -108,11 +94,7 @@ class EnhancedMemory extends FallbackMemoryStore {
 
   // === METRICS COLLECTION ===
   
-  async recordMetric(metricName: string, value: any, metadata: Record<string, any> = {}): Promise<{
-    success: boolean;
-    id?: string | number;
-    size?: number;
-  }> {
+  async recordMetric(metricName: string, value: number, metadata: Record<string, any> = {}): Promise<any> {
     const timestamp = Date.now();
     const metricKey = `metric:${metricName}:${timestamp}`;
     
@@ -122,7 +104,7 @@ class EnhancedMemory extends FallbackMemoryStore {
       timestamp,
       metadata
     };
-
+    
     return this.store(metricKey, metricData, {
       namespace: 'metrics',
       ttl: 86400 // 24 hours
@@ -144,23 +126,19 @@ class EnhancedMemory extends FallbackMemoryStore {
 
   // === AGENT COORDINATION ===
   
-  async registerAgent(agentId: string, config: Partial<AgentData>): Promise<{
-    success: boolean;
-    id?: string | number;
-    size?: number;
-  }> {
+  async registerAgent(agentId: string, config: { type: string; capabilities?: string[] }): Promise<any> {
     const agentData: AgentData = {
-      id: agentId,
-      type: config.type || 'unknown',
-      status: 'active',
+      agentId,
+      type: config.type,
       capabilities: config.capabilities || [],
+      status: 'active',
+      createdAt: Date.now(),
+      lastHeartbeat: Date.now(),
       metrics: {
         tasksCompleted: 0,
         successRate: 1.0,
-        avgResponseTime: 0,
-        ...config.metrics
-      },
-      ...config
+        avgResponseTime: 0
+      }
     };
 
     return this.store(`agent:${agentId}`, agentData, {
@@ -169,40 +147,36 @@ class EnhancedMemory extends FallbackMemoryStore {
     });
   }
 
-  async updateAgentStatus(agentId: string, status: string, metrics: Record<string, any> = {}): Promise<AgentData | null> {
-    const agent = await this.retrieve(`agent:${agentId}`, { namespace: 'agents' }) as AgentData | null;
+  async updateAgentStatus(agentId: string, status: string, metrics: Record<string, number> = {}): Promise<any> {
+    const agent = await this.retrieve(`agent:${agentId}`, { namespace: 'agents' }) as AgentData;
     if (!agent) return null;
 
     agent.status = status;
+    agent.lastHeartbeat = Date.now();
     
-    if (metrics && agent.metrics) {
+    if (metrics) {
       Object.assign(agent.metrics, metrics);
     }
 
-    await this.store(`agent:${agentId}`, agent, {
+    return this.store(`agent:${agentId}`, agent, {
       namespace: 'agents',
       metadata: { type: 'agent_update' }
     });
-
-    return agent;
   }
 
   async getActiveAgents(): Promise<AgentData[]> {
     const agents = await this.list({ namespace: 'agents', limit: 100 });
+    const cutoff = Date.now() - 300000; // 5 minutes
     
     return agents
       .map(item => item.value as AgentData)
-      .filter(agent => agent.status === 'active');
+      .filter(agent => agent.lastHeartbeat > cutoff && agent.status === 'active');
   }
 
   // === KNOWLEDGE MANAGEMENT ===
   
-  async storeKnowledge(domain: string, key: string, value: any, metadata: Record<string, any> = {}): Promise<{
-    success: boolean;
-    id?: string | number;
-    size?: number;
-  }> {
-    const knowledgeData = {
+  async storeKnowledge(domain: string, key: string, value: any, metadata: Record<string, any> = {}): Promise<any> {
+    const knowledgeData: KnowledgeData = {
       domain,
       key,
       value,
@@ -210,39 +184,35 @@ class EnhancedMemory extends FallbackMemoryStore {
       createdAt: Date.now(),
       updatedAt: Date.now()
     };
-
+    
     return this.store(`knowledge:${domain}:${key}`, knowledgeData, {
       namespace: 'knowledge',
       metadata: { domain }
     });
   }
 
-  async retrieveKnowledge(domain: string, key: string): Promise<any> {
+  async retrieveKnowledge(domain: string, key: string): Promise<KnowledgeData | null> {
     return this.retrieve(`knowledge:${domain}:${key}`, { namespace: 'knowledge' });
   }
 
-  async searchKnowledge(domain: string, pattern: string): Promise<any[]> {
+  async searchKnowledge(domain: string, pattern: string): Promise<KnowledgeData[]> {
     const results = await this.search(`knowledge:${domain}:${pattern}`, {
       namespace: 'knowledge',
       limit: 50
     });
     
-    return results.map(item => item.value);
+    return results.map(item => item.value as KnowledgeData);
   }
 
   // === LEARNING & ADAPTATION ===
   
-  async recordLearning(agentId: string, learning: Omit<LearningData, 'agentId' | 'timestamp'>): Promise<{
-    success: boolean;
-    id?: string | number;
-    size?: number;
-  }> {
+  async recordLearning(agentId: string, learning: Partial<LearningData>): Promise<any> {
     const learningData: LearningData = {
       agentId,
       timestamp: Date.now(),
-      type: learning.type,
-      input: learning.input,
-      output: learning.output,
+      type: learning.type || 'general',
+      input: learning.input || {},
+      output: learning.output || {},
       feedback: learning.feedback,
       improvement: learning.improvement
     };
@@ -266,11 +236,7 @@ class EnhancedMemory extends FallbackMemoryStore {
 
   // === PERFORMANCE TRACKING ===
   
-  async trackPerformance(operation: string, duration: number, success: boolean = true, metadata: Record<string, any> = {}): Promise<{
-    success: boolean;
-    id?: string | number;
-    size?: number;
-  }> {
+  async trackPerformance(operation: string, duration: number, success: boolean = true, metadata: Record<string, any> = {}): Promise<any> {
     const perfData: PerformanceData = {
       operation,
       duration,
@@ -293,7 +259,8 @@ class EnhancedMemory extends FallbackMemoryStore {
       totalDuration: 0,
       avgDuration: 0,
       minDuration: Infinity,
-      maxDuration: 0
+      maxDuration: 0,
+      successRate: 0
     };
 
     stats.count++;
@@ -313,11 +280,7 @@ class EnhancedMemory extends FallbackMemoryStore {
 
   // === COORDINATION CACHE ===
   
-  async cacheCoordination(key: string, value: any, ttl: number = 300): Promise<{
-    success: boolean;
-    id?: string | number;
-    size?: number;
-  }> { // 5 minutes default
+  async cacheCoordination(key: string, value: any, ttl: number = 300): Promise<any> { // 5 minutes default
     return this.store(`cache:${key}`, value, {
       namespace: 'coordination',
       ttl
@@ -342,13 +305,13 @@ class EnhancedMemory extends FallbackMemoryStore {
     return cleaned;
   }
 
-  async exportData(namespace?: string): Promise<ExportData> {
+  async exportData(namespace: string | null = null): Promise<Record<string, any[]>> {
     const namespaces = namespace ? [namespace] : [
       'sessions', 'workflows', 'metrics', 'agents', 
       'knowledge', 'learning', 'performance', 'coordination'
     ];
     
-    const exportData: ExportData = {};
+    const exportData: Record<string, any[]> = {};
     
     for (const ns of namespaces) {
       exportData[ns] = await this.list({ namespace: ns, limit: 10000 });
@@ -357,17 +320,16 @@ class EnhancedMemory extends FallbackMemoryStore {
     return exportData;
   }
 
-  async importData(data: ExportData): Promise<void> {
+  async importData(data: Record<string, any[]>): Promise<void> {
     for (const [namespace, items] of Object.entries(data)) {
       for (const item of items) {
         await this.store(item.key, item.value, {
           namespace,
-          metadata: item.metadata || undefined
+          metadata: item.metadata
         });
       }
     }
   }
 }
 
-export { EnhancedMemory };
 export default EnhancedMemory;

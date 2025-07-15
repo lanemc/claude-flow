@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../utils/error-handler';
+// import { getErrorMessage } from '../utils/error-handler';
 /**
  * Event bus implementation for Claude-Flow
  */
@@ -97,10 +97,10 @@ export class EventBus implements IEventBus {
   emit(event: string, data?: unknown): void {
     // Type-safe emission for known events
     if (event in SystemEvents) {
-      this.typedBus.emit(event as keyof EventMap, data as any);
+      this.typedBus.emit(event as keyof EventMap, data as unknown);
     } else {
       // For custom events, emit as-is
-      this.typedBus.emit(event as any, data as any);
+      this.typedBus.emit(event as unknown, data as unknown);
     }
   }
 
@@ -108,21 +108,21 @@ export class EventBus implements IEventBus {
    * Registers an event handler
    */
   on(event: string, handler: (data: unknown) => void): void {
-    this.typedBus.on(event as any, handler);
+    this.typedBus.on(event as unknown, handler);
   }
 
   /**
    * Removes an event handler
    */
   off(event: string, handler: (data: unknown) => void): void {
-    this.typedBus.off(event as any, handler);
+    this.typedBus.off(event as unknown, handler);
   }
 
   /**
    * Registers a one-time event handler
    */
   once(event: string, handler: (data: unknown) => void): void {
-    this.typedBus.once(event as any, handler);
+    this.typedBus.once(event as unknown, handler);
   }
 
   /**
@@ -180,7 +180,7 @@ export class EventBus implements IEventBus {
    * Remove all listeners for an event
    */
   removeAllListeners(event?: string): void {
-    this.typedBus.removeAllListeners(event as any);
+    this.typedBus.removeAllListeners(event as unknown);
   }
 }
 

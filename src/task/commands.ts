@@ -80,22 +80,26 @@ export function createTaskWorkflowCommand(context: TaskCommandContext) {
       try {
         switch (action) {
           case 'create':
-            const [workflowData] = args;
-            const createdWorkflow = await context.taskEngine.createWorkflow(workflowData);
-            context.logger?.info('Workflow created successfully', { workflowId: createdWorkflow.id });
-            return createdWorkflow;
-          case 'execute':
+            {
+              const [workflowData] = args;
+              const createdWorkflow = await context.taskEngine.createWorkflow(workflowData);
+              context.logger?.info('Workflow created successfully', { workflowId: createdWorkflow.id });
+              return createdWorkflow;
+            }
+          case 'execute': {
             const [workflowToExecute] = args;
             await context.taskEngine.executeWorkflow(workflowToExecute);
             context.logger?.info('Workflow execution started', { workflowId: workflowToExecute.id });
             return { success: true, workflowId: workflowToExecute.id };
+          }
           case 'list':
             context.logger?.info('Workflow list requested');
             return { workflows: [] }; // Would need additional implementation
-          case 'get':
+          case 'get': {
             const [workflowId] = args;
             context.logger?.info('Workflow details requested', { workflowId });
             return { workflowId }; // Would need additional implementation
+          }
           default:
             throw new Error(`Unknown workflow action: ${action}`);
         }

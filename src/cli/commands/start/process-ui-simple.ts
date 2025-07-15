@@ -143,7 +143,7 @@ export class ProcessUI {
     console.log(chalk.white.bold('Processes:'));
     console.log(chalk.gray('─'.repeat(60)));
     
-    processes.forEach((process, index) => {
+    processes.forEach((process, _index) => {
       const num = `[${index + 1}]`.padEnd(4);
       const status = this.getStatusDisplay(process.status);
       const name = process.name.padEnd(25);

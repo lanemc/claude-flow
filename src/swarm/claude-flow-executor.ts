@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../utils/error-handler';
+// import { getErrorMessage } from '../utils/error-handler';
 /**
  * Claude Flow SPARC Executor
  * Executes tasks using the full claude-flow SPARC system in non-interactive mode
@@ -125,7 +125,7 @@ export class ClaudeFlowExecutor {
         error: {
           type: error instanceof Error ? error.constructor.name : 'UnknownError',
           message: error instanceof Error ? error.message : String(error),
-          code: (error as any).code || 'UNKNOWN',
+          code: (error as unknown).code || 'UNKNOWN',
           stack: error instanceof Error ? error.stack : undefined,
           context: { taskId: task.id.id, agentId: agent.id.id },
           recoverable: true,
@@ -228,7 +228,7 @@ export class ClaudeFlowExecutor {
     return description.replace(/"/g, '\\"');
   }
 
-  private async executeCommand(command: string[]): Promise<any> {
+  private async executeCommand(command: string[]): Promise<unknown> {
     return new Promise((resolve, reject) => {
       const [cmd, ...args] = command;
       
@@ -243,7 +243,7 @@ export class ClaudeFlowExecutor {
 
       let stdout = '';
       let stderr = '';
-      const artifacts: Record<string, any> = {};
+      const artifacts: Record<string, unknown> = {};
 
       proc.stdout.on('data', (data) => {
         const chunk = data.toString();

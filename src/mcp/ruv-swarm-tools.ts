@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../utils/error-handler';
+// import { getErrorMessage } from '../utils/error-handler';
 /**
  * ruv-swarm MCP tools wrapper for Claude Code integration
  * 
@@ -22,13 +22,13 @@ export interface RuvSwarmToolContext extends MCPContext {
  */
 interface RuvSwarmResponse {
   success: boolean;
-  data?: any;
+  data?: unknown;
   error?: string;
   metadata?: {
     timestamp: number;
     swarmId?: string;
     sessionId?: string;
-    performance?: any;
+    performance?: unknown;
   };
 }
 
@@ -123,7 +123,7 @@ export function createRuvSwarmTools(logger: ILogger): MCPTool[] {
         },
         required: ['topology']
       },
-      handler: async (input: any, context?: RuvSwarmToolContext) => {
+      handler: async (input: unknown, context?: RuvSwarmToolContext) => {
         const args = [
           '--topology', input.topology,
           '--max-agents', String(input.maxAgents || 5),
@@ -147,7 +147,7 @@ export function createRuvSwarmTools(logger: ILogger): MCPTool[] {
           }
         }
       },
-      handler: async (input: any, context?: RuvSwarmToolContext) => {
+      handler: async (input: unknown, context?: RuvSwarmToolContext) => {
         const args = input.verbose ? ['--verbose'] : [];
         return await executeRuvSwarmCommand('swarm status', args, context, logger);
       }
@@ -171,7 +171,7 @@ export function createRuvSwarmTools(logger: ILogger): MCPTool[] {
           }
         }
       },
-      handler: async (input: any, context?: RuvSwarmToolContext) => {
+      handler: async (input: unknown, context?: RuvSwarmToolContext) => {
         const args = [
           '--duration', String(input.duration || 10),
           '--interval', String(input.interval || 1)
@@ -205,7 +205,7 @@ export function createRuvSwarmTools(logger: ILogger): MCPTool[] {
         },
         required: ['type']
       },
-      handler: async (input: any, context?: RuvSwarmToolContext) => {
+      handler: async (input: unknown, context?: RuvSwarmToolContext) => {
         const args = ['--type', input.type];
         
         if (input.name) {
@@ -234,7 +234,7 @@ export function createRuvSwarmTools(logger: ILogger): MCPTool[] {
           }
         }
       },
-      handler: async (input: any, context?: RuvSwarmToolContext) => {
+      handler: async (input: unknown, context?: RuvSwarmToolContext) => {
         const args = ['--filter', input.filter || 'all'];
         return await executeRuvSwarmCommand('agent list', args, context, logger);
       }
@@ -257,7 +257,7 @@ export function createRuvSwarmTools(logger: ILogger): MCPTool[] {
           }
         }
       },
-      handler: async (input: any, context?: RuvSwarmToolContext) => {
+      handler: async (input: unknown, context?: RuvSwarmToolContext) => {
         const args = ['--metric', input.metric || 'all'];
         
         if (input.agentId) {
@@ -300,7 +300,7 @@ export function createRuvSwarmTools(logger: ILogger): MCPTool[] {
         },
         required: ['task']
       },
-      handler: async (input: any, context?: RuvSwarmToolContext) => {
+      handler: async (input: unknown, context?: RuvSwarmToolContext) => {
         const args = [
           '--task', JSON.stringify(input.task),
           '--strategy', input.strategy || 'adaptive',
@@ -332,7 +332,7 @@ export function createRuvSwarmTools(logger: ILogger): MCPTool[] {
           }
         }
       },
-      handler: async (input: any, context?: RuvSwarmToolContext) => {
+      handler: async (input: unknown, context?: RuvSwarmToolContext) => {
         const args = [];
         
         if (input.taskId) {
@@ -366,7 +366,7 @@ export function createRuvSwarmTools(logger: ILogger): MCPTool[] {
         },
         required: ['taskId']
       },
-      handler: async (input: any, context?: RuvSwarmToolContext) => {
+      handler: async (input: unknown, context?: RuvSwarmToolContext) => {
         const args = [
           '--task-id', input.taskId,
           '--format', input.format || 'summary'
@@ -391,7 +391,7 @@ export function createRuvSwarmTools(logger: ILogger): MCPTool[] {
           }
         }
       },
-      handler: async (input: any, context?: RuvSwarmToolContext) => {
+      handler: async (input: unknown, context?: RuvSwarmToolContext) => {
         const args = ['--detail', input.detail || 'summary'];
         return await executeRuvSwarmCommand('memory usage', args, context, logger);
       }
@@ -410,7 +410,7 @@ export function createRuvSwarmTools(logger: ILogger): MCPTool[] {
           }
         }
       },
-      handler: async (input: any, context?: RuvSwarmToolContext) => {
+      handler: async (input: unknown, context?: RuvSwarmToolContext) => {
         const args = [];
         
         if (input.agentId) {
@@ -440,7 +440,7 @@ export function createRuvSwarmTools(logger: ILogger): MCPTool[] {
           }
         }
       },
-      handler: async (input: any, context?: RuvSwarmToolContext) => {
+      handler: async (input: unknown, context?: RuvSwarmToolContext) => {
         const args = ['--iterations', String(input.iterations || 10)];
         
         if (input.agentId) {
@@ -465,7 +465,7 @@ export function createRuvSwarmTools(logger: ILogger): MCPTool[] {
           }
         }
       },
-      handler: async (input: any, context?: RuvSwarmToolContext) => {
+      handler: async (input: unknown, context?: RuvSwarmToolContext) => {
         const args = ['--pattern', input.pattern || 'all'];
         return await executeRuvSwarmCommand('neural patterns', args, context, logger);
       }
@@ -493,7 +493,7 @@ export function createRuvSwarmTools(logger: ILogger): MCPTool[] {
           }
         }
       },
-      handler: async (input: any, context?: RuvSwarmToolContext) => {
+      handler: async (input: unknown, context?: RuvSwarmToolContext) => {
         const args = [
           '--type', input.type || 'all',
           '--iterations', String(input.iterations || 10)
@@ -517,7 +517,7 @@ export function createRuvSwarmTools(logger: ILogger): MCPTool[] {
           }
         }
       },
-      handler: async (input: any, context?: RuvSwarmToolContext) => {
+      handler: async (input: unknown, context?: RuvSwarmToolContext) => {
         const args = ['--category', input.category || 'all'];
         return await executeRuvSwarmCommand('features detect', args, context, logger);
       }
@@ -541,7 +541,7 @@ export async function isRuvSwarmAvailable(logger?: ILogger): Promise<boolean> {
 /**
  * Get ruv-swarm configuration and capabilities
  */
-export async function getRuvSwarmCapabilities(logger?: ILogger): Promise<any> {
+export async function getRuvSwarmCapabilities(logger?: ILogger): Promise<unknown> {
   try {
     const result = await executeRuvSwarmCommand('features detect', ['--category', 'all'], undefined, logger);
     return result.data;
@@ -561,7 +561,7 @@ export async function initializeRuvSwarmIntegration(
   const context: RuvSwarmToolContext = {
     workingDirectory,
     sessionId: `claude-flow-${Date.now()}`,
-    logger: logger || console as any
+    logger: logger || console as unknown
   };
   
   logger?.info('Initializing ruv-swarm integration', { workingDirectory });
@@ -601,3 +601,5 @@ export default {
   getRuvSwarmCapabilities,
   initializeRuvSwarmIntegration
 };
+// Add alias for backward compatibility
+export const getRuvSwarmTools = createRuvSwarmTools;

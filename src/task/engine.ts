@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../utils/error-handler';
+// import { getErrorMessage } from '../utils/error-handler';
 /**
  * Task Engine Core - Comprehensive task management with orchestration features
  * Integrates with TodoWrite/TodoRead for coordination and Memory for persistence
@@ -235,9 +235,12 @@ export class TaskEngine extends EventEmitter {
           case 'priority':
             return direction * (a.priority - b.priority);
           case 'deadline':
-            const aDeadline = a.schedule?.deadline?.getTime() || 0;
+            {
+const aDeadline = a.schedule?.deadline?.getTime() || 0;
             const bDeadline = b.schedule?.deadline?.getTime() || 0;
             return direction * (aDeadline - bDeadline);
+
+          }
           case 'estimatedDuration':
             return direction * ((a.estimatedDurationMs || 0) - (b.estimatedDurationMs || 0));
           default:
@@ -417,7 +420,7 @@ export class TaskEngine extends EventEmitter {
   /**
    * Get dependency visualization
    */
-  getDependencyGraph(): { nodes: any[]; edges: any[] } {
+  getDependencyGraph(): { nodes: unknown[]; edges: unknown[] } {
     const nodes = Array.from(this.tasks.values()).map(task => ({
       id: task.id,
       label: task.description,
@@ -428,7 +431,7 @@ export class TaskEngine extends EventEmitter {
       tags: task.tags
     }));
 
-    const edges: any[] = [];
+    const edges: unknown[] = [];
     for (const task of Array.from(this.tasks.values())) {
       for (const dep of task.dependencies) {
         edges.push({

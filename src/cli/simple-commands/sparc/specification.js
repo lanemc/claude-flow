@@ -296,7 +296,7 @@ export class SparcSpecification extends SparcPhase {
     
     for (const requirement of requirements) {
       const criterion = {
-        requirement: requirement,
+        requirement,
         given: this.generateGivenCondition(requirement),
         when: this.generateWhenCondition(requirement),
         then: this.generateThenCondition(requirement),

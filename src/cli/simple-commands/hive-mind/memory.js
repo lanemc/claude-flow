@@ -405,7 +405,7 @@ export class CollectiveMemory extends EventEmitter {
       const shouldCompress = size > this.config.compressionThreshold && 
                            MEMORY_TYPES[type]?.compress;
       
-      let storedValue = serialized;
+      const storedValue = serialized;
       let compressed = 0;
       
       if (shouldCompress) {
@@ -515,7 +515,7 @@ export class CollectiveMemory extends EventEmitter {
       `).run(this.config.swarmId, key);
       
       // Decompress if needed
-      let value = result.value;
+      const value = result.value;
       if (result.compressed) {
         // In production, decompress here
       }

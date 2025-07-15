@@ -28,7 +28,7 @@ export class ProcessManager extends EventEmitter {
   private memoryManager: MemoryManager | undefined;
   private coordinationManager: CoordinationManager | undefined;
   private mcpServer: MCPServer | undefined;
-  private config: any;
+  private config: Record<string, unknown>;
 
   constructor() {
     super();

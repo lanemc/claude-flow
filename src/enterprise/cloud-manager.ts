@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../utils/error-handler';
+// import { getErrorMessage } from '../utils/error-handler';
 import { EventEmitter } from 'events';
 import { writeFile, readFile, mkdir, readdir } from 'fs/promises';
 import { join } from 'path';
@@ -16,7 +16,7 @@ export interface CloudProvider {
     subscriptionId?: string;
     token?: string;
     keyFile?: string;
-    customConfig?: Record<string, any>;
+    customConfig?: Record<string, unknown>;
   };
   configuration: {
     defaultRegion: string;
@@ -166,7 +166,7 @@ export interface CloudAuditEntry {
   userId: string;
   action: string;
   resource: string;
-  details: Record<string, any>;
+  details: Record<string, unknown>;
   ipAddress?: string;
   userAgent?: string;
 }
@@ -188,7 +188,7 @@ export interface CloudInfrastructure {
   deployment: {
     strategy: 'manual' | 'terraform' | 'cloudformation' | 'kubernetes' | 'custom';
     template: string;
-    parameters: Record<string, any>;
+    parameters: Record<string, unknown>;
     lastDeployment?: Date;
     deploymentHistory: DeploymentHistory[];
   };
@@ -237,7 +237,7 @@ export interface NetworkTopology {
   id: string;
   name: string;
   type: 'vpc' | 'subnet' | 'security-group' | 'nat-gateway' | 'internet-gateway';
-  configuration: Record<string, any>;
+  configuration: Record<string, unknown>;
   connections: string[];
 }
 
@@ -570,7 +570,7 @@ export class CloudManager extends EventEmitter {
     projectId: string;
     environment: string;
     template: string;
-    parameters: Record<string, any>;
+    parameters: Record<string, unknown>;
   }): Promise<CloudInfrastructure> {
     const infrastructure: CloudInfrastructure = {
       id: `infra-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -1204,7 +1204,7 @@ export class CloudManager extends EventEmitter {
     userId: string,
     action: string,
     target: string,
-    details: Record<string, any>
+    details: Record<string, unknown>
   ): void {
     const entry: CloudAuditEntry = {
       id: `audit-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,

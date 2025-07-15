@@ -6,10 +6,8 @@ import { dirname } from "path";
  */
 export function getImportMetaUrl(): string {
   // Check if we're in a pkg bundled environment
-  // @ts-ignore - __filename might be injected by pkg
   if (typeof __filename !== "undefined") {
     // In pkg bundled environment, use the injected __filename
-    // @ts-ignore
     return `file://${__filename.replace(/\\/g, "/")}`;
   }
 
@@ -25,9 +23,7 @@ export function getImportMetaUrl(): string {
  */
 export function getDirname(): string {
   // Check if we're in a pkg bundled environment
-  // @ts-ignore - __dirname might be injected by pkg
   if (typeof __dirname !== "undefined") {
-    // @ts-ignore
     return __dirname;
   }
 
@@ -44,9 +40,7 @@ export function getDirname(): string {
  */
 export function getFilename(): string {
   // Check if we're in a pkg bundled environment
-  // @ts-ignore - __filename might be injected by pkg
   if (typeof __filename !== "undefined") {
-    // @ts-ignore
     return __filename;
   }
 
@@ -62,9 +56,7 @@ export function getFilename(): string {
  * Create a dirname from a URL (for replacing fileURLToPath + dirname pattern)
  */
 export function urlToDirname(url: string): string {
-  // @ts-ignore - __dirname might be injected by pkg
   if (typeof __dirname !== "undefined") {
-    // @ts-ignore
     return __dirname;
   }
   return dirname(fileURLToPath(url));

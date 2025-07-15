@@ -23,9 +23,9 @@ export type { ExecutorConfig, ExecutionMetrics } from './optimized-executor';
 
 // Re-export commonly used together
 export const createOptimizedSwarmStack = (config?: {
-  connectionPool?: any;
-  executor?: any;
-  fileManager?: any;
+  connectionPool?: unknown;
+  executor?: unknown;
+  fileManager?: unknown;
 }) => {
   const connectionPool = new ClaudeConnectionPool(config?.connectionPool);
   const fileManager = new AsyncFileManager(config?.fileManager);

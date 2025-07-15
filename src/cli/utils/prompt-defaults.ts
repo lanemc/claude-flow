@@ -13,7 +13,7 @@ export interface PromptDefault {
   id: string;
   type: 'text' | 'confirm' | 'select' | 'multiselect' | 'number';
   pattern?: RegExp | string;
-  defaultValue: any;
+  defaultValue: unknown;
   description?: string;
 }
 
@@ -30,7 +30,7 @@ export interface PromptDefaultsConfig {
 export class PromptDefaultsManager {
   private config: PromptDefaultsConfig = {};
   private configPath: string;
-  private environmentDefaults: Map<string, any> = new Map();
+  private environmentDefaults: Map<string, unknown> = new Map();
 
   constructor(configPath?: string) {
     this.configPath = configPath || join(homedir(), '.claude-flow', 'prompt-defaults.json');
@@ -103,7 +103,7 @@ export class PromptDefaultsManager {
   /**
    * Get default value for a prompt
    */
-  getDefault(promptId: string, command?: string, promptType?: string): any {
+  getDefault(promptId: string, command?: string, promptType?: string): unknown {
     // Check environment defaults first (highest priority)
     const envKey = `${promptType || 'text'}:${promptId}`;
     if (this.environmentDefaults.has(envKey)) {
@@ -154,7 +154,7 @@ export class PromptDefaultsManager {
   /**
    * Set a default value
    */
-  setDefault(promptId: string, defaultValue: any, options: {
+  setDefault(promptId: string, defaultValue: unknown, options: {
     command?: string;
     type?: string;
     pattern?: string | RegExp;
@@ -163,7 +163,7 @@ export class PromptDefaultsManager {
   } = {}): void {
     const defaultEntry: PromptDefault = {
       id: promptId,
-      type: (options.type as any) || 'text',
+      type: (options.type as unknown) || 'text',
       defaultValue,
       description: options.description,
       pattern: options.pattern
@@ -201,7 +201,7 @@ export class PromptDefaultsManager {
   /**
    * Get common defaults for non-interactive mode
    */
-  getNonInteractiveDefaults(): Record<string, any> {
+  getNonInteractiveDefaults(): Record<string, unknown> {
     return {
       // Confirmation prompts
       'confirm:continue': true,
@@ -295,12 +295,12 @@ export function getPromptDefaultsManager(configPath?: string): PromptDefaultsMan
 }
 
 // Convenience function for getting defaults
-export function getPromptDefault(promptId: string, command?: string, promptType?: string): any {
+export function getPromptDefault(promptId: string, command?: string, promptType?: string): unknown {
   return getPromptDefaultsManager().getDefault(promptId, command, promptType);
 }
 
 // Apply non-interactive defaults based on environment
-export function applyNonInteractiveDefaults(flags: any): void {
+export function applyNonInteractiveDefaults(flags: unknown): void {
   const manager = getPromptDefaultsManager();
   const isNonInteractive = flags.nonInteractive || flags['non-interactive'] || 
                           flags.ci || !process.stdout.isTTY;

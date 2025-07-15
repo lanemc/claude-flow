@@ -15,7 +15,7 @@ export const helpCommand = new Command()
   .option('-e, --examples', 'Show examples for the topic')
   .option('--tutorial', 'Show tutorial for the topic')
   .option('--all', 'Show all available help topics')
-  .action(async (options: any, topic: string | undefined) => {
+  .action(async (_options: Record<string, unknown>, topic: string | undefined) => {
     if (options.interactive) {
       await startInteractiveHelp();
     } else if (options.all) {
@@ -673,7 +673,7 @@ function showAllTopics(): void {
   console.log(chalk.gray('Use "claude-flow help <topic>" for detailed information.'));
 }
 
-async function showTopicHelp(topicName: string, options: any): Promise<void> {
+async function showTopicHelp(topicName: string, options: Record<string, unknown>): Promise<void> {
   const topic = HELP_TOPICS.find(t => t.name === topicName);
   
   if (!topic) {

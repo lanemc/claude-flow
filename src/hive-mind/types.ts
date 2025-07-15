@@ -99,7 +99,7 @@ export interface Task {
   strategy: TaskStrategy;
   status: TaskStatus;
   progress: number;
-  result?: any;
+  result?: unknown;
   error?: string;
   dependencies: string[];
   assignedAgents: string[];
@@ -111,7 +111,7 @@ export interface Task {
   assignedAt?: Date;
   startedAt?: Date;
   completedAt?: Date;
-  metadata: any;
+  metadata: Record<string, unknown>;
 }
 
 export interface TaskSubmitOptions {
@@ -123,7 +123,7 @@ export interface TaskSubmitOptions {
   requireConsensus?: boolean;
   maxAgents?: number;
   requiredCapabilities?: AgentCapability[];
-  metadata?: any;
+  metadata?: unknown;
 }
 
 export interface TaskAssignment {
@@ -157,7 +157,7 @@ export interface Message {
   toAgentId: string | null;
   swarmId: string;
   type: MessageType;
-  content: any;
+  content: unknown;
   priority?: MessagePriority;
   timestamp: Date;
   requiresResponse: boolean;
@@ -236,7 +236,7 @@ export interface ConsensusProposal {
   id: string;
   swarmId: string;
   taskId?: string;
-  proposal: any;
+  proposal: unknown;
   requiredThreshold: number;
   deadline?: Date;
 }
@@ -263,7 +263,7 @@ export interface VotingStrategy {
   name: string;
   description: string;
   threshold: number;
-  recommend: (proposal: ConsensusProposal, analysis: any) => {
+  recommend: (proposal: ConsensusProposal, analysis: unknown) => {
     vote: boolean;
     confidence: number;
     reasoning: string;
@@ -286,26 +286,26 @@ export interface ExecutionPlan {
   phases: string[];
   phaseAssignments: TaskAssignment[][];
   dependencies: string[];
-  checkpoints: any[];
+  checkpoints: unknown[];
   parallelizable: boolean;
   estimatedDuration: number;
-  resourceRequirements: any;
+  resourceRequirements: unknown;
 }
 
 export interface OrchestrationResult {
   taskId: string;
   success: boolean;
   executionTime: number;
-  phaseResults: any[];
-  errors?: any[];
+  phaseResults: unknown[];
+  errors?: unknown[];
 }
 
 export interface ExecutionResult {
   success: boolean;
-  data: any;
+  data: Record<string, unknown>;
   executionTime: number;
   agentId: string;
-  metadata?: any;
+  metadata?: unknown;
 }
 
 // Queen types
@@ -314,7 +314,7 @@ export interface QueenDecision {
   taskId: string;
   strategy: CoordinationStrategy;
   selectedAgents: string[];
-  executionPlan: any;
+  executionPlan: unknown;
   confidence: number;
   rationale: string;
   timestamp: Date;
@@ -379,7 +379,7 @@ export interface NeuralPattern {
   id: string;
   swarmId: string;
   patternType: 'coordination' | 'optimization' | 'prediction' | 'behavior';
-  patternData: any;
+  patternData: unknown;
   confidence: number;
   usageCount: number;
   successRate: number;
@@ -394,5 +394,5 @@ export interface PerformanceMetric {
   metricType: string;
   metricValue: number;
   timestamp: Date;
-  metadata?: any;
+  metadata?: unknown;
 }

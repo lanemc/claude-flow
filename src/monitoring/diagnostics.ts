@@ -31,7 +31,7 @@ export interface ComponentDiagnostic {
   version?: string;
   uptime: number;
   lastError?: string;
-  metrics?: Record<string, any>;
+  metrics?: Record<string, unknown>;
   issues: DiagnosticIssue[];
 }
 
@@ -40,7 +40,7 @@ export interface DiagnosticIssue {
   severity: "low" | "medium" | "high" | "critical";
   message: string;
   recommendation?: string;
-  data?: any;
+  data?: unknown;
 }
 
 export interface PerformanceDiagnostic {
@@ -239,9 +239,9 @@ export class DiagnosticManager {
       issues.push(...memoryIssues);
 
       // Get component metrics
-      let componentMetrics: Record<string, any> = {};
-      if (typeof (component as any).getMetrics === "function") {
-        componentMetrics = await (component as any).getMetrics();
+      let componentMetrics: Record<string, unknown> = {};
+      if (typeof (component as unknown).getMetrics === "function") {
+        componentMetrics = await (component as unknown).getMetrics();
       }
 
       // Get last error
@@ -658,7 +658,7 @@ Memory Leaks: ${report.performance.memoryLeaks ? "Detected" : "None detected"}
 RECOMMENDATIONS
 ---------------
 `;
-    report.recommendations.forEach((rec, index) => {
+    report.recommendations.forEach((rec, _index) => {
       text += `${index + 1}. ${rec}\n`;
     });
 
@@ -724,7 +724,7 @@ RECOMMENDATIONS
     });
 
     // Track errors
-    this.eventBus.on("system:error", (error: any) => {
+    this.eventBus.on("system:error", (_error: Error | unknown) => {
       const component = error.component || "system";
 
       if (!this.errorHistory.has(component)) {
@@ -753,8 +753,8 @@ RECOMMENDATIONS
       data !== null &&
       "name" in data &&
       "value" in data &&
-      typeof (data as any).name === "string" &&
-      typeof (data as any).value === "number"
+      typeof (data as unknown).name === "string" &&
+      typeof (data as unknown).value === "number"
     );
   }
 

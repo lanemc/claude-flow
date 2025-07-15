@@ -77,7 +77,7 @@ export async function startCommand(subArgs, flags) {
     
     // Check if required directories exist
     const requiredDirs = ['memory', 'coordination'];
-    let missingDirs = [];
+    const missingDirs = [];
     
     for (const dir of requiredDirs) {
       try {

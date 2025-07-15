@@ -74,7 +74,7 @@ class HighPerformanceCache<T> {
     }
   }
 
-  private estimateSize(data: any): number {
+  private estimateSize(data: Record<string, unknown>): number {
     try {
       return JSON.stringify(data).length * 2; // Rough estimate
     } catch {
@@ -174,11 +174,11 @@ export class Memory extends EventEmitter {
   private swarmId: string;
   private db: DatabaseManager | null = null;
   private mcpWrapper: MCPToolWrapper | null = null;
-  private cache: HighPerformanceCache<any>;
+  private cache: HighPerformanceCache<unknown>;
   private namespaces: Map<string, MemoryNamespace>;
   private accessPatterns: Map<string, number>;
   private performanceMetrics: Map<string, number[]>;
-  private objectPools: Map<string, ObjectPool<any>>;
+  private objectPools: Map<string, ObjectPool<unknown>>;
   private isActive: boolean = false;
   private optimizationTimers: NodeJS.Timeout[] = [];
   private compressionThreshold = 10000; // 10KB
@@ -276,8 +276,8 @@ export class Memory extends EventEmitter {
     
     // Pool for search results
     this.objectPools.set('searchResult', new ObjectPool(
-      () => ({ results: [], metadata: {} as Record<string, any> }),
-      (obj: any) => {
+      () => ({ results: [], metadata: {} as Record<string, unknown> }),
+      (obj: unknown) => {
         obj.results.length = 0;
         Object.keys(obj.metadata).forEach((k: string) => delete obj.metadata[k]);
       }
@@ -300,7 +300,7 @@ export class Memory extends EventEmitter {
   /**
    * Optimized store method with compression and batching
    */
-  async store(key: string, value: any, namespace: string = 'default', ttl?: number): Promise<void> {
+  async store(key: string, value: unknown, namespace: string = 'default', ttl?: number): Promise<void> {
     this.ensureInitialized();
     const startTime = performance.now();
     
@@ -387,7 +387,7 @@ export class Memory extends EventEmitter {
   /**
    * Batch store operation for high-throughput scenarios
    */
-  async storeBatch(entries: Array<{ key: string; value: any; namespace?: string; ttl?: number }>): Promise<void> {
+  async storeBatch(entries: Array<{ key: string; value: unknown; namespace?: string; ttl?: number }>): Promise<void> {
     const startTime = performance.now();
     const batchResults = [];
     
@@ -417,7 +417,7 @@ export class Memory extends EventEmitter {
   /**
    * High-performance retrieve method with intelligent caching
    */
-  async retrieve(key: string, namespace: string = 'default'): Promise<any> {
+  async retrieve(key: string, namespace: string = 'default'): Promise<unknown> {
     this.ensureInitialized();
     const startTime = performance.now();
     const cacheKey = this.getCacheKey(key, namespace);
@@ -481,9 +481,9 @@ export class Memory extends EventEmitter {
   /**
    * Batch retrieve for multiple keys with optimized database queries
    */
-  async retrieveBatch(keys: string[], namespace: string = 'default'): Promise<Map<string, any>> {
+  async retrieveBatch(keys: string[], namespace: string = 'default'): Promise<Map<string, unknown>> {
     const startTime = performance.now();
-    const results = new Map<string, any>();
+    const results = new Map<string, unknown>();
     const cacheHits: string[] = [];
     const cacheMisses: string[] = [];
     
@@ -648,7 +648,7 @@ export class Memory extends EventEmitter {
   async getStats(): Promise<MemoryStats> {
     const stats = await this.db!.getMemoryStats();
     
-    const byNamespace: Record<string, any> = {};
+    const byNamespace: Record<string, unknown> = {};
     for (const ns of this.namespaces.values()) {
       const nsStats = await this.db!.getNamespaceStats(ns.name);
       byNamespace[ns.name] = nsStats;
@@ -998,7 +998,7 @@ export class Memory extends EventEmitter {
    * Enhanced helper methods with performance optimizations
    */
   
-  private convertRowToEntry(row: any): MemoryEntry {
+  private convertRowToEntry(row: unknown): MemoryEntry {
     return {
       key: row.key,
       namespace: row.namespace,
@@ -1168,7 +1168,7 @@ export class Memory extends EventEmitter {
     }
   }
 
-  private parseValue(value: string): any {
+  private parseValue(value: string): unknown {
     try {
       return JSON.parse(value);
     } catch {
@@ -1257,7 +1257,7 @@ export class Memory extends EventEmitter {
 
   private async identifyCoAccessPatterns(accessData: [string, number][]): Promise<any[]> {
     // Simplified co-access pattern detection
-    const patterns: any[] = [];
+    const patterns: unknown[] = [];
     
     for (let i = 0; i < accessData.length - 1; i++) {
       for (let j = i + 1; j < Math.min(i + 5, accessData.length); j++) {

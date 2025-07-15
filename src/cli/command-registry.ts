@@ -25,7 +25,7 @@ import { showUnifiedMetrics, fixTaskAttribution } from './simple-commands/swarm-
 
 // TypeScript interfaces for command system
 export interface CommandFlags {
-  [key: string]: any;
+  [key: string]: unknown;
   help?: boolean;
   h?: boolean;
   verbose?: boolean;

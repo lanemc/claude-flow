@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../utils/error-handler';
+// import { getErrorMessage } from '../utils/error-handler';
 /**
  * Persistence layer for Claude-Flow using SQLite
  */
@@ -122,7 +122,7 @@ export class PersistenceManager {
 
   async getAgent(id: string): Promise<PersistedAgent | null> {
     const stmt = this.db.prepare("SELECT * FROM agents WHERE id = ?");
-    const row = stmt.get(id) as any;
+    const row = stmt.get(id) as unknown;
     
     if (!row) return null;
     
@@ -141,7 +141,7 @@ export class PersistenceManager {
 
   async getActiveAgents(): Promise<PersistedAgent[]> {
     const stmt = this.db.prepare("SELECT * FROM agents WHERE status IN ('active', 'idle') ORDER BY created_at DESC");
-    const rows = stmt.all() as any[];
+    const rows = stmt.all() as unknown[];
     
     return rows.map(row => ({
       id: row.id,
@@ -186,7 +186,7 @@ export class PersistenceManager {
 
   async getTask(id: string): Promise<PersistedTask | null> {
     const stmt = this.db.prepare("SELECT * FROM tasks WHERE id = ?");
-    const row = stmt.get(id) as any;
+    const row = stmt.get(id) as unknown;
     
     if (!row) return null;
     
@@ -208,7 +208,7 @@ export class PersistenceManager {
 
   async getActiveTasks(): Promise<PersistedTask[]> {
     const stmt = this.db.prepare("SELECT * FROM tasks WHERE status IN ('pending', 'in_progress', 'assigned') ORDER BY priority DESC, created_at ASC");
-    const rows = stmt.all() as any[];
+    const rows = stmt.all() as unknown[];
     
     return rows.map(row => ({
       id: row.id,
@@ -249,11 +249,11 @@ export class PersistenceManager {
     pendingTasks: number;
     completedTasks: number;
   }> {
-    const totalAgents = this.db.prepare("SELECT COUNT(*) as count FROM agents").get() as any;
-    const activeAgents = this.db.prepare("SELECT COUNT(*) as count FROM agents WHERE status IN ('active', 'idle')").get() as any;
-    const totalTasks = this.db.prepare("SELECT COUNT(*) as count FROM tasks").get() as any;
-    const pendingTasks = this.db.prepare("SELECT COUNT(*) as count FROM tasks WHERE status IN ('pending', 'in_progress', 'assigned')").get() as any;
-    const completedTasks = this.db.prepare("SELECT COUNT(*) as count FROM tasks WHERE status = 'completed'").get() as any;
+    const totalAgents = this.db.prepare("SELECT COUNT(*) as count FROM agents").get() as unknown;
+    const activeAgents = this.db.prepare("SELECT COUNT(*) as count FROM agents WHERE status IN ('active', 'idle')").get() as unknown;
+    const totalTasks = this.db.prepare("SELECT COUNT(*) as count FROM tasks").get() as unknown;
+    const pendingTasks = this.db.prepare("SELECT COUNT(*) as count FROM tasks WHERE status IN ('pending', 'in_progress', 'assigned')").get() as unknown;
+    const completedTasks = this.db.prepare("SELECT COUNT(*) as count FROM tasks WHERE status = 'completed'").get() as unknown;
     
     return {
       totalAgents: totalAgents.count,

@@ -333,8 +333,8 @@ export class QueenCoordinator extends EventEmitter {
       strategy: 'parallel_execution',
       phases: [{
         name: 'Parallel Execution',
-        tasks: tasks,
-        workers: workers,
+        tasks,
+        workers,
         parallel: true,
         workerAssignment: this._optimizeWorkerAssignment(tasks, workerGroups)
       }],
@@ -359,7 +359,7 @@ export class QueenCoordinator extends EventEmitter {
           `Test iteration ${i + 1}`,
           `Review and refine iteration ${i + 1}`
         ],
-        workers: workers,
+        workers,
         parallel: false,
         requiresConsensus: true
       });
@@ -390,7 +390,7 @@ export class QueenCoordinator extends EventEmitter {
           `Build consensus on approach`,
           `Implement chosen solution`
         ],
-        workers: workers,
+        workers,
         parallel: index === 0, // Only first phase in parallel
         requiresConsensus: true,
         consensusThreshold: this.config.consensusThreshold
@@ -418,7 +418,7 @@ export class QueenCoordinator extends EventEmitter {
           'Experiment with different solutions',
           'Collect performance metrics'
         ],
-        workers: workers,
+        workers,
         parallel: true,
         learning: true
       },
@@ -440,7 +440,7 @@ export class QueenCoordinator extends EventEmitter {
           'Apply learned patterns',
           'Validate improvements'
         ],
-        workers: workers,
+        workers,
         parallel: true,
         applyLearning: true
       }

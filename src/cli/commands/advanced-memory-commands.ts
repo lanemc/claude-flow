@@ -64,7 +64,7 @@ async function ensureMemoryManager(): Promise<AdvancedMemoryManager> {
 
 // === MAIN MEMORY COMMAND ===
 
-export async function advancedMemoryCommand(subArgs: string[], flags: Record<string, any>): Promise<void> {
+export async function advancedMemoryCommand(subArgs: string[], flags: Record<string, unknown>): Promise<void> {
   const subcommand = subArgs[0];
   
   if (!subcommand) {
@@ -151,7 +151,7 @@ function showAdvancedMemoryHelp(): void {
 
 // === INDIVIDUAL COMMAND FUNCTIONS ===
 
-async function queryCommand(args: string[], flags: Record<string, any>): Promise<void> {
+async function queryCommand(args: string[], flags: Record<string, unknown>): Promise<void> {
   const search = args[0];
   
   if (!search) {
@@ -233,7 +233,8 @@ async function queryCommand(args: string[], flags: Record<string, any>): Promise
         break;
 
       case 'csv':
-        console.log('key,value,type,namespace,tags,size,created,updated');
+        {
+console.log('key,value,type,namespace,tags,size,created,updated');
         for (const entry of result.entries) {
           console.log([
             entry.key,
@@ -245,12 +246,15 @@ async function queryCommand(args: string[], flags: Record<string, any>): Promise
             entry.createdAt.toISOString(),
             entry.updatedAt.toISOString()
           ].join(','));
+
+
+      }
         }
         break;
 
       default: // table
         console.log('\n📋 Query Results:\n');
-        result.entries.forEach((entry, i) => {
+        result.entries.forEach((entry, _i) => {
           const value = typeof entry.value === 'string' && entry.value.length > 100 
             ? entry.value.substring(0, 100) + '...'
             : JSON.stringify(entry.value);
@@ -274,7 +278,7 @@ async function queryCommand(args: string[], flags: Record<string, any>): Promise
       console.log('\n📊 Aggregations:\n');
       for (const [key, value] of Object.entries(result.aggregations)) {
         console.log(`${key}:`);
-        for (const [subKey, stats] of Object.entries(value as Record<string, any>)) {
+        for (const [subKey, stats] of Object.entries(value as Record<string, unknown>)) {
           console.log(`  ${subKey}: ${stats.count} entries, ${formatBytes(stats.totalSize)}`);
         }
         console.log();
@@ -296,7 +300,7 @@ async function queryCommand(args: string[], flags: Record<string, any>): Promise
   }
 }
 
-async function exportCommand(args: string[], flags: Record<string, any>): Promise<void> {
+async function exportCommand(args: string[], flags: Record<string, unknown>): Promise<void> {
   const file = args[0];
   
   if (!file) {
@@ -381,7 +385,7 @@ async function exportCommand(args: string[], flags: Record<string, any>): Promis
   }
 }
 
-async function importCommand(args: string[], flags: Record<string, any>): Promise<void> {
+async function importCommand(args: string[], flags: Record<string, unknown>): Promise<void> {
   const file = args[0];
   
   if (!file) {
@@ -474,7 +478,7 @@ async function importCommand(args: string[], flags: Record<string, any>): Promis
   }
 }
 
-async function statsCommand(args: string[], flags: Record<string, any>): Promise<void> {
+async function statsCommand(args: string[], flags: Record<string, unknown>): Promise<void> {
   try {
     const manager = await ensureMemoryManager();
     const startTime = Date.now();
@@ -583,7 +587,7 @@ async function statsCommand(args: string[], flags: Record<string, any>): Promise
   }
 }
 
-async function cleanupCommand(args: string[], flags: Record<string, any>): Promise<void> {
+async function cleanupCommand(args: string[], flags: Record<string, unknown>): Promise<void> {
   try {
     const manager = await ensureMemoryManager();
 
@@ -647,7 +651,7 @@ async function cleanupCommand(args: string[], flags: Record<string, any>): Promi
   }
 }
 
-async function storeCommand(args: string[], flags: Record<string, any>): Promise<void> {
+async function storeCommand(args: string[], flags: Record<string, unknown>): Promise<void> {
   const key = args[0];
   const value = args.slice(1).join(' ');
   
@@ -704,7 +708,7 @@ async function storeCommand(args: string[], flags: Record<string, any>): Promise
   }
 }
 
-async function getCommand(args: string[], flags: Record<string, any>): Promise<void> {
+async function getCommand(args: string[], flags: Record<string, unknown>): Promise<void> {
   const key = args[0];
   
   if (!key) {
@@ -770,7 +774,7 @@ async function getCommand(args: string[], flags: Record<string, any>): Promise<v
   }
 }
 
-async function deleteCommand(args: string[], flags: Record<string, any>): Promise<void> {
+async function deleteCommand(args: string[], flags: Record<string, unknown>): Promise<void> {
   const key = args[0];
   
   if (!key) {
@@ -808,7 +812,7 @@ async function deleteCommand(args: string[], flags: Record<string, any>): Promis
   }
 }
 
-async function listCommand(args: string[], flags: Record<string, any>): Promise<void> {
+async function listCommand(args: string[], flags: Record<string, unknown>): Promise<void> {
   try {
     const manager = await ensureMemoryManager();
     
@@ -828,7 +832,7 @@ async function listCommand(args: string[], flags: Record<string, any>): Promise<
     
     console.log(`\n📋 Memory Entries (${result.total} total):\n`);
     
-    result.entries.forEach((entry, i) => {
+    result.entries.forEach((entry, _i) => {
       const num = (flags.offset ? parseInt(flags.offset) : 0) + i + 1;
       console.log(`${num}. ${entry.key}`);
       console.log(`   Namespace: ${entry.namespace} | Type: ${entry.type} | Size: ${formatBytes(entry.size)}`);
@@ -849,7 +853,7 @@ async function listCommand(args: string[], flags: Record<string, any>): Promise<
   }
 }
 
-async function namespacesCommand(args: string[], flags: Record<string, any>): Promise<void> {
+async function namespacesCommand(args: string[], flags: Record<string, unknown>): Promise<void> {
   try {
     const manager = await ensureMemoryManager();
     const namespaces = await manager.listNamespaces();
@@ -860,7 +864,7 @@ async function namespacesCommand(args: string[], flags: Record<string, any>): Pr
     }
     
     console.log('\n📁 Namespaces:\n');
-    namespaces.forEach((namespace, i) => {
+    namespaces.forEach((namespace, _i) => {
       console.log(`${i + 1}. ${namespace}`);
     });
   } catch (error) {
@@ -868,7 +872,7 @@ async function namespacesCommand(args: string[], flags: Record<string, any>): Pr
   }
 }
 
-async function typesCommand(args: string[], flags: Record<string, any>): Promise<void> {
+async function typesCommand(args: string[], flags: Record<string, unknown>): Promise<void> {
   try {
     const manager = await ensureMemoryManager();
     const types = await manager.listTypes();
@@ -879,7 +883,7 @@ async function typesCommand(args: string[], flags: Record<string, any>): Promise
     }
     
     console.log('\n🏷️  Data Types:\n');
-    types.forEach((type, i) => {
+    types.forEach((type, _i) => {
       console.log(`${i + 1}. ${type}`);
     });
   } catch (error) {
@@ -887,7 +891,7 @@ async function typesCommand(args: string[], flags: Record<string, any>): Promise
   }
 }
 
-async function tagsCommand(args: string[], flags: Record<string, any>): Promise<void> {
+async function tagsCommand(args: string[], flags: Record<string, unknown>): Promise<void> {
   try {
     const manager = await ensureMemoryManager();
     const tags = await manager.listTags();
@@ -898,7 +902,7 @@ async function tagsCommand(args: string[], flags: Record<string, any>): Promise<
     }
     
     console.log('\n🏷️  Tags:\n');
-    tags.forEach((tag, i) => {
+    tags.forEach((tag, _i) => {
       console.log(`${i + 1}. ${tag}`);
     });
   } catch (error) {
@@ -906,7 +910,7 @@ async function tagsCommand(args: string[], flags: Record<string, any>): Promise<
   }
 }
 
-async function configCommand(args: string[], flags: Record<string, any>): Promise<void> {
+async function configCommand(args: string[], flags: Record<string, unknown>): Promise<void> {
   try {
     const manager = await ensureMemoryManager();
     

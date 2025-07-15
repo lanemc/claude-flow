@@ -760,7 +760,7 @@ export default class GitHubIntegrationView {
       // Emit tool execution event
       this.eventBus.emit('tool:execute', {
         tool: toolName,
-        params: params,
+        params,
         source: 'github-view'
       });
       

@@ -1,4 +1,4 @@
-import { getErrorMessage } from "../utils/error-handler";
+// import { getErrorMessage } from '../utils/error-handler';
 import { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 // Note: __dirname setup is handled in build process
@@ -488,7 +488,7 @@ export class MigrationRunner {
     console.log(chalk.gray("\n" + "─".repeat(50)));
   }
 
-  private async confirmMigration(analysis: any): Promise<boolean> {
+  private async confirmMigration(analysis: unknown): Promise<boolean> {
     const questions = [
       {
         type: "confirm",
@@ -563,7 +563,7 @@ export class MigrationRunner {
     return templateContent;
   }
 
-  private async getMergedRoomodes(existing: any): Promise<any> {
+  private async getMergedRoomodes(existing: unknown): Promise<unknown> {
     const templatePath = path.join(__dirname, "../../.roomodes");
     const template = await fs.readJson(templatePath);
 

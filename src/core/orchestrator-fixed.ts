@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../utils/error-handler';
+// import { getErrorMessage } from '../utils/error-handler';
 /**
  * Fixed orchestrator implementation for Claude-Flow
  */
@@ -273,7 +273,7 @@ export class Orchestrator {
     this.eventBus.emit('session:terminated', { sessionId });
   }
 
-  async executeWorkflow(workflow: any): Promise<string> {
+  async executeWorkflow(workflow: unknown): Promise<string> {
     const workflowId = `workflow-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     
     const status: WorkflowStatus = {

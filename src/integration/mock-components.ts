@@ -7,7 +7,7 @@ import { EventBus } from '../core/event-bus';
 import { Logger } from '../core/logger';
 
 export class MockConfigManager {
-  private config: Record<string, any> = {};
+  private config: Record<string, unknown> = {};
 
   static getInstance(): MockConfigManager {
     return new MockConfigManager();
@@ -22,7 +22,7 @@ export class MockConfigManager {
     };
   }
 
-  get(path: string): any {
+  get(path: string): unknown {
     const keys = path.split('.');
     let value = this.config;
     for (const key of keys) {
@@ -32,7 +32,7 @@ export class MockConfigManager {
     return value;
   }
 
-  set(path: string, value: any): void {
+  set(path: string, value: unknown): void {
     const keys = path.split('.');
     let obj = this.config;
     for (let i = 0; i < keys.length - 1; i++) {
@@ -53,7 +53,7 @@ export class MockConfigManager {
     // Mock shutdown
   }
 
-  healthCheck(): Promise<any> {
+  healthCheck(): Promise<unknown> {
     return Promise.resolve({
       component: 'configManager',
       healthy: true,
@@ -64,7 +64,7 @@ export class MockConfigManager {
 }
 
 export class MockMemoryManager {
-  private storage: Map<string, any> = new Map();
+  private storage: Map<string, unknown> = new Map();
 
   async initialize(): Promise<void> {
     // Mock initialization
@@ -74,11 +74,11 @@ export class MockMemoryManager {
     // Mock shutdown
   }
 
-  async get(key: string): Promise<any> {
+  async get(key: string): Promise<unknown> {
     return this.storage.get(key) || null;
   }
 
-  async set(key: string, value: any): Promise<void> {
+  async set(key: string, value: unknown): Promise<void> {
     this.storage.set(key, value);
   }
 
@@ -95,7 +95,7 @@ export class MockMemoryManager {
     return allKeys.filter(key => regex.test(key));
   }
 
-  healthCheck(): Promise<any> {
+  healthCheck(): Promise<unknown> {
     return Promise.resolve({
       component: 'memoryManager',
       healthy: true,
@@ -104,7 +104,7 @@ export class MockMemoryManager {
     });
   }
 
-  getMetrics(): Promise<any> {
+  getMetrics(): Promise<unknown> {
     return Promise.resolve({
       storageSize: this.storage.size,
       memoryUsage: process.memoryUsage().heapUsed
@@ -113,7 +113,7 @@ export class MockMemoryManager {
 }
 
 export class MockAgentManager {
-  private agents: Map<string, any> = new Map();
+  private agents: Map<string, unknown> = new Map();
 
   constructor(private eventBus: EventBus, private logger: Logger) {}
 
@@ -125,7 +125,7 @@ export class MockAgentManager {
     // Mock shutdown
   }
 
-  async spawnAgent(type: string, config: any): Promise<string> {
+  async spawnAgent(type: string, config: Record<string, unknown>): Promise<string> {
     const agentId = `mock-agent-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     this.agents.set(agentId, {
       id: agentId,
@@ -145,16 +145,16 @@ export class MockAgentManager {
     return Array.from(this.agents.values());
   }
 
-  async getAgent(agentId: string): Promise<any> {
+  async getAgent(agentId: string): Promise<unknown> {
     return this.agents.get(agentId) || null;
   }
 
-  async sendMessage(message: any): Promise<any> {
+  async sendMessage(message: unknown): Promise<unknown> {
     // Mock message sending
     return { success: true, id: `msg-${Date.now()}` };
   }
 
-  healthCheck(): Promise<any> {
+  healthCheck(): Promise<unknown> {
     return Promise.resolve({
       component: 'agentManager',
       healthy: true,
@@ -163,7 +163,7 @@ export class MockAgentManager {
     });
   }
 
-  getMetrics(): Promise<any> {
+  getMetrics(): Promise<unknown> {
     return Promise.resolve({
       activeAgents: this.agents.size,
       totalAgents: this.agents.size
@@ -172,7 +172,7 @@ export class MockAgentManager {
 }
 
 export class MockSwarmCoordinator {
-  private swarms: Map<string, any> = new Map();
+  private swarms: Map<string, unknown> = new Map();
 
   constructor(
     private eventBus: EventBus,
@@ -188,7 +188,7 @@ export class MockSwarmCoordinator {
     // Mock shutdown
   }
 
-  async createSwarm(config: any): Promise<string> {
+  async createSwarm(config: Record<string, unknown>): Promise<string> {
     const swarmId = `mock-swarm-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     this.swarms.set(swarmId, {
       id: swarmId,
@@ -200,12 +200,12 @@ export class MockSwarmCoordinator {
     return swarmId;
   }
 
-  async getSwarmStatus(swarmId: string): Promise<any> {
+  async getSwarmStatus(swarmId: string): Promise<unknown> {
     const swarm = this.swarms.get(swarmId);
     return swarm || null;
   }
 
-  async spawnAgentInSwarm(swarmId: string, agentConfig: any): Promise<string> {
+  async spawnAgentInSwarm(swarmId: string, agentConfig: unknown): Promise<string> {
     const agentId = `mock-swarm-agent-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const swarm = this.swarms.get(swarmId);
     if (swarm) {
@@ -219,7 +219,7 @@ export class MockSwarmCoordinator {
     return swarm?.agents || [];
   }
 
-  healthCheck(): Promise<any> {
+  healthCheck(): Promise<unknown> {
     return Promise.resolve({
       component: 'swarmCoordinator',
       healthy: true,
@@ -228,7 +228,7 @@ export class MockSwarmCoordinator {
     });
   }
 
-  getMetrics(): Promise<any> {
+  getMetrics(): Promise<unknown> {
     return Promise.resolve({
       activeSwarms: this.swarms.size,
       totalAgents: Array.from(this.swarms.values()).reduce((sum, swarm) => sum + swarm.agents.length, 0)
@@ -237,7 +237,7 @@ export class MockSwarmCoordinator {
 }
 
 export class MockTaskEngine {
-  private tasks: Map<string, any> = new Map();
+  private tasks: Map<string, unknown> = new Map();
 
   constructor(
     private eventBus: EventBus,
@@ -253,7 +253,7 @@ export class MockTaskEngine {
     // Mock shutdown
   }
 
-  async createTask(taskConfig: any): Promise<string> {
+  async createTask(taskConfig: unknown): Promise<string> {
     const taskId = `mock-task-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     this.tasks.set(taskId, {
       id: taskId,
@@ -264,7 +264,7 @@ export class MockTaskEngine {
     return taskId;
   }
 
-  async getTaskStatus(taskId: string): Promise<any> {
+  async getTaskStatus(taskId: string): Promise<unknown> {
     return this.tasks.get(taskId) || null;
   }
 
@@ -275,7 +275,7 @@ export class MockTaskEngine {
       : allTasks.filter(task => task.status === 'active');
   }
 
-  healthCheck(): Promise<any> {
+  healthCheck(): Promise<unknown> {
     return Promise.resolve({
       component: 'taskEngine',
       healthy: true,
@@ -284,7 +284,7 @@ export class MockTaskEngine {
     });
   }
 
-  getMetrics(): Promise<any> {
+  getMetrics(): Promise<unknown> {
     const tasks = Array.from(this.tasks.values());
     return Promise.resolve({
       totalTasks: tasks.length,
@@ -306,23 +306,23 @@ export class MockRealTimeMonitor {
     // Mock shutdown
   }
 
-  attachToOrchestrator(orchestrator: any): void {
+  attachToOrchestrator(orchestrator: unknown): void {
     // Mock attachment
   }
 
-  attachToAgentManager(agentManager: any): void {
+  attachToAgentManager(agentManager: unknown): void {
     // Mock attachment
   }
 
-  attachToSwarmCoordinator(swarmCoordinator: any): void {
+  attachToSwarmCoordinator(swarmCoordinator: unknown): void {
     // Mock attachment
   }
 
-  attachToTaskEngine(taskEngine: any): void {
+  attachToTaskEngine(taskEngine: unknown): void {
     // Mock attachment
   }
 
-  healthCheck(): Promise<any> {
+  healthCheck(): Promise<unknown> {
     return Promise.resolve({
       component: 'monitor',
       healthy: true,
@@ -343,27 +343,27 @@ export class MockMcpServer {
     // Mock shutdown
   }
 
-  attachToOrchestrator(orchestrator: any): void {
+  attachToOrchestrator(orchestrator: unknown): void {
     // Mock attachment
   }
 
-  attachToAgentManager(agentManager: any): void {
+  attachToAgentManager(agentManager: unknown): void {
     // Mock attachment
   }
 
-  attachToSwarmCoordinator(swarmCoordinator: any): void {
+  attachToSwarmCoordinator(swarmCoordinator: unknown): void {
     // Mock attachment
   }
 
-  attachToTaskEngine(taskEngine: any): void {
+  attachToTaskEngine(taskEngine: unknown): void {
     // Mock attachment
   }
 
-  attachToMemoryManager(memoryManager: any): void {
+  attachToMemoryManager(memoryManager: unknown): void {
     // Mock attachment
   }
 
-  healthCheck(): Promise<any> {
+  healthCheck(): Promise<unknown> {
     return Promise.resolve({
       component: 'mcpServer',
       healthy: true,
@@ -375,7 +375,7 @@ export class MockMcpServer {
 
 export class MockOrchestrator {
   constructor(
-    private configManager: any,
+    private configManager: unknown,
     private eventBus: EventBus,
     private logger: Logger
   ) {}
@@ -388,11 +388,11 @@ export class MockOrchestrator {
     // Mock shutdown
   }
 
-  setAgentManager(agentManager: any): void {
+  setAgentManager(agentManager: unknown): void {
     // Mock setter
   }
 
-  healthCheck(): Promise<any> {
+  healthCheck(): Promise<unknown> {
     return Promise.resolve({
       component: 'orchestrator',
       healthy: true,

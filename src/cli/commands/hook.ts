@@ -25,7 +25,7 @@ const logger = new Logger({
 }, { prefix: 'Hook' });
 
 // Helper function to build command arguments
-function buildArgs(hookType: string, options: Record<string, any>): string[] {
+function buildArgs(hookType: string, options: Record<string, unknown>): string[] {
   const args = [hookType];
   
   Object.entries(options).forEach(([key, value]) => {
@@ -148,8 +148,8 @@ const hookHandlers: Record<string, (args: string[]) => Promise<void>> = {
 };
 
 // Parse command line arguments
-function parseArgs<T extends Record<string, any>>(args: string[]): T {
-  const options: Record<string, any> = {};
+function parseArgs<T extends Record<string, unknown>>(args: string[]): T {
+  const options: Record<string, unknown> = {};
   
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
@@ -173,7 +173,7 @@ function parseArgs<T extends Record<string, any>>(args: string[]): T {
 }
 
 // Execute hook with ruv-swarm
-async function executeHook(hookType: string, options: Record<string, any>): Promise<void> {
+async function executeHook(hookType: string, options: Record<string, unknown>): Promise<void> {
   const args = buildArgs(hookType, options);
   
   logger.debug(`Executing hook: ruv-swarm hook ${args.join(' ')}`);

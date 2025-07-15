@@ -1,4 +1,4 @@
-import { getErrorMessage } from "../utils/error-handler";
+// import { getErrorMessage } from '../utils/error-handler';
 /**
  * MCP Client for Model Context Protocol
  */
@@ -29,7 +29,7 @@ export class MCPClient extends EventEmitter {
   private recoveryManager?: RecoveryManager;
   private pendingRequests = new Map<
     string,
-    { resolve: Function; reject: Function; timer: NodeJS.Timeout }
+    { resolve: (...args: unknown[]) => unknown; reject: (...args: unknown[]) => unknown; timer: NodeJS.Timeout }
   >();
 
   constructor(config: MCPClientConfig) {

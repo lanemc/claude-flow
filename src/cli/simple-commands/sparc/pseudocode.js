@@ -270,7 +270,7 @@ export class SparcPseudocode extends SparcPhase {
       pseudocode.push({
         function: functionName,
         description: requirement,
-        steps: steps,
+        steps,
         complexity: this.estimateComplexity(steps)
       });
     }

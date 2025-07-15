@@ -296,7 +296,7 @@ async function handleList(ctx: CommandContext) {
             return;
           }
           
-          listData.data.agents.forEach((agent: any, index: number) => {
+          listData.data.agents.forEach((agent: unknown, index: number) => {
             console.log(`\
   ${index + 1}. ${agent.id || agent.agentId}`);
             console.log(`     Type: ${agent.type}`);

@@ -19,7 +19,7 @@ export interface MigrationAnalysis {
   hasClaudeFolder: boolean;
   hasOptimizedPrompts: boolean;
   customCommands: string[];
-  customConfigurations: Record<string, any>;
+  customConfigurations: Record<string, unknown>;
   conflictingFiles: string[];
   migrationRisks: MigrationRisk[];
   recommendations: string[];
@@ -37,7 +37,7 @@ export interface MigrationBackup {
   timestamp: Date;
   version: string;
   files: BackupFile[];
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
 }
 
 export interface BackupFile {
@@ -74,7 +74,7 @@ export interface ValidationCheck {
   name: string;
   passed: boolean;
   message?: string;
-  details?: any;
+  details?: unknown;
 }
 
 export interface MigrationManifest {
@@ -98,7 +98,7 @@ export interface ConfigMigration {
   source: string;
   target: string;
   merge?: boolean;
-  transform?: (config: any) => any;
+  transform?: (config: Record<string, unknown>) => unknown;
 }
 
 export interface TemplateMigration {

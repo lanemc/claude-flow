@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../utils/error-handler';
+// import { getErrorMessage } from '../utils/error-handler';
 import { EventEmitter } from 'events';
 import { writeFile, readFile, mkdir, readdir } from 'fs/promises';
 import { join } from 'path';
@@ -130,7 +130,7 @@ export interface DeploymentLog {
   level: 'debug' | 'info' | 'warn' | 'error';
   message: string;
   source: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface RollbackCondition {
@@ -226,7 +226,7 @@ export interface DeploymentAuditEntry {
   userId: string;
   action: string;
   target: string;
-  details: Record<string, any>;
+  details: Record<string, unknown>;
   ipAddress?: string;
 }
 
@@ -243,7 +243,7 @@ export interface DeploymentPipeline {
   }[];
   triggers: {
     type: 'webhook' | 'schedule' | 'manual' | 'git';
-    configuration: Record<string, any>;
+    configuration: Record<string, unknown>;
   }[];
   configuration: {
     parallelDeployments: boolean;
@@ -733,7 +733,7 @@ export class DeploymentManager extends EventEmitter {
       ) / completedDeployments.length : 0;
 
     // Calculate environment metrics
-    const environmentMetrics: Record<string, any> = {};
+    const environmentMetrics: Record<string, unknown> = {};
     for (const env of this.environments.values()) {
       const envDeployments = deployments.filter(d => d.environmentId === env.id);
       const envSuccessful = envDeployments.filter(d => d.status === 'success').length;
@@ -749,7 +749,7 @@ export class DeploymentManager extends EventEmitter {
     }
 
     // Calculate strategy metrics
-    const strategyMetrics: Record<string, any> = {};
+    const strategyMetrics: Record<string, unknown> = {};
     for (const strategy of this.strategies.values()) {
       const strategyDeployments = deployments.filter(d => d.strategyId === strategy.id);
       const strategySuccessful = strategyDeployments.filter(d => d.status === 'success').length;
@@ -1067,7 +1067,7 @@ export class DeploymentManager extends EventEmitter {
     userId: string,
     action: string,
     target: string,
-    details: Record<string, any>
+    details: Record<string, unknown>
   ): void {
     const entry: DeploymentAuditEntry = {
       id: `audit-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -1086,7 +1086,7 @@ export class DeploymentManager extends EventEmitter {
     level: DeploymentLog['level'],
     message: string,
     source: string,
-    metadata?: Record<string, any>
+    metadata?: Record<string, unknown>
   ): void {
     const log: DeploymentLog = {
       timestamp: new Date(),
@@ -1179,7 +1179,7 @@ export class DeploymentManager extends EventEmitter {
     }
   }
 
-  private async handleDeploymentError(deployment: Deployment, error: any): Promise<void> {
+  private async handleDeploymentError(deployment: Deployment, error: Error | unknown): Promise<void> {
     deployment.status = 'failed';
     deployment.metrics.endTime = new Date();
     deployment.updatedAt = new Date();

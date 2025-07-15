@@ -110,7 +110,7 @@ export class CoordinatorAgent extends BaseAgent {
     };
   }
 
-  override async executeTask(task: TaskDefinition): Promise<any> {
+  override async executeTask(task: TaskDefinition): Promise<unknown> {
     this.logger.info('Coordinator executing task', {
       agentId: this.id,
       taskType: task.type,
@@ -144,7 +144,7 @@ export class CoordinatorAgent extends BaseAgent {
     }
   }
 
-  private async orchestrateTasks(task: TaskDefinition): Promise<any> {
+  private async orchestrateTasks(task: TaskDefinition): Promise<unknown> {
     const tasks = task.parameters?.tasks || [];
     const strategy = task.parameters?.strategy || 'sequential';
     const priority = task.parameters?.priority || 'balanced';
@@ -181,7 +181,7 @@ export class CoordinatorAgent extends BaseAgent {
     // Simulate task orchestration
     await this.delay(2000);
 
-    orchestration.tasks = tasks.map((t: any, index: number) => ({
+    orchestration.tasks = tasks.map((t: unknown, index: number) => ({
       id: t.id || `task-${index + 1}`,
       name: t.name || `Task ${index + 1}`,
       status: 'pending',
@@ -193,7 +193,7 @@ export class CoordinatorAgent extends BaseAgent {
     return orchestration;
   }
 
-  private async trackProgress(task: TaskDefinition): Promise<any> {
+  private async trackProgress(task: TaskDefinition): Promise<unknown> {
     const project = task.parameters?.project;
     const timeframe = task.parameters?.timeframe || 'weekly';
     const metrics = task.parameters?.metrics || ['completion', 'velocity', 'quality'];
@@ -248,7 +248,7 @@ export class CoordinatorAgent extends BaseAgent {
     return progress;
   }
 
-  private async allocateResources(task: TaskDefinition): Promise<any> {
+  private async allocateResources(task: TaskDefinition): Promise<unknown> {
     const resources = task.input?.resources || [];
     const requirements = task.input?.requirements || [];
     const constraints = task.input?.constraints || [];
@@ -265,9 +265,9 @@ export class CoordinatorAgent extends BaseAgent {
       constraints,
       assignments: [] as ResourceAssignment[],
       utilization: {},
-      conflicts: [] as any[],
-      optimizations: [] as any[],
-      recommendations: [] as any[],
+      conflicts: [] as unknown[],
+      optimizations: [] as unknown[],
+      recommendations: [] as unknown[],
       efficiency: 0,
       timestamp: new Date()
     };
@@ -295,7 +295,7 @@ export class CoordinatorAgent extends BaseAgent {
     return allocation;
   }
 
-  private async manageWorkflow(task: TaskDefinition): Promise<any> {
+  private async manageWorkflow(task: TaskDefinition): Promise<unknown> {
     const workflow = task.input?.workflow;
     const stage = task.input?.stage || 'planning';
     const automation = task.input?.automation || false;
@@ -311,10 +311,10 @@ export class CoordinatorAgent extends BaseAgent {
       stage,
       automation,
       stages: [] as TaskProgressItem[],
-      transitions: [] as any[],
-      approvals: [] as any[],
-      bottlenecks: [] as any[],
-      optimizations: [] as any[],
+      transitions: [] as unknown[],
+      approvals: [] as unknown[],
+      bottlenecks: [] as unknown[],
+      optimizations: [] as unknown[],
       sla_compliance: {
         on_time: 0,
         quality: 0,
@@ -336,7 +336,7 @@ export class CoordinatorAgent extends BaseAgent {
     return management;
   }
 
-  private async coordinateTeam(task: TaskDefinition): Promise<any> {
+  private async coordinateTeam(task: TaskDefinition): Promise<unknown> {
     const team = task.parameters?.team || [];
     const objectives = task.parameters?.objectives || [];
     const communication = task.parameters?.communication || 'daily';
@@ -383,7 +383,7 @@ export class CoordinatorAgent extends BaseAgent {
     return coordination;
   }
 
-  private async generateStatusReport(task: TaskDefinition): Promise<any> {
+  private async generateStatusReport(task: TaskDefinition): Promise<unknown> {
     const scope = task.input?.scope || 'project';
     const period = task.input?.period || 'weekly';
     const audience = task.input?.audience || 'stakeholders';
@@ -404,13 +404,13 @@ export class CoordinatorAgent extends BaseAgent {
       executive_summary: '',
       key_metrics: {},
       achievements: [] as string[],
-      challenges: [] as any[],
-      next_steps: [] as any[],
-      risks: [] as any[],
-      recommendations: [] as any[],
+      challenges: [] as unknown[],
+      next_steps: [] as unknown[],
+      risks: [] as unknown[],
+      recommendations: [] as unknown[],
       appendix: {
         detailed_metrics: {},
-        charts: [] as any[],
+        charts: [] as unknown[],
         raw_data: {}
       },
       timestamp: new Date()
@@ -437,7 +437,7 @@ export class CoordinatorAgent extends BaseAgent {
     return report;
   }
 
-  private async performGeneralCoordination(task: TaskDefinition): Promise<any> {
+  private async performGeneralCoordination(task: TaskDefinition): Promise<unknown> {
     this.logger.info('Performing general coordination', {
       description: task.description
     });
@@ -450,7 +450,7 @@ export class CoordinatorAgent extends BaseAgent {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 
-  override getAgentStatus(): any {
+  override getAgentStatus(): unknown {
     return {
       ...super.getAgentStatus(),
       specialization: 'Task Orchestration & Project Management',

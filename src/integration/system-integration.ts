@@ -36,10 +36,10 @@ export class SystemIntegration {
     // Initialize configManager safely
     try {
       // Dynamic import for ConfigManager if available
-      this.configManager = { getInstance: () => ({ load: async () => {}, get: () => null, set: () => {} }) };
+      this.configManager = { getInstance: () => ({ load: async () => { /* empty */ }, get: () => null, set: () => { /* empty */ } }) };
     } catch (error) {
       this.logger.warn('ConfigManager not available, using mock');
-      this.configManager = { load: async () => {}, get: () => null, set: () => {} };
+      this.configManager = { load: async () => { /* empty */ }, get: () => null, set: () => { /* empty */ } };
     }
     
     this.setupEventHandlers();
@@ -378,18 +378,18 @@ export class SystemIntegration {
    */
   private setupEventHandlers(): void {
     // System health monitoring
-    this.eventBus.on('component:status', (event: any) => {
+    this.eventBus.on('component:status', (event: Event | Record<string, unknown>) => {
       this.updateComponentStatus(event.component, event.status, event.message);
     });
     
     // Error handling
-    this.eventBus.on('system:error', (event: any) => {
+    this.eventBus.on('system:error', (event: Event | Record<string, unknown>) => {
       this.logger.error(`System Error in ${event.component}:`, event.error);
       this.updateComponentStatus(event.component, 'unhealthy', event.error.message);
     });
     
     // Performance monitoring
-    this.eventBus.on('performance:metric', (event: any) => {
+    this.eventBus.on('performance:metric', (event: Event | Record<string, unknown>) => {
       this.logger.debug(`Performance Metric: ${event.metric} = ${event.value}`);
     });
   }

@@ -1,12 +1,12 @@
-/**
- * Coder Agent - Specialized in software development and code generation
- */
-
 import { BaseAgent } from './base-agent';
 import type { AgentCapabilities, AgentConfig, AgentEnvironment, TaskDefinition } from '../../swarm/types';
 import type { ILogger } from '../../core/logger';
 import type { IEventBus } from '../../core/event-bus';
 import type { DistributedMemorySystem } from '../../memory/distributed-memory';
+
+/**
+ * Coder Agent - Specialized in software development and code generation
+ */
 
 // Type definitions for coder activities
 interface CodeFile {
@@ -27,6 +27,7 @@ interface DatabaseTable {
 }
 
 export class CoderAgent extends BaseAgent {
+
   constructor(
     id: string,
     config: AgentConfig,
@@ -191,10 +192,10 @@ export class CoderAgent extends BaseAgent {
   }
 
   private async generateCode(task: TaskDefinition): Promise<any> {
-    const requirements = task.input?.requirements || task.description;
-    const language = task.input?.language || 'typescript';
-    const framework = task.input?.framework;
-    const style = task.input?.style || 'functional';
+    const _requirements = task.input?.requirements || task.description;
+    const _language = task.input?.language || 'typescript';
+    const _framework = task.input?.framework;
+    const _style = task.input?.style || 'functional';
 
     this.logger.info('Generating code', {
       requirements,
@@ -203,7 +204,7 @@ export class CoderAgent extends BaseAgent {
       style
     });
 
-    const result = {
+    const _result = {
       requirements,
       language,
       framework,
@@ -279,16 +280,16 @@ export class CoderAgent extends BaseAgent {
   }
 
   private async reviewCode(task: TaskDefinition): Promise<any> {
-    const code = task.input?.code;
-    const files = task.input?.files || [];
-    const focus = task.input?.focus || ['quality', 'security', 'performance'];
+    const _code = task.input?.code;
+    const _files = task.input?.files || [];
+    const _focus = task.input?.focus || ['quality', 'security', 'performance'];
 
     this.logger.info('Reviewing code', {
       filesCount: files.length,
       focus
     });
 
-    const review = {
+    const _review = {
       files: [] as any[],
       overallScore: 0,
       issues: [] as any[],
@@ -340,16 +341,16 @@ export class CoderAgent extends BaseAgent {
   }
 
   private async refactorCode(task: TaskDefinition): Promise<any> {
-    const code = task.input?.code;
-    const goals = task.input?.goals || ['maintainability', 'performance'];
-    const preserveAPI = task.input?.preserveAPI || true;
+    const _code = task.input?.code;
+    const _goals = task.input?.goals || ['maintainability', 'performance'];
+    const _preserveAPI = task.input?.preserveAPI || true;
 
     this.logger.info('Refactoring code', {
       goals,
       preserveAPI
     });
 
-    const refactoring = {
+    const _refactoring = {
       originalFiles: [] as any[],
       refactoredFiles: [] as any[],
       changes: [] as string[],
@@ -390,10 +391,10 @@ export class CoderAgent extends BaseAgent {
   }
 
   private async writeTests(task: TaskDefinition): Promise<any> {
-    const code = task.input?.code;
-    const testType = task.input?.type || 'unit';
-    const coverage = task.input?.coverage || 80;
-    const framework = task.input?.framework || 'jest';
+    const _code = task.input?.code;
+    const _testType = task.input?.type || 'unit';
+    const _coverage = task.input?.coverage || 80;
+    const _framework = task.input?.framework || 'jest';
 
     this.logger.info('Writing tests', {
       testType,
@@ -401,7 +402,7 @@ export class CoderAgent extends BaseAgent {
       framework
     });
 
-    const testing = {
+    const _testing = {
       testType,
       framework,
       targetCoverage: coverage,
@@ -457,10 +458,10 @@ export class CoderAgent extends BaseAgent {
   }
 
   private async debugCode(task: TaskDefinition): Promise<any> {
-    const code = task.input?.code;
-    const error = task.input?.error;
-    const symptoms = task.input?.symptoms || [];
-    const environment = task.input?.environment || 'development';
+    const _code = task.input?.code;
+    const _error = task.input?.error;
+    const _symptoms = task.input?.symptoms || [];
+    const _environment = task.input?.environment || 'development';
 
     this.logger.info('Debugging code', {
       error: error?.message,
@@ -468,7 +469,7 @@ export class CoderAgent extends BaseAgent {
       environment
     });
 
-    const debugging = {
+    const _debugging = {
       error,
       symptoms,
       environment,
@@ -500,10 +501,10 @@ export class CoderAgent extends BaseAgent {
   }
 
   private async developAPI(task: TaskDefinition): Promise<any> {
-    const spec = task.input?.spec;
-    const framework = task.input?.framework || 'express';
-    const database = task.input?.database || 'postgresql';
-    const auth = task.input?.auth || 'jwt';
+    const _spec = task.input?.spec;
+    const _framework = task.input?.framework || 'express';
+    const _database = task.input?.database || 'postgresql';
+    const _auth = task.input?.auth || 'jwt';
 
     this.logger.info('Developing API', {
       framework,
@@ -511,7 +512,7 @@ export class CoderAgent extends BaseAgent {
       auth
     });
 
-    const api = {
+    const _api = {
       framework,
       database,
       auth,
@@ -554,16 +555,16 @@ export class CoderAgent extends BaseAgent {
   }
 
   private async designDatabase(task: TaskDefinition): Promise<any> {
-    const requirements = task.input?.requirements;
-    const dbType = task.input?.type || 'relational';
-    const engine = task.input?.engine || 'postgresql';
+    const _requirements = task.input?.requirements;
+    const _dbType = task.input?.type || 'relational';
+    const _engine = task.input?.engine || 'postgresql';
 
     this.logger.info('Designing database', {
       dbType,
       engine
     });
 
-    const design = {
+    const _design = {
       type: dbType,
       engine,
       schema: {},
@@ -593,15 +594,15 @@ export class CoderAgent extends BaseAgent {
   }
 
   private async optimizePerformance(task: TaskDefinition): Promise<any> {
-    const code = task.input?.code;
-    const metrics = task.input?.metrics;
-    const targets = task.input?.targets || ['speed', 'memory'];
+    const _code = task.input?.code;
+    const _metrics = task.input?.metrics;
+    const _targets = task.input?.targets || ['speed', 'memory'];
 
     this.logger.info('Optimizing performance', {
       targets
     });
 
-    const optimization = {
+    const _optimization = {
       targets,
       analysis: {
         bottlenecks: [] as string[],
@@ -647,7 +648,7 @@ export class CoderAgent extends BaseAgent {
 
   // Helper methods
   private getFileExtension(language: string): string {
-    const extensions = {
+    const _extensions = {
       typescript: 'ts',
       javascript: 'js',
       python: 'py',
@@ -665,10 +666,9 @@ export class CoderAgent extends BaseAgent {
   }
 
   private generateSampleCode(language: string, requirements: string): string {
-    const templates = {
+    const _templates = {
       typescript: `
 // ${requirements}
-export class Application {
   constructor() {
     console.log('Application initialized');
   }
@@ -709,14 +709,12 @@ class Application:
   private generateTypesCode(language: string): string {
     if (language === 'typescript') {
       return `
-export interface User {
   id: string;
   email: string;
   name: string;
   createdAt: Date;
 }
 
-export interface ApiResponse<T> {
   data: T;
   success: boolean;
   message?: string;
@@ -727,9 +725,8 @@ export interface ApiResponse<T> {
   }
 
   private generateTestCode(language: string, description: string): string {
-    const templates = {
+    const _templates = {
       typescript: `
-import { Application } from '../src/main';
 
 describe('${description}', () => {
   let app: Application;
@@ -748,7 +745,6 @@ describe('${description}', () => {
 });
 `,
       javascript: `
-const Application = require('../src/main');
 
 describe('${description}', () => {
   let app;
@@ -799,7 +795,7 @@ npm test
   }
 
   private suggestDependencies(language: string, framework?: string): string[] {
-    const baseDeps = {
+    const _baseDeps = {
       typescript: ['typescript', '@types/node'],
       javascript: ['lodash', 'axios'],
       python: ['requests', 'pytest'],
@@ -807,7 +803,7 @@ npm test
       go: ['gin', 'gorm']
     };
 
-    const frameworkDeps = {
+    const _frameworkDeps = {
       express: ['express', 'cors', 'helmet'],
       react: ['react', 'react-dom', '@types/react'],
       vue: ['vue', 'vue-router'],
@@ -815,7 +811,7 @@ npm test
       spring: ['spring-boot', 'spring-data-jpa']
     };
 
-    const deps = baseDeps[language as keyof typeof baseDeps] || [];
+    const _deps = baseDeps[language as keyof typeof baseDeps] || [];
     if (framework && frameworkDeps[framework as keyof typeof frameworkDeps]) {
       deps.push(...frameworkDeps[framework as keyof typeof frameworkDeps]);
     }
@@ -824,7 +820,7 @@ npm test
   }
 
   private generateBuildInstructions(language: string, framework?: string): string[] {
-    const instructions = {
+    const _instructions = {
       typescript: ['npm install', 'npm run build', 'npm start'],
       javascript: ['npm install', 'npm start'],
       python: ['python -m pip install -r requirements.txt', 'python main.py'],
@@ -863,7 +859,7 @@ export const createCoderAgent = (
   eventBus: IEventBus,
   memory: DistributedMemorySystem
 ): CoderAgent => {
-  const defaultConfig = {
+  const _defaultConfig = {
     autonomyLevel: 0.7,
     learningEnabled: true,
     adaptationEnabled: true,
@@ -895,7 +891,7 @@ export const createCoderAgent = (
       refactoringFrequency: 'regular'
     }
   };
-  const defaultEnv = {
+  const _defaultEnv = {
     runtime: 'deno' as const,
     version: '1.40.0',
     workingDirectory: './agents/coder',

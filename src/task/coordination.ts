@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../utils/error-handler';
+// import { getErrorMessage } from '../utils/error-handler';
 /**
  * Task Coordination Layer - Integrates with TodoWrite/TodoRead and Memory for orchestration
  * Provides seamless coordination between task management and Claude Code batch tools
@@ -154,7 +154,7 @@ export class TaskCoordinator extends EventEmitter {
    */
   async storeInMemory(
     key: string,
-    value: any,
+    value: unknown,
     options: {
       namespace?: string;
       tags?: string[];
@@ -328,12 +328,12 @@ export class TaskCoordinator extends EventEmitter {
       configuration?: Record<string, unknown>;
     }>,
     context: CoordinationContext
-  ): Promise<Map<string, any>> {
+  ): Promise<Map<string, unknown>> {
     const batchId = generateId('batch_ops');
-    const results = new Map<string, any>();
+    const results = new Map<string, unknown>();
 
     // Group operations by type for maximum efficiency
-    const groupedOps = new Map<string, Array<any>>();
+    const groupedOps = new Map<string, Array<unknown>>();
     
     for (const op of operations) {
       if (!groupedOps.has(op.type)) {
@@ -416,7 +416,7 @@ export class TaskCoordinator extends EventEmitter {
 
   private async generateTaskBreakdown(
     objective: string,
-    options: any
+    options: Record<string, unknown>
   ): Promise<TodoItem[]> {
     // AI-powered task breakdown based on strategy
     const strategy = options.strategy || 'development';
@@ -605,7 +605,7 @@ export class TaskCoordinator extends EventEmitter {
   }
 
   private async launchAgent(
-    task: any,
+    task: unknown,
     context: CoordinationContext,
     batchId: string
   ): Promise<string> {
@@ -628,9 +628,9 @@ export class TaskCoordinator extends EventEmitter {
 
   private async executeBatchOperationType(
     type: string,
-    operations: any[],
+    operations: unknown[],
     batchId: string,
-    results: Map<string, any>
+    results: Map<string, unknown>
   ): Promise<void> {
     // Simulate batch operation execution
     // In real implementation, this would use actual tools
@@ -645,7 +645,7 @@ export class TaskCoordinator extends EventEmitter {
     }
   }
 
-  private async simulateBatchOperation(type: string, operation: any): Promise<any> {
+  private async simulateBatchOperation(type: string, operation: unknown): Promise<unknown> {
     // Simulate operation based on type
     await new Promise(resolve => setTimeout(resolve, 100));
     
@@ -659,7 +659,7 @@ export class TaskCoordinator extends EventEmitter {
 
   // Swarm coordination patterns
 
-  private async coordinateCentralizedSwarm(swarmId: string, objective: string, agents: any[]): Promise<void> {
+  private async coordinateCentralizedSwarm(swarmId: string, objective: string, agents: unknown[]): Promise<void> {
     // Single coordinator manages all agents
     await this.storeInMemory(`swarm:${swarmId}:pattern`, {
       type: 'centralized',
@@ -672,14 +672,14 @@ export class TaskCoordinator extends EventEmitter {
     });
   }
 
-  private async coordinateDistributedSwarm(swarmId: string, objective: string, agents: any[]): Promise<void> {
+  private async coordinateDistributedSwarm(swarmId: string, objective: string, agents: unknown[]): Promise<void> {
     // Multiple coordinators for different aspects
     const coordinators = ['research_coord', 'impl_coord', 'test_coord'];
     
     await this.storeInMemory(`swarm:${swarmId}:pattern`, {
       type: 'distributed',
       coordinators,
-      agentAssignments: agents.map((agent, index) => ({
+      agentAssignments: agents.map((agent, _index) => ({
         agentId: agent.type,
         role: agent.role,
         coordinator: coordinators[index % coordinators.length]
@@ -687,7 +687,7 @@ export class TaskCoordinator extends EventEmitter {
     });
   }
 
-  private async coordinateHierarchicalSwarm(swarmId: string, objective: string, agents: any[]): Promise<void> {
+  private async coordinateHierarchicalSwarm(swarmId: string, objective: string, agents: unknown[]): Promise<void> {
     // Tree structure with team leads
     await this.storeInMemory(`swarm:${swarmId}:pattern`, {
       type: 'hierarchical',
@@ -703,7 +703,7 @@ export class TaskCoordinator extends EventEmitter {
     });
   }
 
-  private async coordinateMeshSwarm(swarmId: string, objective: string, agents: any[]): Promise<void> {
+  private async coordinateMeshSwarm(swarmId: string, objective: string, agents: unknown[]): Promise<void> {
     // Peer-to-peer coordination
     await this.storeInMemory(`swarm:${swarmId}:pattern`, {
       type: 'mesh',
@@ -714,7 +714,7 @@ export class TaskCoordinator extends EventEmitter {
     });
   }
 
-  private async coordinateHybridSwarm(swarmId: string, objective: string, agents: any[]): Promise<void> {
+  private async coordinateHybridSwarm(swarmId: string, objective: string, agents: unknown[]): Promise<void> {
     // Mixed patterns based on requirements
     await this.storeInMemory(`swarm:${swarmId}:pattern`, {
       type: 'hybrid',
@@ -813,11 +813,11 @@ export class TaskCoordinator extends EventEmitter {
 interface BatchOperation {
   id: string;
   type: string;
-  tasks: any[];
+  tasks: unknown[];
   startedAt: Date;
   completedAt?: Date;
   status: 'running' | 'completed' | 'failed';
-  results: Map<string, any>;
+  results: Map<string, unknown>;
   errors: Map<string, Error>;
 }
 

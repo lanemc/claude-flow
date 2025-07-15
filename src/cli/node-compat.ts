@@ -106,9 +106,9 @@ export const Deno = {
   },
   Command: class Command {
     public command: string;
-    public options: any;
+    public options: Record<string, unknown>;
 
-    constructor(command: string, options: any) {
+    constructor(command: string, options: Record<string, unknown>) {
       this.command = command;
       this.options = options;
     }
@@ -171,7 +171,7 @@ export { fsExistsSync as existsSync };
 
 // Get directory of current module
 export function getCurrentModuleDir(): string {
-  // @ts-ignore - import.meta.url is valid in ES modules
-  const __filename = fileURLToPath(import.meta.url);
+  // Use process.cwd() as fallback since import.meta is problematic in mixed module environments
+  const __filename = process.cwd();
   return dirname(__filename);
 }

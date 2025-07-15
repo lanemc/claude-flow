@@ -49,7 +49,7 @@ export interface ComponentStatus {
   message: string;
   timestamp: number;
   lastHealthCheck: number;
-  metrics?: Record<string, any>;
+  metrics?: Record<string, unknown>;
 }
 
 export interface SystemHealth {
@@ -68,7 +68,7 @@ export interface SystemHealth {
 export interface IntegrationEvent {
   type: string;
   component: string;
-  data: any;
+  data: Record<string, unknown>;
   timestamp: number;
 }
 
@@ -76,7 +76,7 @@ export interface HealthCheckResult {
   component: string;
   healthy: boolean;
   message?: string;
-  metrics?: Record<string, any>;
+  metrics?: Record<string, unknown>;
   timestamp: number;
 }
 

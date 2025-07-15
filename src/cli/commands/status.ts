@@ -16,7 +16,7 @@ export const statusCommand = new Command()
   .option('-i, --interval <seconds>', 'Update interval in seconds', '5')
   .option('-c, --component <name>', 'Show status for specific component')
   .option('--json', 'Output in JSON format')
-  .action(async (options: any) => {
+  .action(async (_options: Record<string, unknown>) => {
     if (options.watch) {
       await watchStatus(options);
     } else {
@@ -24,7 +24,7 @@ export const statusCommand = new Command()
     }
   });
 
-async function showStatus(options: any): Promise<void> {
+async function showStatus(options: Record<string, unknown>): Promise<void> {
   try {
     // In a real implementation, this would connect to the running orchestrator
     const status = await getSystemStatus();
@@ -49,7 +49,7 @@ async function showStatus(options: any): Promise<void> {
   }
 }
 
-async function watchStatus(options: any): Promise<void> {
+async function watchStatus(options: Record<string, unknown>): Promise<void> {
   const interval = parseInt(options.interval) * 1000;
   
   console.log(chalk.cyan('Watching Claude-Flow status...'));
@@ -73,7 +73,7 @@ async function watchStatus(options: any): Promise<void> {
   }
 }
 
-function showFullStatus(status: any): void {
+function showFullStatus(status: unknown): void {
   // System overview
   console.log(chalk.cyan.bold('System Overview'));
   console.log('─'.repeat(50));
@@ -91,7 +91,7 @@ function showFullStatus(status: any): void {
   
   const componentRows = [];
   for (const [name, component] of Object.entries(status.components)) {
-    const comp = component as any;
+    const comp = component as unknown;
     const statusIcon = formatStatusIndicator(comp.status);
     const statusText = getStatusColor(comp.status)(comp.status.toUpperCase());
     
@@ -118,7 +118,7 @@ function showFullStatus(status: any): void {
     
     const resourceRows = [];
     for (const [name, resource] of Object.entries(status.resources)) {
-      const res = resource as any;
+      const res = resource as unknown;
       const percentage = ((res.used / res.total) * 100).toFixed(1);
       const color = getResourceColor(parseFloat(percentage));
       
@@ -203,7 +203,7 @@ function showFullStatus(status: any): void {
   }
 }
 
-function showComponentStatus(status: any, componentName: string): void {
+function showComponentStatus(status: unknown, componentName: string): void {
   const component = status.components[componentName];
   
   if (!component) {
@@ -231,7 +231,7 @@ function showComponentStatus(status: any, componentName: string): void {
     for (const [name, value] of Object.entries(component.metrics)) {
       metricRows.push([
         chalk.white(name),
-        (value as any).toString()
+        (value as unknown).toString()
       ]);
     }
     
@@ -262,7 +262,7 @@ function showComponentStatus(status: any, componentName: string): void {
   }
 }
 
-async function getSystemStatus(): Promise<any> {
+async function getSystemStatus(): Promise<unknown> {
   // In a real implementation, this would connect to the orchestrator
   // For now, return mock data
   return {

@@ -57,7 +57,7 @@ interface InfrastructureComponent {
   name: string;
   type: string;
   purpose: string;
-  specifications: any;
+  specifications: unknown;
 }
 
 export class ArchitectAgent extends BaseAgent {
@@ -170,7 +170,7 @@ export class ArchitectAgent extends BaseAgent {
     };
   }
 
-  override async executeTask(task: TaskDefinition): Promise<any> {
+  override async executeTask(task: TaskDefinition): Promise<unknown> {
     this.logger.info('Architect executing task', {
       agentId: this.id,
       taskType: task.type,
@@ -208,7 +208,7 @@ export class ArchitectAgent extends BaseAgent {
     }
   }
 
-  private async designSystem(task: TaskDefinition): Promise<any> {
+  private async designSystem(task: TaskDefinition): Promise<unknown> {
     const requirements = task.input?.requirements;
     const scale = task.input?.scale || 'medium';
     const constraints = task.input?.constraints || [];
@@ -225,11 +225,11 @@ export class ArchitectAgent extends BaseAgent {
       scale,
       style,
       architecture: {
-        components: [] as any[],
-        services: [] as any[],
-        databases: [] as any[],
-        queues: [] as any[],
-        caches: [] as any[]
+        components: [] as unknown[],
+        services: [] as unknown[],
+        databases: [] as unknown[],
+        queues: [] as unknown[],
+        caches: [] as unknown[]
       },
       patterns: [] as string[],
       technologies: {
@@ -247,7 +247,7 @@ export class ArchitectAgent extends BaseAgent {
         deployment: '',
         monitoring: ''
       },
-      constraints: constraints,
+      constraints,
       tradeoffs: [],
       risks: [],
       recommendations: [],
@@ -287,7 +287,7 @@ export class ArchitectAgent extends BaseAgent {
         purpose: 'Data processing and analytics',
         technology: 'Python/FastAPI'
       }
-    ] as any[];
+    ] as unknown[];
     
     design.patterns = [
       'Microservices Architecture',
@@ -316,7 +316,7 @@ export class ArchitectAgent extends BaseAgent {
     return design;
   }
 
-  private async reviewArchitecture(task: TaskDefinition): Promise<any> {
+  private async reviewArchitecture(task: TaskDefinition): Promise<unknown> {
     const architecture = task.parameters?.architecture;
     const focus = task.parameters?.focus || ['scalability', 'security', 'maintainability'];
     const standards = task.parameters?.standards || 'enterprise';
@@ -334,20 +334,20 @@ export class ArchitectAgent extends BaseAgent {
       issues: [] as ArchitectureIssue[],
       recommendations: [] as ArchitectureRecommendation[],
       compliance: {
-        passed: [] as any[],
-        failed: [] as any[],
-        warnings: [] as any[]
+        passed: [] as unknown[],
+        failed: [] as unknown[],
+        warnings: [] as unknown[]
       },
       patterns: {
-        identified: [] as any[],
-        missing: [] as any[],
-        antipatterns: [] as any[]
+        identified: [] as unknown[],
+        missing: [] as unknown[],
+        antipatterns: [] as unknown[]
       },
-      improvements: [] as any[],
+      improvements: [] as unknown[],
       riskAssessment: {
-        technical: [] as any[],
-        security: [] as any[],
-        operational: [] as any[]
+        technical: [] as unknown[],
+        security: [] as unknown[],
+        operational: [] as unknown[]
       },
       timestamp: new Date()
     };
@@ -383,7 +383,7 @@ export class ArchitectAgent extends BaseAgent {
     return review;
   }
 
-  private async designAPI(task: TaskDefinition): Promise<any> {
+  private async designAPI(task: TaskDefinition): Promise<unknown> {
     const domain = task.parameters?.domain;
     const style = task.parameters?.style || 'REST';
     const version = task.parameters?.version || 'v1';
@@ -402,7 +402,7 @@ export class ArchitectAgent extends BaseAgent {
       version,
       auth,
       endpoints: [] as ApiEndpoint[],
-      schemas: [] as any[],
+      schemas: [] as unknown[],
       security: {
         authentication: auth,
         authorization: 'RBAC',
@@ -457,7 +457,7 @@ export class ArchitectAgent extends BaseAgent {
     return apiDesign;
   }
 
-  private async designCloudArchitecture(task: TaskDefinition): Promise<any> {
+  private async designCloudArchitecture(task: TaskDefinition): Promise<unknown> {
     const provider = task.parameters?.provider || 'AWS';
     const regions = task.parameters?.regions || ['us-east-1'];
     const budget = task.parameters?.budget;
@@ -475,13 +475,13 @@ export class ArchitectAgent extends BaseAgent {
       budget,
       compliance,
       infrastructure: {
-        compute: [] as any[],
-        storage: [] as any[],
-        network: [] as any[],
-        database: [] as any[],
-        security: [] as any[]
+        compute: [] as unknown[],
+        storage: [] as unknown[],
+        network: [] as unknown[],
+        database: [] as unknown[],
+        security: [] as unknown[]
       },
-      services: [] as any[],
+      services: [] as unknown[],
       deployment: {
         strategy: 'blue-green',
         automation: 'terraform',
@@ -521,7 +521,7 @@ export class ArchitectAgent extends BaseAgent {
     return cloudDesign;
   }
 
-  private async designMicroservices(task: TaskDefinition): Promise<any> {
+  private async designMicroservices(task: TaskDefinition): Promise<unknown> {
     const domain = task.parameters?.domain;
     const services = task.parameters?.services || [];
     const communication = task.parameters?.communication || 'async';
@@ -557,8 +557,8 @@ export class ArchitectAgent extends BaseAgent {
         ci_cd: 'jenkins',
         configuration: 'helm'
       },
-      challenges: [] as any[],
-      solutions: [] as any[],
+      challenges: [] as unknown[],
+      solutions: [] as unknown[],
       timestamp: new Date()
     };
 
@@ -585,7 +585,7 @@ export class ArchitectAgent extends BaseAgent {
     return microservicesDesign;
   }
 
-  private async designSecurity(task: TaskDefinition): Promise<any> {
+  private async designSecurity(task: TaskDefinition): Promise<unknown> {
     const system = task.parameters?.system;
     const threats = task.parameters?.threats || [];
     const compliance = task.parameters?.compliance || [];
@@ -602,15 +602,15 @@ export class ArchitectAgent extends BaseAgent {
       sensitivity,
       compliance,
       threatModel: {
-        assets: [] as any[],
-        threats: [] as any[],
-        vulnerabilities: [] as any[],
-        risks: [] as any[]
+        assets: [] as unknown[],
+        threats: [] as unknown[],
+        vulnerabilities: [] as unknown[],
+        risks: [] as unknown[]
       },
       controls: {
-        preventive: [] as any[],
-        detective: [] as any[],
-        corrective: [] as any[]
+        preventive: [] as unknown[],
+        detective: [] as unknown[],
+        corrective: [] as unknown[]
       },
       architecture: {
         authentication: 'OAuth2 + JWT',
@@ -646,7 +646,7 @@ export class ArchitectAgent extends BaseAgent {
     return securityDesign;
   }
 
-  private async designScalability(task: TaskDefinition): Promise<any> {
+  private async designScalability(task: TaskDefinition): Promise<unknown> {
     const currentLoad = task.parameters?.currentLoad;
     const targetLoad = task.parameters?.targetLoad;
     const constraints = task.parameters?.constraints || [];
@@ -664,10 +664,10 @@ export class ArchitectAgent extends BaseAgent {
       constraints,
       budget,
       strategies: {
-        horizontal: [] as any[],
-        vertical: [] as any[],
-        caching: [] as any[],
-        database: [] as any[]
+        horizontal: [] as unknown[],
+        vertical: [] as unknown[],
+        caching: [] as unknown[],
+        database: [] as unknown[]
       },
       implementation: {
         autoScaling: true,
@@ -706,7 +706,7 @@ export class ArchitectAgent extends BaseAgent {
     return scalabilityDesign;
   }
 
-  private async designDatabase(task: TaskDefinition): Promise<any> {
+  private async designDatabase(task: TaskDefinition): Promise<unknown> {
     const requirements = task.parameters?.requirements;
     const dataTypes = task.parameters?.dataTypes || ['relational'];
     const scale = task.parameters?.scale || 'medium';
@@ -771,7 +771,7 @@ export class ArchitectAgent extends BaseAgent {
     return databaseDesign;
   }
 
-  private async performGeneralDesign(task: TaskDefinition): Promise<any> {
+  private async performGeneralDesign(task: TaskDefinition): Promise<unknown> {
     this.logger.info('Performing general design', {
       description: task.description
     });
@@ -784,7 +784,7 @@ export class ArchitectAgent extends BaseAgent {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 
-  override getAgentStatus(): any {
+  override getAgentStatus(): unknown {
     return {
       ...super.getAgentStatus(),
       specialization: 'System Architecture & Design',

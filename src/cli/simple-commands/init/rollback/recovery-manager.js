@@ -768,7 +768,7 @@ export class RecoveryManager {
     const executableContent = `#!/usr/bin/env bash
 # Claude Flow Local Executable Wrapper
 exec deno run --allow-all --unstable-kv --unstable-cron \\
-  "${import.meta.url.replace('file://', '').replace(/[^/]*$/, '../../../main.js')}" "$@"
+  "node ../../../main.js" "$@"
 `;
 
     try {

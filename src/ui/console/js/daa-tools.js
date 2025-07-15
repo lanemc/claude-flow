@@ -64,8 +64,8 @@ class DAATools {
         
         return {
             success: true,
-            agentId: agentId,
-            agent: agent
+            agentId,
+            agent
         };
     }
     
@@ -96,7 +96,7 @@ class DAATools {
         
         return {
             success: true,
-            matches: matches,
+            matches,
             totalCandidates: matches.length
         };
     }
@@ -126,7 +126,7 @@ class DAATools {
         
         return {
             success: allocationResult.success,
-            resourceId: resourceId,
+            resourceId,
             allocation: allocationResult,
             utilization: this.calculateResourceUtilization()
         };
@@ -178,7 +178,7 @@ class DAATools {
             id: commId,
             from: fromAgent,
             to: toAgent,
-            message: message,
+            message,
             timestamp: Date.now(),
             type: options.type || 'direct',
             priority: options.priority || 'normal',
@@ -197,7 +197,7 @@ class DAATools {
         
         return {
             success: result.success,
-            commId: commId,
+            commId,
             latency: result.latency,
             status: result.status
         };
@@ -208,7 +208,7 @@ class DAATools {
         const consensusId = this.generateConsensusId();
         const consensus = {
             id: consensusId,
-            proposal: proposal,
+            proposal,
             participants: agents,
             votes: new Map(),
             status: 'voting',
@@ -230,7 +230,7 @@ class DAATools {
         
         return {
             success: result.success,
-            consensusId: consensusId,
+            consensusId,
             expectedCompletion: result.expectedCompletion
         };
     }
@@ -263,8 +263,8 @@ class DAATools {
         
         return {
             success: recoveryResult.success,
-            faultId: faultId,
-            recoveryPlan: recoveryPlan,
+            faultId,
+            recoveryPlan,
             estimatedRecoveryTime: recoveryResult.estimatedTime
         };
     }
@@ -274,9 +274,9 @@ class DAATools {
         const optimizationId = this.generateOptimizationId();
         const optimization = {
             id: optimizationId,
-            target: target,
+            target,
             baseline: this.capturePerformanceBaseline(),
-            options: options,
+            options,
             started: Date.now(),
             status: 'running',
             improvements: [],
@@ -291,7 +291,7 @@ class DAATools {
         
         return {
             success: result.success,
-            optimizationId: optimizationId,
+            optimizationId,
             improvements: result.improvements,
             performanceGain: result.performanceGain
         };
@@ -590,7 +590,7 @@ class DAATools {
             resource.allocated += requested;
             return { success: true, allocated: requested, remaining: available - requested };
         } else {
-            return { success: false, error: 'Insufficient resources', available: available };
+            return { success: false, error: 'Insufficient resources', available };
         }
     }
     
@@ -602,7 +602,7 @@ class DAATools {
         
         this.metrics.communicationLatency = (this.metrics.communicationLatency + latency) / 2;
         
-        return { success: true, latency: latency, status: 'completed' };
+        return { success: true, latency, status: 'completed' };
     }
     
     startConsensusProcess(consensus) {
@@ -675,7 +675,7 @@ class DAATools {
         
         const totalGain = improvements.reduce((sum, imp) => sum + imp.improvement, 0) / improvements.length;
         
-        return { success: true, improvements: improvements, performanceGain: totalGain };
+        return { success: true, improvements, performanceGain: totalGain };
     }
     
     // UI Update Methods
@@ -917,8 +917,8 @@ class DAATools {
         const capabilities = document.getElementById('daa-agent-capabilities').value.split(',').map(s => s.trim());
         
         const result = this.daa_agent_create({
-            type: type,
-            capabilities: capabilities,
+            type,
+            capabilities,
             resources: { cpu: 1, memory: 512 }
         });
         
@@ -933,9 +933,9 @@ class DAATools {
         const priority = document.getElementById('daa-resource-priority').value;
         
         const result = this.daa_resource_alloc({
-            type: type,
-            capacity: capacity,
-            priority: priority,
+            type,
+            capacity,
+            priority,
             amount: capacity * 0.5 // Allocate 50% initially
         });
         
@@ -955,7 +955,7 @@ class DAATools {
         
         const agents = Array.from(this.agents.keys());
         const result = this.daa_consensus(proposal, agents, {
-            algorithm: algorithm,
+            algorithm,
             timeout: 30000
         });
         

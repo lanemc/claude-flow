@@ -92,6 +92,6 @@ export interface Command {
     flag: string;
     description: string;
     type?: 'string' | 'number' | 'boolean';
-    default?: any;
+    default?: unknown;
   }>;
 }

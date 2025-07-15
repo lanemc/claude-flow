@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../utils/error-handler';
+// import { getErrorMessage } from '../utils/error-handler';
 /**
  * Distributed Memory System with Cross-Agent Sharing
  */
@@ -56,7 +56,7 @@ export interface MemoryBackup {
   timestamp: Date;
   version: string;
   checksum: string;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
   entries: MemoryEntry[];
   partitions: MemoryPartition[];
 }
@@ -218,7 +218,7 @@ export class SwarmMemoryManager extends EventEmitter {
 
   async store(
     key: string,
-    value: any,
+    value: unknown,
     options: Partial<{
       partition: string;
       type: MemoryType;
@@ -226,7 +226,7 @@ export class SwarmMemoryManager extends EventEmitter {
       owner: AgentId;
       accessLevel: AccessLevel;
       ttl: number;
-      metadata: Record<string, any>;
+      metadata: Record<string, unknown>;
     }> = {}
   ): Promise<string> {
     this.ensureInitialized();
@@ -313,7 +313,7 @@ export class SwarmMemoryManager extends EventEmitter {
       requester: AgentId;
       includeMetadata: boolean;
     }> = {}
-  ): Promise<any> {
+  ): Promise<unknown> {
     this.ensureInitialized();
 
     // Try cache first
@@ -361,11 +361,11 @@ export class SwarmMemoryManager extends EventEmitter {
 
   async update(
     key: string,
-    value: any,
+    value: unknown,
     options: Partial<{
       partition: string;
       updater: AgentId;
-      metadata: Record<string, any>;
+      metadata: Record<string, unknown>;
       incrementVersion: boolean;
     }> = {}
   ): Promise<boolean> {
@@ -1007,7 +1007,7 @@ export class SwarmMemoryManager extends EventEmitter {
     return partition;
   }
 
-  private async serializeValue(value: any): Promise<any> {
+  private async serializeValue(value: unknown): Promise<unknown> {
     // Apply compression and encryption if enabled
     let serialized = JSON.stringify(value);
     
@@ -1023,7 +1023,7 @@ export class SwarmMemoryManager extends EventEmitter {
     return serialized;
   }
 
-  private async deserializeValue(value: any): Promise<any> {
+  private async deserializeValue(value: unknown): Promise<unknown> {
     let deserialized = value;
     
     if (this.config.enableEncryption) {
@@ -1257,7 +1257,7 @@ export class SwarmMemoryManager extends EventEmitter {
 
   private setupEventHandlers(): void {
     // Handle replication events
-    this.replication.on('entry-received', async (data: any) => {
+    this.replication.on('entry-received', async (data: Record<string, unknown>) => {
       const entry = data.entry as MemoryEntry;
       this.entries.set(entry.id, entry);
       await this.index.addEntry(entry);
@@ -1381,7 +1381,7 @@ class MemoryReplication extends EventEmitter {
     // Replicate entry to other nodes
   }
 
-  async synchronizeWith(targetNode: string, options: any): Promise<void> {
+  async synchronizeWith(targetNode: string, options: Record<string, unknown>): Promise<void> {
     // Synchronize with target node
   }
 
@@ -1405,12 +1405,12 @@ class MemoryPersistence {
     // Shutdown persistence
   }
 
-  async saveState(state: any): Promise<void> {
+  async saveState(state: Record<string, unknown>): Promise<void> {
     const statePath = path.join(this.config.persistencePath, 'state.json');
     await fs.writeFile(statePath, JSON.stringify(state, null, 2));
   }
 
-  async loadState(): Promise<any> {
+  async loadState(): Promise<unknown> {
     try {
       const statePath = path.join(this.config.persistencePath, 'state.json');
       const content = await fs.readFile(statePath, 'utf-8');

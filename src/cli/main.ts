@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { getErrorMessage } from '../utils/error-handler';
+// import { getErrorMessage } from '../utils/error-handler';
 /**
  * Claude-Flow CLI - Main entry point for Node.js
  */

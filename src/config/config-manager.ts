@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../utils/error-handler';
+// import { getErrorMessage } from '../utils/error-handler';
 /**
  * Node.js-compatible Configuration management for Claude-Flow
  */
@@ -214,7 +214,7 @@ export class ConfigManager {
   /**
    * Gets a configuration value by path
    */
-  get(path: string): any {
+  get(path: string): unknown {
     const keys = path.split('.');
     let current: any = this.config;
     
@@ -232,7 +232,7 @@ export class ConfigManager {
   /**
    * Sets a configuration value by path
    */
-  set(path: string, value: any): void {
+  set(path: string, value: unknown): void {
     const keys = path.split('.');
     let current: any = this.config;
     
@@ -409,7 +409,7 @@ export class ConfigManager {
   /**
    * Create a configuration template
    */
-  createTemplate(name: string, config: any): void {
+  createTemplate(name: string, config: Record<string, unknown>): void {
     // Implementation for creating templates
     console.log(`Creating template: ${name}`, config);
   }
@@ -417,10 +417,10 @@ export class ConfigManager {
   /**
    * Get format parsers
    */
-  getFormatParsers(): Record<string, any> {
+  getFormatParsers(): Record<string, unknown> {
     return {
       json: { extension: '.json', parse: JSON.parse, stringify: JSON.stringify },
-      yaml: { extension: '.yaml', parse: (content: string) => content, stringify: (obj: any) => JSON.stringify(obj) }
+      yaml: { extension: '.yaml', parse: (content: string) => content, stringify: (obj: unknown) => JSON.stringify(obj) }
     };
   }
 
@@ -440,14 +440,14 @@ export class ConfigManager {
   /**
    * Get path history
    */
-  getPathHistory(): any[] {
+  getPathHistory(): unknown[] {
     return []; // Mock implementation
   }
 
   /**
    * Get change history
    */
-  getChangeHistory(): any[] {
+  getChangeHistory(): unknown[] {
     return []; // Mock implementation
   }
 

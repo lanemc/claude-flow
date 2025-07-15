@@ -34,7 +34,7 @@ export const monitorCommand = new Command()
   .option('-c, --compact', 'Compact view mode')
   .option('--no-graphs', 'Disable ASCII graphs')
   .option('--focus <component:string>', 'Focus on specific component')
-  .action(async (options: any) => {
+  .action(async (_options: Record<string, unknown>) => {
     await startMonitorDashboard(options);
   });
 
@@ -46,10 +46,10 @@ interface MonitorData {
     agents: number;
     tasks: number;
   };
-  components: Record<string, any>;
-  agents: any[];
-  tasks: any[];
-  events: any[];
+  components: Record<string, unknown>;
+  agents: unknown[];
+  tasks: unknown[];
+  events: unknown[];
 }
 
 class Dashboard {
@@ -60,7 +60,7 @@ class Dashboard {
   private startTime = Date.now();
   private exportData: MonitorData[] = [];
 
-  constructor(private options: any) {
+  constructor(private options: Record<string, unknown>) {
     this.options.threshold = this.options.threshold || 80;
   }
 
@@ -191,7 +191,7 @@ class Dashboard {
     console.log(chalk.white.bold('Components'));
     console.log('─'.repeat(40));
     
-    const tableData: any[] = [];
+    const tableData: unknown[] = [];
 
     for (const [name, component] of Object.entries(data.components)) {
       const statusIcon = formatStatusIndicator(component.status);
@@ -322,7 +322,7 @@ class Dashboard {
                chalk.yellow(`${this.options.interval}s`));
   }
 
-  private renderError(error: any): void {
+  private renderError(error: Error | unknown): void {
     console.clear();
     console.log(chalk.red.bold('Monitor Error'));
     console.log('─'.repeat(40));
@@ -373,7 +373,7 @@ class Dashboard {
     return icons[type as keyof typeof icons] || chalk.blue('•');
   }
 
-  private generateMockAgents(): any[] {
+  private generateMockAgents(): unknown[] {
     return [
       {
         id: 'agent-001',
@@ -396,7 +396,7 @@ class Dashboard {
     ];
   }
 
-  private generateMockTasks(): any[] {
+  private generateMockTasks(): unknown[] {
     const types = ['research', 'implementation', 'analysis', 'coordination'];
     const statuses = ['running', 'pending', 'completed', 'failed'];
     
@@ -408,7 +408,7 @@ class Dashboard {
     }));
   }
 
-  private generateMockEvents(): any[] {
+  private generateMockEvents(): unknown[] {
     const events = [
       { type: 'task_completed', message: 'Research task completed successfully' },
       { type: 'agent_spawned', message: 'New implementer agent spawned' },
@@ -553,7 +553,7 @@ class Dashboard {
   }
 }
 
-async function startMonitorDashboard(options: any): Promise<void> {
+async function startMonitorDashboard(options: Record<string, unknown>): Promise<void> {
   // Validate options
   if (options.interval < 1) {
     console.error(chalk.red('Update interval must be at least 1 second'));

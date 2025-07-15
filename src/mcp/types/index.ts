@@ -8,24 +8,24 @@ export interface MCPMessage {
   jsonrpc: '2.0';
   id?: string | number;
   method?: string;
-  params?: any;
-  result?: any;
+  params?: unknown;
+  result?: unknown;
   error?: MCPError;
 }
 
 export interface MCPError {
   code: number;
   message: string;
-  data?: any;
+  data?: unknown;
 }
 
 export interface MCPRequest extends MCPMessage {
   method: string;
-  params?: any;
+  params?: unknown;
 }
 
 export interface MCPResponse extends MCPMessage {
-  result?: any;
+  result?: unknown;
   error?: MCPError;
 }
 
@@ -52,9 +52,9 @@ export interface MCPServerInfo {
 // Tool Definitions
 export interface MCPToolInputSchema {
   type: 'object';
-  properties?: Record<string, any>;
+  properties?: Record<string, unknown>;
   required?: string[];
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface MCPTool {
@@ -65,7 +65,7 @@ export interface MCPTool {
 
 export interface MCPToolCall {
   name: string;
-  arguments: Record<string, any>;
+  arguments: Record<string, unknown>;
 }
 
 export interface MCPToolResult {
@@ -223,7 +223,7 @@ export interface MemoryRetrieveResult {
   success: boolean;
   action: 'retrieve';
   key: string;
-  value: any;
+  value: unknown;
   found: boolean;
   namespace: string;
   timestamp: string;
@@ -235,8 +235,8 @@ export interface MemoryListResult {
   namespace: string;
   entries: Array<{
     key: string;
-    value: any;
-    metadata?: any;
+    value: unknown;
+    metadata?: unknown;
     timestamp: string;
   }>;
   count: number;
@@ -250,9 +250,9 @@ export interface MemorySearchResult {
   namespace: string;
   results: Array<{
     key: string;
-    value: any;
+    value: unknown;
     score?: number;
-    metadata?: any;
+    metadata?: unknown;
   }>;
   count: number;
   timestamp: string;
@@ -292,18 +292,18 @@ export interface WorkflowCreation {
   steps: Array<{
     name: string;
     type: string;
-    config: any;
+    config: Record<string, unknown>;
   }>;
   triggers: Array<{
     type: string;
-    condition: any;
+    condition: unknown;
   }>;
 }
 
 export interface DAAAgentCreation {
   agent_type: string;
   capabilities: string[];
-  resources: Record<string, any>;
+  resources: Record<string, unknown>;
 }
 
 export interface DAACapabilityMatch {
@@ -319,7 +319,7 @@ export interface DAACapabilityMatch {
 export interface SPARCMode {
   mode: 'dev' | 'api' | 'ui' | 'test' | 'refactor';
   task_description: string;
-  options?: Record<string, any>;
+  options?: Record<string, unknown>;
 }
 
 // Tool Execution Result Types
@@ -342,27 +342,27 @@ export type MCPToolExecutionResult =
   | EnsembleCreationResult
   | TransferLearningResult
   | NeuralExplanationResult
-  | { success: boolean; tool: string; message: string; args: any; timestamp: string }
+  | { success: boolean; tool: string; message: string; args: unknown; timestamp: string }
   | { success: false; error: string; timestamp: string };
 
 // Enhanced Memory Store Interface
 export interface EnhancedMemoryStore {
   initialize(): Promise<void>;
-  store(key: string, value: any, options?: {
+  store(key: string, value: unknown, options?: {
     namespace?: string;
     ttl?: number;
-    metadata?: any;
+    metadata?: unknown;
   }): Promise<{ size: number; id: string }>;
   retrieve(key: string, options?: {
     namespace?: string;
-  }): Promise<any>;
+  }): Promise<unknown>;
   list(options?: {
     namespace?: string;
     limit?: number;
   }): Promise<Array<{
     key: string;
-    value: any;
-    metadata?: any;
+    value: unknown;
+    metadata?: unknown;
     timestamp: string;
   }>>;
   delete(key: string, options?: {
@@ -373,9 +373,9 @@ export interface EnhancedMemoryStore {
     limit?: number;
   }): Promise<Array<{
     key: string;
-    value: any;
+    value: unknown;
     score?: number;
-    metadata?: any;
+    metadata?: unknown;
   }>>;
   close?(): Promise<void>;
 }
@@ -394,25 +394,25 @@ export interface ClaudeFlowMCPServerInterface {
   initializeResources(): Record<string, MCPResource>;
   
   handleMessage(message: MCPMessage): Promise<MCPResponse>;
-  handleInitialize(id: string | number, params?: any): MCPResponse;
+  handleInitialize(id: string | number, params?: unknown): MCPResponse;
   handleToolsList(id: string | number): MCPResponse;
-  handleToolCall(id: string | number, params: { name: string; arguments: Record<string, any> }): Promise<MCPResponse>;
+  handleToolCall(id: string | number, params: { name: string; arguments: Record<string, unknown> }): Promise<MCPResponse>;
   handleResourcesList(id: string | number): MCPResponse;
   handleResourceRead(id: string | number, params: { uri: string }): Promise<MCPResponse>;
   
-  executeTool(name: string, args: Record<string, any>): Promise<MCPToolExecutionResult>;
-  readResource(uri: string): Promise<any>;
+  executeTool(name: string, args: Record<string, unknown>): Promise<MCPToolExecutionResult>;
+  readResource(uri: string): Promise<unknown>;
   
   handleMemoryUsage(args: MemoryOperation): Promise<MemoryStoreResult | MemoryRetrieveResult | MemoryListResult | MemorySearchResult | { success: false; error: string; timestamp: string }>;
   handleMemorySearch(args: { pattern: string; namespace?: string; limit?: number }): Promise<MemorySearchResult | { success: false; error: string; timestamp: string }>;
   
-  createErrorResponse(id: string | number, code: number, message: string, data?: any): MCPResponse;
+  createErrorResponse(id: string | number, code: number, message: string, data?: unknown): MCPResponse;
 }
 
 // Pattern Recognition Types
 export interface PatternRecognitionResult {
   success: boolean;
-  data: any[];
+  data: Record<string, unknown>[];
   patterns_detected: {
     coordination_patterns: number;
     efficiency_patterns: number;
@@ -446,7 +446,7 @@ export interface CognitiveAnalysisResult {
 // Learning Adaptation Types
 export interface LearningAdaptationResult {
   success: boolean;
-  experience: any;
+  experience: unknown;
   adaptation_results: {
     model_version: string;
     performance_delta: string;
@@ -522,7 +522,7 @@ export interface TransferLearningResult {
 export interface NeuralExplanationResult {
   success: boolean;
   modelId: string;
-  prediction: any;
+  prediction: unknown;
   explanation: {
     decision_factors: Array<{
       factor: string;
@@ -580,9 +580,9 @@ export interface MCPServer {
     error?: string;
     metrics?: Record<string, number>;
   }>;
-  getMetrics(): any;
-  getSessions(): any[];
-  getSession(sessionId: string): any | undefined;
+  getMetrics(): unknown;
+  getSessions(): unknown[];
+  getSession(sessionId: string): unknown | undefined;
   terminateSession(sessionId: string): void;
 }
 
@@ -599,10 +599,10 @@ export interface MCPLifecycleManager {
 export interface MCPPerformanceMonitor {
   start(): void;
   stop(): void;
-  recordMetrics(metrics: any): void;
-  getMetrics(): any;
-  getAlerts(): any[];
-  addAlertRule(rule: any): void;
+  recordMetrics(metrics: unknown): void;
+  getMetrics(): unknown;
+  getAlerts(): unknown[];
+  addAlertRule(rule: unknown): void;
   removeAlertRule(ruleId: string): void;
 }
 
@@ -625,21 +625,21 @@ export interface MCPOrchestrationConfig {
 }
 
 export interface OrchestrationComponents {
-  orchestrator?: any;
-  swarmCoordinator?: any;
-  agentManager?: any;
-  resourceManager?: any;
-  memoryManager?: any;
-  messageBus?: any;
-  monitor?: any;
-  eventBus?: any;
-  terminalManager?: any;
+  orchestrator?: unknown;
+  swarmCoordinator?: unknown;
+  agentManager?: unknown;
+  resourceManager?: unknown;
+  memoryManager?: unknown;
+  messageBus?: unknown;
+  monitor?: unknown;
+  eventBus?: unknown;
+  terminalManager?: unknown;
 }
 
 export interface MCPOrchestrationIntegration {
   start(): Promise<void>;
   stop(): Promise<void>;
-  getStatus(): Map<string, any>;
+  getStatus(): Map<string, unknown>;
   isHealthy(): boolean;
   getServer(): MCPServer | undefined;
   getLifecycleManager(): MCPLifecycleManager | undefined;
@@ -647,8 +647,8 @@ export interface MCPOrchestrationIntegration {
 }
 
 export interface MCPProtocolManager {
-  negotiate(clientVersion: any): Promise<any>;
-  validateRequest(request: any): boolean;
-  getVersion(): any;
-  isCompatible(version: any): boolean;
+  negotiate(clientVersion: unknown): Promise<unknown>;
+  validateRequest(request: Request | Record<string, unknown>): boolean;
+  getVersion(): unknown;
+  isCompatible(version: unknown): boolean;
 }

@@ -135,7 +135,7 @@ export const startCommand = new Command('start')
           process.on('SIGTERM', shutdownWebUI);
           
           // Keep process alive
-          await new Promise<void>(() => {});
+          await new Promise<void>(() => { /* empty */ });
         } catch (webError) {
           // Fall back to TUI if web server is not available
           console.log(chalk.yellow('Web UI not available, falling back to Terminal UI'));
@@ -182,7 +182,7 @@ export const startCommand = new Command('start')
         console.log(chalk.gray('Use "claude-flow monitor" for real-time monitoring'));
         
         // Keep process running
-        await new Promise<void>(() => {});
+        await new Promise<void>(() => { /* empty */ });
       } 
       // Interactive mode (default)
       else {
@@ -227,25 +227,29 @@ export const startCommand = new Command('start')
               break;
 
             case '3':
-              const ui = new ProcessUI(processManager);
-              await ui.start();
-              break;
+              {
+                const ui = new ProcessUI(processManager);
+                await ui.start();
+                break;
+              }
 
             case '4':
-              console.clear();
-              systemMonitor.printSystemHealth();
-              console.log();
-              systemMonitor.printEventLog(10);
-              console.log();
-              console.log(chalk.gray('Press any key to continue...'));
-              await new Promise<void>((resolve) => {
-                const onData = () => {
-                  process.stdin.removeListener('data', onData);
-                  resolve();
-                };
-                process.stdin.once('data', onData);
-              });
-              break;
+              {
+                console.clear();
+                systemMonitor.printSystemHealth();
+                console.log();
+                systemMonitor.printEventLog(10);
+                console.log();
+                console.log(chalk.gray('Press any key to continue...'));
+                await new Promise<void>((resolve) => {
+                  const onData = () => {
+                    process.stdin.removeListener('data', onData);
+                    resolve();
+                  };
+                  process.stdin.once('data', onData);
+                });
+                break;
+              }
 
             case 'q':
             case 'Q':
@@ -333,7 +337,7 @@ async function stopExistingInstance(): Promise<void> {
       // Process already stopped
     }
     
-    await fs.unlink('.claude-flow.pid').catch(() => {});
+    await fs.unlink('.claude-flow.pid').catch(() => { /* empty */ });
     console.log(chalk.green('✓ Existing instance stopped'));
   } catch (error) {
     console.warn(chalk.yellow('Warning: Could not stop existing instance'), (error as Error).message);
@@ -486,7 +490,7 @@ async function waitForSystemReady(processManager: ProcessManager): Promise<void>
 
 async function cleanupOnFailure(): Promise<void> {
   try {
-    await fs.unlink('.claude-flow.pid').catch(() => {});
+    await fs.unlink('.claude-flow.pid').catch(() => { /* empty */ });
     console.log(chalk.gray('Cleaned up PID file'));
   } catch {
     // Ignore cleanup errors
@@ -495,7 +499,7 @@ async function cleanupOnFailure(): Promise<void> {
 
 async function cleanupOnShutdown(): Promise<void> {
   try {
-    await fs.unlink('.claude-flow.pid').catch(() => {});
+    await fs.unlink('.claude-flow.pid').catch(() => { /* empty */ });
     console.log(chalk.gray('Cleaned up PID file'));
   } catch {
     // Ignore cleanup errors

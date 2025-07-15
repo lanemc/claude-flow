@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../utils/error-handler';
+// import { getErrorMessage } from '../utils/error-handler';
 /**
  * Load balancer and rate limiting for MCP
  */
@@ -407,7 +407,7 @@ export class RequestQueue {
   private queue: Array<{
     session: MCPSession;
     request: MCPRequest;
-    resolve: (result: any) => void;
+    resolve: (result: unknown) => void;
     reject: (error: Error) => void;
     timestamp: number;
   }> = [];

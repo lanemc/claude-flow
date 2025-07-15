@@ -1424,7 +1424,10 @@ export class AdvancedMemoryManager extends EventEmitter {
           });
           return { action: 'updated' };
         case 'rename':
-          const newKey = `${item.key}_imported_${Date.now()}`;
+          {
+const newKey = `${item.key
+
+        }}_imported_${Date.now()}`;
           await this.store(newKey, item.value, {
             namespace: item.namespace,
             type: item.type,
@@ -1432,6 +1435,7 @@ export class AdvancedMemoryManager extends EventEmitter {
             metadata: item.metadata
           });
           return { action: 'imported' };
+        }
         default:
           return { 
             action: 'conflict', 
@@ -1725,7 +1729,7 @@ export class AdvancedMemoryManager extends EventEmitter {
   private async archiveEntries(entries: MemoryEntry[], archivePath: string): Promise<void> {
     const archiveData = {
       archivedAt: new Date().toISOString(),
-      entries: entries
+      entries
     };
     
     const archiveFile = join(archivePath, `archive-${Date.now()}.json`);

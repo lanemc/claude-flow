@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../utils/error-handler';
+// import { getErrorMessage } from '../utils/error-handler';
 /**
  * MCP (Model Context Protocol) server implementation
  */
@@ -94,12 +94,12 @@ export class MCPServer implements IMCPServer {
     private config: MCPConfig,
     private eventBus: IEventBus,
     private logger: ILogger,
-    private orchestrator?: any, // Reference to orchestrator instance
-    private swarmCoordinator?: any, // Reference to swarm coordinator instance
-    private agentManager?: any, // Reference to agent manager instance
-    private resourceManager?: any, // Reference to resource manager instance
-    private messagebus?: any, // Reference to message bus instance
-    private monitor?: any, // Reference to real-time monitor instance
+    private orchestrator?: unknown, // Reference to orchestrator instance
+    private swarmCoordinator?: unknown, // Reference to swarm coordinator instance
+    private agentManager?: unknown, // Reference to agent manager instance
+    private resourceManager?: unknown, // Reference to resource manager instance
+    private messagebus?: unknown, // Reference to message bus instance
+    private monitor?: unknown, // Reference to real-time monitor instance
   ) {
     // Initialize transport
     this.transport = this.createTransport();
@@ -163,7 +163,7 @@ export class MCPServer implements IMCPServer {
 
       // Clean up session manager
       if (this.sessionManager && 'destroy' in this.sessionManager) {
-        (this.sessionManager as any).destroy();
+        (this.sessionManager as unknown).destroy();
       }
 
       // Clean up all sessions
@@ -487,7 +487,7 @@ export class MCPServer implements IMCPServer {
         },
         required: ['name'],
       },
-      handler: async (input: any) => {
+      handler: async (input: unknown) => {
         const tool = this.toolRegistry.getTool(input.name);
         if (!tool) {
           throw new Error(`Tool not found: ${input.name}`);
@@ -656,7 +656,7 @@ export async function runMCPServer(): Promise<void> {
     info: (message: string, meta?: unknown) => console.info(message, meta),
     warn: (message: string, meta?: unknown) => console.warn(message, meta),
     error: (message: string, error?: unknown) => console.error(message, error),
-    configure: async () => {},
+    configure: async () => { /* empty */ },
   };
   
   const server = new MCPServer(mcpConfig, eventBus, mockLogger);

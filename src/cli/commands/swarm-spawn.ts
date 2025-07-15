@@ -23,7 +23,7 @@ const swarmStates = new Map<string, SwarmState>();
 
 export function initializeSwarm(swarmId: string, objective: string): void {
   swarmStates.set(swarmId, {
-    swarmId: swarmId,
+    swarmId,
     objective,
     agents: new Map<string, Agent>(),
     startTime: Date.now(),
@@ -42,7 +42,7 @@ export async function spawnSwarmAgent(swarmId: string, agentType: string, task: 
     type: agentType,
     status: 'active',
     name: `${agentType}-${agentId}`,
-    task: task,
+    task,
   };
   swarm.agents.set(agentId, agent);
   

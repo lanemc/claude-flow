@@ -218,7 +218,7 @@ function showEnvironmentWarnings(env: ExecutionEnvironment): void {
 /**
  * Applies smart defaults based on environment
  */
-export function applySmartDefaults<T extends Record<string, any>>(
+export function applySmartDefaults<T extends Record<string, unknown>>(
   options: T,
   env?: ExecutionEnvironment
 ): T & { appliedDefaults: string[] } {
@@ -229,24 +229,24 @@ export function applySmartDefaults<T extends Record<string, any>>(
   // Apply defaults based on environment
   if ((environment.isVSCode || environment.isCI || !environment.supportsRawMode) && 
       !options.hasOwnProperty('skipPermissions')) {
-    (enhanced as any).skipPermissions = true;
-    (enhanced as any).dangerouslySkipPermissions = true;
+    (enhanced as unknown).skipPermissions = true;
+    (enhanced as unknown).dangerouslySkipPermissions = true;
     appliedDefaults.push('--dangerously-skip-permissions');
   }
   
   if ((environment.isCI || !environment.isInteractive) && 
       !options.hasOwnProperty('nonInteractive')) {
-    (enhanced as any).nonInteractive = true;
+    (enhanced as unknown).nonInteractive = true;
     appliedDefaults.push('--non-interactive');
   }
   
   if (environment.isCI && !options.hasOwnProperty('json')) {
-    (enhanced as any).json = true;
+    (enhanced as unknown).json = true;
     appliedDefaults.push('--json');
   }
   
   if (!environment.supportsColor && !options.hasOwnProperty('noColor')) {
-    (enhanced as any).noColor = true;
+    (enhanced as unknown).noColor = true;
     appliedDefaults.push('--no-color');
   }
   

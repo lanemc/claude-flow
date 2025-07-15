@@ -5,7 +5,7 @@
  * @module swarm-memory
  */
 
-import { SharedMemory } from './shared-memory';
+import { SharedMemory } from './shared-memory.js';
 import * as path from 'path';
 import type {
   SwarmMemoryOptions,
@@ -189,7 +189,7 @@ class SwarmMemory extends SharedMemory {
   /**
    * Update task status
    */
-  async updateTaskStatus(taskId: string, status: string, result?: any): Promise<{ taskId: string; status: string; updated: boolean }> {
+  async updateTaskStatus(taskId: string, status: string, result?: unknown): Promise<{ taskId: string; status: string; updated: boolean }> {
     const task = await this.getTask(taskId);
     if (!task) {
       throw new Error(`Task ${taskId} not found`);
@@ -387,7 +387,7 @@ class SwarmMemory extends SharedMemory {
   /**
    * Store coordination state
    */
-  async storeCoordination(key: string, state: any): Promise<{ key: string; stored: boolean }> {
+  async storeCoordination(key: string, state: Record<string, unknown>): Promise<{ key: string; stored: boolean }> {
     await this.store(key, state, {
       namespace: SWARM_NAMESPACES.COORDINATION,
       ttl: 3600, // 1 hour
@@ -403,7 +403,7 @@ class SwarmMemory extends SharedMemory {
   /**
    * Get coordination state
    */
-  async getCoordination(key: string): Promise<any> {
+  async getCoordination(key: string): Promise<unknown> {
     return await this.retrieve(key, { namespace: SWARM_NAMESPACES.COORDINATION });
   }
 
@@ -532,8 +532,8 @@ class SwarmMemory extends SharedMemory {
     return {
       swarmId: this.swarmId,
       exportedAt: new Date().toISOString(),
-      agents: agents,
-      tasks: tasks,
+      agents,
+      tasks,
       patterns: patterns.map(p => p.value as NeuralPattern),
       statistics: await this.getSwarmStats()
     };
@@ -543,7 +543,7 @@ class SwarmMemory extends SharedMemory {
    * Import swarm state
    */
   async importSwarmState(state: SwarmExportState): Promise<ImportResult> {
-    let imported: ImportResult = {
+    const imported: ImportResult = {
       agents: 0,
       tasks: 0,
       patterns: 0

@@ -150,7 +150,7 @@ export class GitHubMCPBridge {
             // Emit result back to the view
             this.eventBus.emit('tool:executed', {
               tool: data.tool,
-              result: result,
+              result,
               source: 'github-view'
             });
           }
@@ -191,7 +191,5 @@ export function runGitHubViewTest() {
   console.log('═'.repeat(50));
 }
 
-// Run test if executed directly
-if (typeof process !== 'undefined' && process.argv[1] === import.meta.url) {
-  runGitHubViewTest();
-}
+// Run test if executed directly in Node.js environment
+// This block is not needed in browser environment

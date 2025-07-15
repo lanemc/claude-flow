@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../utils/error-handler';
+// import { getErrorMessage } from '../utils/error-handler';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import * as os from 'os';
@@ -158,7 +158,7 @@ describe('PromptCopier', () => {
     test('should detect verification failures', async () => {
       // Mock fs.stat to simulate size mismatch
       const originalStat = fs.stat;
-      jest.spyOn(fs, 'stat').mockImplementation(async (filePath: any) => {
+      jest.spyOn(fs, 'stat').mockImplementation(async (filePath: unknown) => {
         const stats = await originalStat(filePath);
         if (filePath.includes('dest') && filePath.includes('test1.md')) {
           return { ...stats, size: stats.size + 1 };
@@ -198,7 +198,7 @@ describe('PromptCopier', () => {
 
   describe('Progress reporting', () => {
     test('should report progress during copy', async () => {
-      const progressUpdates: any[] = [];
+      const progressUpdates: unknown[] = [];
 
       await copyPrompts({
         source: sourceDir,

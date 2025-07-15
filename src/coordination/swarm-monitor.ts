@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../utils/error-handler';
+// import { getErrorMessage } from '../utils/error-handler';
 import { EventEmitter } from 'node:events';
 import * as os from 'node:os';
 import * as fs from 'node:fs/promises';
@@ -47,7 +47,7 @@ interface Alert {
   level: 'info' | 'warning' | 'error' | 'critical';
   type: 'agent_failure' | 'high_cpu' | 'high_memory' | 'stalled_agent' | 'low_throughput' | 'error_rate';
   message: string;
-  details?: any;
+  details?: unknown;
 }
 
 interface MonitoringConfig {
@@ -350,7 +350,7 @@ export class SwarmMonitor extends EventEmitter {
     }
   }
 
-  private createAlert(type: Alert['type'], level: Alert['level'], message: string, details?: any): void {
+  private createAlert(type: Alert['type'], level: Alert['level'], message: string, details?: unknown): void {
     const alert: Alert = {
       id: `${type}_${Date.now()}`,
       timestamp: Date.now(),

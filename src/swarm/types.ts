@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../utils/error-handler';
+// import { getErrorMessage } from '../utils/error-handler';
 /**
  * Comprehensive types and interfaces for the swarm system
  */
@@ -176,7 +176,7 @@ export interface AgentConfig {
   
   // Specialization
   expertise: Record<string, number>;
-  preferences: Record<string, any>;
+  preferences: Record<string, unknown>;
 }
 
 export interface AgentEnvironment {
@@ -195,7 +195,7 @@ export interface AgentEnvironment {
   
   // Tool access
   availableTools: string[];
-  toolConfigs: Record<string, any>;
+  toolConfigs: Record<string, unknown>;
 }
 
 export interface AgentError {
@@ -203,7 +203,7 @@ export interface AgentError {
   type: string;
   message: string;
   stack?: string;
-  context: Record<string, any>;
+  context: Record<string, unknown>;
   severity: 'low' | 'medium' | 'high' | 'critical';
   resolved: boolean;
 }
@@ -273,7 +273,7 @@ export interface TaskRequirements {
   // Environment requirements
   tools: string[];
   permissions: string[];
-  environment?: Record<string, any>;
+  environment?: Record<string, unknown>;
   
   // Quality requirements
   reviewRequired?: boolean;
@@ -310,7 +310,7 @@ export interface TaskContext {
   relatedTasks?: TaskDefinition[];
   
   // Custom context data
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface TaskResult {
@@ -323,9 +323,9 @@ export interface TaskResult {
   error?: TaskError;
   
   // Result data
-  output: any;
-  artifacts: Record<string, any>;
-  metadata: Record<string, any>;
+  output: unknown;
+  artifacts: Record<string, unknown>;
+  metadata: Record<string, unknown>;
   
   // Quality metrics
   quality: number;
@@ -345,7 +345,7 @@ export interface TaskResult {
   
   // Validation
   validated: boolean;
-  validationResults?: any;
+  validationResults?: unknown;
   
   // Follow-up
   recommendations?: string[];
@@ -365,15 +365,15 @@ export interface TaskDefinition {
   priority: TaskPriority;
   
   // Input/Output
-  input: any;
-  expectedOutput?: any;
+  input: unknown;
+  expectedOutput?: unknown;
   
   // Execution details
   instructions: string;
   context: TaskContext;
-  parameters?: Record<string, any>;
-  examples?: any[];
-  metadata?: Record<string, any>;
+  parameters?: Record<string, unknown>;
+  examples?: unknown[];
+  metadata?: Record<string, unknown>;
   
   // Tracking
   status: TaskStatus;
@@ -419,7 +419,7 @@ export interface TaskError {
   message: string;
   code?: string;
   stack?: string;
-  context: Record<string, any>;
+  context: Record<string, unknown>;
   recoverable: boolean;
   retryable: boolean;
 }
@@ -575,9 +575,9 @@ export interface SwarmProgress {
 
 export interface SwarmResults {
   // Primary outputs
-  outputs: Record<string, any>;
-  artifacts: Record<string, any>;
-  reports: Record<string, any>;
+  outputs: Record<string, unknown>;
+  artifacts: Record<string, unknown>;
+  reports: Record<string, unknown>;
   
   // Quality metrics
   overallQuality: number;
@@ -756,7 +756,7 @@ export type MemoryType =
 export interface MemoryEntry {
   id: string;
   key: string;
-  value: any;
+  value: unknown;
   
   // Metadata
   type: MemoryType;
@@ -864,7 +864,7 @@ export interface Alert {
   
   // Context
   source: string;
-  context: Record<string, any>;
+  context: Record<string, unknown>;
   
   // Handling
   acknowledged: boolean;
@@ -901,7 +901,7 @@ export interface SwarmEvent {
   source: string;
   
   // Event data
-  data: Record<string, any>;
+  data: Record<string, unknown>;
   
   // Routing
   targets?: string[];
@@ -1079,7 +1079,7 @@ export interface ValidationResult {
   // Context
   validatedAt: Date;
   validator: string;
-  context: Record<string, any>;
+  context: Record<string, unknown>;
 }
 
 export interface ValidationError {
@@ -1098,23 +1098,23 @@ export interface ValidationWarning {
 
 // ===== TYPE GUARDS =====
 
-export function isAgentId(obj: any): obj is AgentId {
+export function isAgentId(obj: unknown): obj is AgentId {
   return obj && typeof obj.id === 'string' && typeof obj.swarmId === 'string';
 }
 
-export function isTaskId(obj: any): obj is TaskId {
+export function isTaskId(obj: unknown): obj is TaskId {
   return obj && typeof obj.id === 'string' && typeof obj.swarmId === 'string';
 }
 
-export function isSwarmEvent(obj: any): obj is SwarmEvent {
+export function isSwarmEvent(obj: unknown): obj is SwarmEvent {
   return obj && typeof obj.id === 'string' && typeof obj.type === 'string';
 }
 
-export function isTaskDefinition(obj: any): obj is TaskDefinition {
+export function isTaskDefinition(obj: unknown): obj is TaskDefinition {
   return obj && isTaskId(obj.id) && typeof obj.type === 'string';
 }
 
-export function isAgentState(obj: any): obj is AgentState {
+export function isAgentState(obj: unknown): obj is AgentState {
   return obj && isAgentId(obj.id) && typeof obj.status === 'string';
 }
 

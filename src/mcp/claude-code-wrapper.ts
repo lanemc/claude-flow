@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { getErrorMessage } from '../utils/error-handler';
+// import { getErrorMessage } from '../utils/error-handler';
 import { Server } from '@modelcontextprotocol/sdk/server/index';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio';
 import {
@@ -36,7 +36,7 @@ interface SwarmAgent {
   mode: string;
   task: string;
   status: 'pending' | 'active' | 'completed' | 'failed';
-  result?: any;
+  result?: unknown;
 }
 
 interface SwarmExecution {
@@ -54,7 +54,7 @@ export class ClaudeCodeMCPWrapper {
   private server: Server;
   private sparcModes: Map<string, SparcMode> = new Map();
   private swarmExecutions: Map<string, SwarmExecution> = new Map();
-  private claudeCodeMCP: any; // Reference to Claude Code MCP client
+  private claudeCodeMCP: unknown; // Reference to Claude Code MCP client
 
   constructor() {
     this.server = new Server({
@@ -188,7 +188,7 @@ export class ClaudeCodeMCPWrapper {
     return tools;
   }
 
-  private async handleToolCall(toolName: string, args: any): Promise<CallToolResult> {
+  private async handleToolCall(toolName: string, args: unknown): Promise<CallToolResult> {
     try {
       if (toolName.startsWith('sparc_')) {
         return await this.handleSparcTool(toolName, args);
@@ -207,7 +207,7 @@ export class ClaudeCodeMCPWrapper {
     }
   }
 
-  private async handleSparcTool(toolName: string, args: any): Promise<CallToolResult> {
+  private async handleSparcTool(toolName: string, args: unknown): Promise<CallToolResult> {
     const mode = toolName.replace('sparc_', '');
 
     // Handle special tools
@@ -492,7 +492,7 @@ Use the appropriate tools for each phase and maintain progress in TodoWrite.`;
     };
   }
 
-  private async handleSwarm(args: any): Promise<CallToolResult> {
+  private async handleSwarm(args: unknown): Promise<CallToolResult> {
     const { objective, strategy, mode = 'distributed', maxAgents = 5 } = args;
     const swarmId = generateId();
     
@@ -657,7 +657,7 @@ Use the appropriate tools for each phase and maintain progress in TodoWrite.`;
     };
   }
 
-  private async forwardToClaudeCode(toolName: string, args: any): Promise<CallToolResult> {
+  private async forwardToClaudeCode(toolName: string, args: unknown): Promise<CallToolResult> {
     // For SPARC tools that were already handled, this shouldn't be called
     // For other tools, we execute them using the existing logic
     

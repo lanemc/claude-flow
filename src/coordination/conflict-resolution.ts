@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../utils/error-handler';
+// import { getErrorMessage } from '../utils/error-handler';
 /**
  * Conflict resolution mechanisms for multi-agent coordination
  */
@@ -36,7 +36,7 @@ export interface ConflictResolution {
 
 export interface ConflictResolutionStrategy {
   name: string;
-  resolve(conflict: ResourceConflict | TaskConflict, context: any): Promise<ConflictResolution>;
+  resolve(conflict: ResourceConflict | TaskConflict, context: Record<string, unknown>): Promise<ConflictResolution>;
 }
 
 /**
@@ -227,7 +227,7 @@ export class ConflictResolver {
   async resolveConflict(
     conflictId: string,
     strategyName: string,
-    context: any,
+    context: Record<string, unknown>,
   ): Promise<ConflictResolution> {
     const conflict = this.conflicts.get(conflictId);
     if (!conflict) {
@@ -281,17 +281,17 @@ export class ConflictResolver {
     }
 
     // Build context based on conflict type
-    let context: any = {};
+    const context: Record<string, unknown> = {};
 
     if (preferredStrategy === 'priority') {
       // In a real implementation, fetch agent priorities from configuration
       context.agentPriorities = new Map(
-        conflict.agents.map((id, index) => [id, conflict.agents.length - index])
+        conflict.agents.map((id, _index) => [id, conflict.agents.length - index])
       );
     } else if (preferredStrategy === 'timestamp') {
       // In a real implementation, fetch request timestamps
       context.requestTimestamps = new Map(
-        conflict.agents.map((id, index) => [id, new Date(Date.now() - index * 1000)])
+        conflict.agents.map((id, _index) => [id, new Date(Date.now() - index * 1000)])
       );
     }
 

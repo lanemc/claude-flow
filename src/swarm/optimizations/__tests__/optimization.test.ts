@@ -127,7 +127,7 @@ describe('Swarm Optimizations', () => {
     
     it('should handle concurrent write operations', async () => {
       // Mock file operations since real file system isn't needed
-      jest.spyOn(fileManager, 'writeFile').mockResolvedValue({ success: true, path: 'test-path' } as any);
+      jest.spyOn(fileManager, 'writeFile').mockResolvedValue({ success: true, path: 'test-path' } as unknown);
       
       const writes = [];
       
@@ -174,7 +174,7 @@ describe('Swarm Optimizations', () => {
     it('should reuse connections', async () => {
       // Mock connection behavior since ClaudeAPI isn't available
       const mockConnection = { id: 'mock-conn-1', isHealthy: true };
-      jest.spyOn(pool, 'acquire').mockResolvedValue(mockConnection as any);
+      jest.spyOn(pool, 'acquire').mockResolvedValue(mockConnection as unknown);
       jest.spyOn(pool, 'release').mockResolvedValue(undefined);
       
       const conn1 = await pool.acquire();
@@ -271,7 +271,7 @@ describe('Swarm Optimizations', () => {
       
       // Mock the API call since ClaudeAPI isn't available
       const mockResult = { taskId: task.id, agentId: agentId.id, success: true };
-      jest.spyOn(executor, 'executeTask').mockResolvedValue(mockResult as any);
+      jest.spyOn(executor, 'executeTask').mockResolvedValue(mockResult as unknown);
       
       const result = await executor.executeTask(task, agentId);
       
@@ -363,7 +363,7 @@ describe('Swarm Optimizations', () => {
       
       // Mock the execution to return a result
       const mockResult = { taskId: task.id, agentId: agentId.id, success: true };
-      jest.spyOn(executor, 'executeTask').mockResolvedValue(mockResult as any);
+      jest.spyOn(executor, 'executeTask').mockResolvedValue(mockResult as unknown);
       
       await executor.executeTask(task, agentId);
       

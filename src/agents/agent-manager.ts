@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../utils/error-handler';
+// import { getErrorMessage } from '../utils/error-handler';
 /**
  * Comprehensive agent management system
  */
@@ -17,8 +17,8 @@ import type {
   AgentEnvironment, 
   AgentMetrics,
   AgentError,
-  TaskId,
-  TaskDefinition
+  TaskId as _TaskId,
+  TaskDefinition as _TaskDefinition
 } from '../swarm/types';
 import type { DistributedMemorySystem } from '../memory/distributed-memory';
 import { generateId } from '../utils/helpers';

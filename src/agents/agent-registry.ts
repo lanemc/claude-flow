@@ -1,11 +1,11 @@
-import { getErrorMessage } from '../utils/error-handler';
+// import { getErrorMessage } from '../utils/error-handler';
 /**
  * Agent Registry with Memory Integration
  * Provides persistent storage and coordination for agent management
  */
 
 import type { DistributedMemorySystem } from '../memory/distributed-memory';
-import type { AgentState, AgentId, AgentType, AgentStatus } from '../swarm/types';
+import type { AgentState, AgentType, AgentStatus } from '../swarm/types';
 import { EventEmitter } from 'node:events';
 
 export interface AgentRegistryEntry {
@@ -13,7 +13,7 @@ export interface AgentRegistryEntry {
   createdAt: Date;
   lastUpdated: Date;
   tags: string[];
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
 }
 
 export interface AgentQuery {
@@ -35,6 +35,20 @@ export interface AgentStatistics {
   totalUptime: number;
   tasksCompleted: number;
   successRate: number;
+}
+
+export interface CoordinationData {
+  taskId?: string;
+  dependencies?: string[];
+  sharedState?: Record<string, unknown>;
+  messages?: Array<{
+    from: string;
+    to: string;
+    content: string;
+    timestamp: Date;
+  }>;
+  metrics?: Record<string, number>;
+  [key: string]: unknown;
 }
 
 /**
@@ -375,7 +389,7 @@ export class AgentRegistry extends EventEmitter {
   /**
    * Store agent coordination data
    */
-  async storeCoordinationData(agentId: string, data: any): Promise<void> {
+  async storeCoordinationData(agentId: string, data: CoordinationData): Promise<void> {
     const key = `coordination:${agentId}`;
     await this.memory.store(key, {
       agentId,
@@ -391,10 +405,10 @@ export class AgentRegistry extends EventEmitter {
   /**
    * Retrieve agent coordination data
    */
-  async getCoordinationData(agentId: string): Promise<any> {
+  async getCoordinationData(agentId: string): Promise<CoordinationData | null> {
     const key = `coordination:${agentId}`;
     const result = await this.memory.retrieve(key);
-    return result?.value || null;
+    return (result?.value as CoordinationData) || null;
   }
 
   // === PRIVATE METHODS ===
@@ -408,8 +422,9 @@ export class AgentRegistry extends EventEmitter {
 
       this.cache.clear();
       for (const entry of entries) {
-        if (entry.value && entry.value.agent) {
-          this.cache.set(entry.value.agent.id.id, entry.value);
+        if (entry.value && typeof entry.value === 'object' && 'agent' in entry.value) {
+          const agentEntry = entry.value as AgentRegistryEntry;
+          this.cache.set(agentEntry.agent.id.id, agentEntry);
         }
       }
 

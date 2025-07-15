@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../utils/error-handler';
+// import { getErrorMessage } from '../utils/error-handler';
 /**
  * Metrics and monitoring for coordination performance
  */
@@ -286,13 +286,13 @@ export class CoordinationMetricsCollector {
       this.recordMetric('task.created', 1);
     });
 
-    this.eventBus.on(SystemEvents.TASK_STARTED, (data: any) => {
+    this.eventBus.on(SystemEvents.TASK_STARTED, (data: Record<string, unknown>) => {
       this.taskStartTimes.set(data.taskId, new Date());
       this.gauges.activeTasks++;
       this.recordMetric('task.started', 1);
     });
 
-    this.eventBus.on(SystemEvents.TASK_COMPLETED, (data: any) => {
+    this.eventBus.on(SystemEvents.TASK_COMPLETED, (data: Record<string, unknown>) => {
       this.counters.completedTasks++;
       this.gauges.activeTasks = Math.max(0, this.gauges.activeTasks - 1);
       
@@ -306,14 +306,14 @@ export class CoordinationMetricsCollector {
       this.recordMetric('task.completed', 1);
     });
 
-    this.eventBus.on(SystemEvents.TASK_FAILED, (data: any) => {
+    this.eventBus.on(SystemEvents.TASK_FAILED, (data: Record<string, unknown>) => {
       this.counters.failedTasks++;
       this.gauges.activeTasks = Math.max(0, this.gauges.activeTasks - 1);
       this.taskStartTimes.delete(data.taskId);
       this.recordMetric('task.failed', 1);
     });
 
-    this.eventBus.on(SystemEvents.TASK_CANCELLED, (data: any) => {
+    this.eventBus.on(SystemEvents.TASK_CANCELLED, (data: Record<string, unknown>) => {
       this.counters.cancelledTasks++;
       this.gauges.activeTasks = Math.max(0, this.gauges.activeTasks - 1);
       this.taskStartTimes.delete(data.taskId);
@@ -344,14 +344,14 @@ export class CoordinationMetricsCollector {
     });
 
     // Resource events
-    this.eventBus.on(SystemEvents.RESOURCE_ACQUIRED, (data: any) => {
+    this.eventBus.on(SystemEvents.RESOURCE_ACQUIRED, (data: Record<string, unknown>) => {
       this.lockStartTimes.set(data.resourceId, new Date());
       this.gauges.lockedResources++;
       this.gauges.freeResources = Math.max(0, this.gauges.freeResources - 1);
       this.recordMetric('resource.acquired', 1);
     });
 
-    this.eventBus.on(SystemEvents.RESOURCE_RELEASED, (data: any) => {
+    this.eventBus.on(SystemEvents.RESOURCE_RELEASED, (data: Record<string, unknown>) => {
       this.gauges.freeResources++;
       this.gauges.lockedResources = Math.max(0, this.gauges.lockedResources - 1);
       
@@ -372,13 +372,13 @@ export class CoordinationMetricsCollector {
     });
 
     // Message events
-    this.eventBus.on(SystemEvents.MESSAGE_SENT, (data: any) => {
+    this.eventBus.on(SystemEvents.MESSAGE_SENT, (data: Record<string, unknown>) => {
       this.counters.messagesSent++;
       this.messageStartTimes.set(data.message.id, new Date());
       this.recordMetric('message.sent', 1);
     });
 
-    this.eventBus.on(SystemEvents.MESSAGE_RECEIVED, (data: any) => {
+    this.eventBus.on(SystemEvents.MESSAGE_RECEIVED, (data: Record<string, unknown>) => {
       this.counters.messagesReceived++;
       
       const startTime = this.messageStartTimes.get(data.message.id);
@@ -409,7 +409,7 @@ export class CoordinationMetricsCollector {
     });
 
     // Circuit breaker events
-    this.eventBus.on('circuitbreaker:state-change', (data: any) => {
+    this.eventBus.on('circuitbreaker:state-change', (data: Record<string, unknown>) => {
       if (data.to === 'open') {
         this.counters.circuitBreakerTrips++;
         this.recordMetric('circuitbreaker.trip', 1);
@@ -568,17 +568,17 @@ export class CoordinationMetricsCollector {
     
     // Reset counters
     for (const key in this.counters) {
-      (this.counters as any)[key] = 0;
+      (this.counters as unknown)[key] = 0;
     }
     
     // Reset gauges
     for (const key in this.gauges) {
-      (this.gauges as any)[key] = 0;
+      (this.gauges as unknown)[key] = 0;
     }
     
     // Clear histograms
     for (const key in this.histograms) {
-      (this.histograms as any)[key] = [];
+      (this.histograms as unknown)[key] = [];
     }
     
     this.logger.info('Coordination metrics cleared');

@@ -21,7 +21,7 @@ export interface TodoItem {
 
 export interface MemoryEntry {
   key: string;
-  value: any;
+  value: unknown;
   timestamp: Date;
   namespace?: string;
   tags?: string[];
@@ -35,15 +35,15 @@ export interface CoordinationContext {
   batchId?: string;
   parentTaskId?: string;
   coordinationMode: 'centralized' | 'distributed' | 'hierarchical' | 'mesh' | 'hybrid';
-  agents?: any[];
-  metadata?: Record<string, any>;
+  agents?: unknown[];
+  metadata?: Record<string, unknown>;
 }
 
 export interface TaskCommandContext {
   taskEngine: TaskEngine;
   taskCoordinator?: TaskCoordinator;
-  memoryManager?: any;
-  logger?: any;
+  memoryManager?: unknown;
+  logger?: unknown;
 }
 
 // Enhanced task metadata interface

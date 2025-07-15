@@ -1,10 +1,10 @@
-#!/usr/bin/env node
+import crypto from 'crypto';
 /**
  * GitHub API Integration Module
  * Provides authentication, rate limiting, and API wrappers for GitHub workflow commands
  */
 
-import { 
+import {
   GitHubAPIResponse,
   GitHubAPIRequestOptions,
   RateLimitInfo,
@@ -476,7 +476,6 @@ export class GitHubAPIClient {
       return true;
     }
 
-    const crypto = require('crypto');
     const hmac = crypto.createHmac('sha256', GITHUB_WEBHOOK_SECRET);
     hmac.update(payload);
     const expectedSignature = `sha256=${hmac.digest('hex')}`;
@@ -590,7 +589,7 @@ export class GitHubAPIClient {
 }
 
 // GitHub API Error class
-class GitHubAPIError extends Error implements GitHubAPIError {
+class GitHubAPIError extends Error implements GitHubAPIErrorType {
   status?: number;
   response?: {
     status: number;

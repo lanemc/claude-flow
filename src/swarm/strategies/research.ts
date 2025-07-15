@@ -46,7 +46,7 @@ interface ResearchResult {
   sourceType: string;
   publishedDate?: Date;
   extractedAt: Date;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
   semanticVector?: number[];
 }
 
@@ -62,7 +62,7 @@ interface ResearchCluster {
 
 interface CacheEntry {
   key: string;
-  data: any;
+  data: Record<string, unknown>;
   timestamp: Date;
   ttl: number;
   accessCount: number;
@@ -74,7 +74,7 @@ interface ConnectionPool {
   idle: number;
   max: number;
   timeout: number;
-  connections: Map<string, any>;
+  connections: Map<string, unknown>;
 }
 
 interface RateLimiter {
@@ -90,7 +90,7 @@ export class ResearchStrategy extends BaseStrategy {
   private researchCache: Map<string, CacheEntry> = new Map();
   private connectionPool: ConnectionPool;
   private rateLimiters: Map<string, RateLimiter> = new Map();
-  private semanticModel: any; // Placeholder for semantic analysis
+  private semanticModel: unknown; // Placeholder for semantic analysis
   private researchQueries: Map<string, ResearchQuery> = new Map();
   private researchResults: Map<string, ResearchResult> = new Map();
   private researchClusters: Map<string, ResearchCluster> = new Map();
@@ -400,7 +400,7 @@ Ensure the report is well-structured and actionable.`,
   }
 
   // Research-specific optimizations for task execution
-  async optimizeTaskExecution(task: TaskDefinition, agent: any): Promise<any> {
+  async optimizeTaskExecution(task: TaskDefinition, agent: unknown): Promise<unknown> {
     const startTime = Date.now();
     
     try {
@@ -419,7 +419,7 @@ Ensure the report is well-structured and actionable.`,
     }
   }
 
-  private async executeOptimizedWebSearch(task: TaskDefinition, agent: any): Promise<any> {
+  private async executeOptimizedWebSearch(task: TaskDefinition, agent: unknown): Promise<unknown> {
     this.logger.info('Executing optimized web search', { taskId: task.id.id });
 
     // Check cache first
@@ -439,7 +439,7 @@ Ensure the report is well-structured and actionable.`,
     const results = await Promise.allSettled(searchPromises);
     const successfulResults = results
       .filter(r => r.status === 'fulfilled')
-      .map(r => (r as PromiseFulfilledResult<any>).value)
+      .map(r => (r as PromiseFulfilledResult<unknown>).value)
       .flat();
 
     // Rank and filter results by credibility
@@ -457,7 +457,7 @@ Ensure the report is well-structured and actionable.`,
     };
   }
 
-  private async executeOptimizedDataExtraction(task: TaskDefinition, agent: any): Promise<any> {
+  private async executeOptimizedDataExtraction(task: TaskDefinition, agent: unknown): Promise<unknown> {
     this.logger.info('Executing optimized data extraction', { taskId: task.id.id });
 
     // Get connection from pool
@@ -482,7 +482,7 @@ Ensure the report is well-structured and actionable.`,
     }
   }
 
-  private async executeOptimizedClustering(task: TaskDefinition, agent: any): Promise<any> {
+  private async executeOptimizedClustering(task: TaskDefinition, agent: unknown): Promise<unknown> {
     this.logger.info('Executing optimized semantic clustering', { taskId: task.id.id });
 
     // Implement semantic clustering with caching
@@ -508,7 +508,7 @@ Ensure the report is well-structured and actionable.`,
     };
   }
 
-  private async executeGenericResearchTask(task: TaskDefinition, agent: any): Promise<any> {
+  private async executeGenericResearchTask(task: TaskDefinition, agent: unknown): Promise<unknown> {
     this.logger.info('Executing generic research task', { taskId: task.id.id });
 
     // Apply general research optimizations
@@ -521,7 +521,7 @@ Ensure the report is well-structured and actionable.`,
 
   // Helper methods for research optimizations
 
-  private extractResearchParameters(description: string): any {
+  private extractResearchParameters(description: string): unknown {
     return {
       domains: this.extractDomains(description),
       keywords: this.extractKeywords(description),
@@ -548,7 +548,7 @@ Ensure the report is well-structured and actionable.`,
       .slice(0, 10);
   }
 
-  private extractTimeframe(description: string): any {
+  private extractTimeframe(description: string): unknown {
     // Extract time-related constraints
     const now = new Date();
     return {
@@ -593,7 +593,7 @@ Ensure the report is well-structured and actionable.`,
     ];
   }
 
-  private async executeRateLimitedSearch(query: ResearchQuery, agent: any): Promise<ResearchResult[]> {
+  private async executeRateLimitedSearch(query: ResearchQuery, agent: unknown): Promise<ResearchResult[]> {
     const domain = query.domains[0] || 'general';
     
     // Check rate limits
@@ -654,7 +654,7 @@ Ensure the report is well-structured and actionable.`,
     });
   }
 
-  private createParallelExtractionTasks(task: TaskDefinition, agent: any): Promise<any>[] {
+  private createParallelExtractionTasks(task: TaskDefinition, agent: unknown): Promise<unknown>[] {
     // Create parallel extraction tasks
     const results = task.input?.results || [];
     const batchSize = Math.ceil(results.length / this.connectionPool.max);
@@ -678,7 +678,7 @@ Ensure the report is well-structured and actionable.`,
     }));
   }
 
-  private deduplicateResults(results: any[]): any[] {
+  private deduplicateResults(results: unknown[]): unknown[] {
     const seen = new Set();
     return results.filter(result => {
       const key = result.extractedData || result.id;
@@ -688,7 +688,7 @@ Ensure the report is well-structured and actionable.`,
     });
   }
 
-  private async performSemanticClustering(data: any[]): Promise<ResearchCluster[]> {
+  private async performSemanticClustering(data: Record<string, unknown>[]): Promise<ResearchCluster[]> {
     // Simulate semantic clustering
     const clusterCount = Math.min(Math.ceil(data.length / 5), 10);
     const clusters: ResearchCluster[] = [];
@@ -710,7 +710,7 @@ Ensure the report is well-structured and actionable.`,
   }
 
   // Connection pooling methods
-  private async getPooledConnection(): Promise<any> {
+  private async getPooledConnection(): Promise<unknown> {
     if (this.connectionPool.active >= this.connectionPool.max) {
       await this.waitForConnection();
     }
@@ -719,7 +719,7 @@ Ensure the report is well-structured and actionable.`,
     return { id: generateId('connection'), timestamp: new Date() };
   }
 
-  private releasePooledConnection(connection: any): void {
+  private releasePooledConnection(connection: unknown): void {
     this.connectionPool.active--;
     this.connectionPool.idle++;
   }
@@ -785,7 +785,7 @@ Ensure the report is well-structured and actionable.`,
     return `${type}:${Buffer.from(data).toString('base64').substring(0, 32)}`;
   }
 
-  private getFromCache(key: string): any | null {
+  private getFromCache(key: string): unknown | null {
     const entry = this.researchCache.get(key);
     if (!entry) return null;
 
@@ -800,7 +800,7 @@ Ensure the report is well-structured and actionable.`,
     return entry.data;
   }
 
-  private setCache(key: string, data: any, ttl: number): void {
+  private setCache(key: string, data: Record<string, unknown>, ttl: number): void {
     this.researchCache.set(key, {
       key,
       data,
@@ -832,7 +832,7 @@ Ensure the report is well-structured and actionable.`,
     type: TaskType,
     name: string,
     instructions: string,
-    options: any = {}
+    options: Record<string, unknown> = {}
   ): TaskDefinition {
     const taskId: TaskId = {
       id: generateId('task'),
@@ -884,8 +884,8 @@ Ensure the report is well-structured and actionable.`,
       (this.researchMetrics.averageResponseTime + duration) / 2;
   }
 
-  private createTaskBatches(tasks: TaskDefinition[], dependencies: Map<string, string[]>): any[] {
-    const batches: any[] = [];
+  private createTaskBatches(tasks: TaskDefinition[], dependencies: Map<string, string[]>): unknown[] {
+    const batches: unknown[] = [];
     const processed = new Set<string>();
     let batchIndex = 0;
 
@@ -919,7 +919,7 @@ Ensure the report is well-structured and actionable.`,
   // Public API for metrics
   override getMetrics() {
     const credibilityScoresRecord: Record<string, number> = {};
-    this.researchMetrics.credibilityScores.forEach((score, index) => {
+    this.researchMetrics.credibilityScores.forEach((score, _index) => {
       credibilityScoresRecord[`result_${index}`] = score;
     });
 
@@ -940,7 +940,7 @@ Ensure the report is well-structured and actionable.`,
   }
 
   // Progressive refinement methods
-  async refineResearchScope(objective: SwarmObjective, intermediateResults: any[]): Promise<SwarmObjective> {
+  async refineResearchScope(objective: SwarmObjective, intermediateResults: unknown[]): Promise<SwarmObjective> {
     this.logger.info('Refining research scope based on intermediate results', {
       objectiveId: objective.id,
       resultsCount: intermediateResults.length
@@ -967,7 +967,7 @@ Ensure the report is well-structured and actionable.`,
   }
 
   // Implementation of abstract methods from BaseStrategy
-  async selectAgentForTask(task: TaskDefinition, availableAgents: any[]): Promise<string | null> {
+  async selectAgentForTask(task: TaskDefinition, availableAgents: unknown[]): Promise<string | null> {
     if (availableAgents.length === 0) return null;
 
     // Research-specific agent selection logic
@@ -999,8 +999,8 @@ Ensure the report is well-structured and actionable.`,
     return bestAgent?.id?.id || null;
   }
 
-  async optimizeTaskSchedule(tasks: TaskDefinition[], agents: any[]): Promise<any[]> {
-    const allocations: any[] = [];
+  async optimizeTaskSchedule(tasks: TaskDefinition[], agents: unknown[]): Promise<any[]> {
+    const allocations: unknown[] = [];
 
     // Group tasks by type for optimal allocation
     const researchTasks = tasks.filter(t => t.type === 'research');
@@ -1051,7 +1051,7 @@ Ensure the report is well-structured and actionable.`,
     return allocations;
   }
 
-  private getAgentCapabilitiesList(agent: any): string[] {
+  private getAgentCapabilitiesList(agent: unknown): string[] {
     const caps: string[] = [];
     if (agent.capabilities) {
       if (agent.capabilities.research) caps.push('research');

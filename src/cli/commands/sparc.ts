@@ -2,6 +2,9 @@ import { getErrorMessage } from '../../utils/error-handler';
 import { success, error, warning, info } from "../cli-core";
 import type { CommandContext } from "../cli-core";
 import chalk from "chalk";
+export async function sparcAction(ctx: CommandContext): Promise<void> {
+          import readline from 'readline';
+
 const { blue, yellow, green, magenta, cyan } = chalk;
 
 interface SparcMode {
@@ -35,7 +38,6 @@ async function loadSparcConfig(): Promise<SparcConfig> {
   }
 }
 
-export async function sparcAction(ctx: CommandContext): Promise<void> {
   const subcommand = ctx.args[0];
 
   switch (subcommand) {
@@ -320,7 +322,6 @@ async function runSparcWorkflow(ctx: CommandContext): Promise<void> {
       if (workflow.sequential !== false && i < workflow.steps.length - 1) {
         console.log("Step completed. Press Enter to continue, or Ctrl+C to stop...");
         await new Promise<void>((resolve) => {
-          const readline = require("readline");
           const rl = readline.createInterface({
             input: process.stdin,
             output: process.stdout
@@ -340,7 +341,7 @@ async function runSparcWorkflow(ctx: CommandContext): Promise<void> {
   }
 }
 
-function buildSparcPrompt(mode: SparcMode, taskDescription: string, flags: any): string {
+function buildSparcPrompt(mode: SparcMode, taskDescription: string, flags: unknown): string {
   const memoryNamespace = flags.namespace || mode.slug || "default";
   
   return `# SPARC Development Mode: ${mode.name}
@@ -475,10 +476,10 @@ async function executeClaudeWithSparc(
       });
     });
 
-    if ((status as any).success) {
+    if ((status as unknown).success) {
       success(`SPARC instance ${instanceId} completed successfully`);
     } else {
-      error(`SPARC instance ${instanceId} exited with code ${(status as any).code}`);
+      error(`SPARC instance ${instanceId} exited with code ${(status as unknown).code}`);
     }
   } catch (err) {
     error(`Failed to execute Claude: ${(err as Error).message}`);

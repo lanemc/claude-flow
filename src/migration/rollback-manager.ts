@@ -1,4 +1,4 @@
-import { getErrorMessage } from "../utils/error-handler";
+// import { getErrorMessage } from '../utils/error-handler';
 /**
  * Rollback Manager - Handles rollback operations and backup management
  */
@@ -21,7 +21,7 @@ export class RollbackManager {
   }
 
   async createBackup(
-    metadata: Record<string, any> = {}
+    metadata: Record<string, unknown> = {}
   ): Promise<MigrationBackup> {
     const timestamp = new Date();
     const backupId = timestamp.toISOString().replace(/[:.]/g, "-");
@@ -383,7 +383,7 @@ export class RollbackManager {
   private async updateBackupIndex(backup: MigrationBackup): Promise<void> {
     const indexPath = path.join(this.backupDir, "backup-index.json");
 
-    let index: Record<string, any> = {};
+    let index: Record<string, unknown> = {};
     if (await fs.pathExists(indexPath)) {
       index = await fs.readJson(indexPath);
     }
@@ -407,7 +407,7 @@ export class RollbackManager {
     console.log(chalk.bold("\n💾 Available Backups"));
     console.log(chalk.gray("─".repeat(70)));
 
-    backups.forEach((backup, index) => {
+    backups.forEach((backup, _index) => {
       const isRecent = index === 0;
       const date = backup.timestamp.toLocaleString();
       const type = backup.metadata.type || "migration";

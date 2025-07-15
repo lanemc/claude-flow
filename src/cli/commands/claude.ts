@@ -31,7 +31,7 @@ claudeCommand
   .option('--commit <frequency>', 'Commit frequency (phase, feature, manual)', 'phase')
   .option('-v, --verbose', 'Enable verbose output')
   .option('--dry-run', 'Show what would be executed without running')
-  .action(async (task: string, options: any) => {
+  .action(async (task: string, options: Record<string, unknown>) => {
       try {
         const instanceId = generateId('claude');
         
@@ -112,7 +112,7 @@ claudeCommand
   .description('Spawn multiple Claude instances from workflow')
   .arguments('<workflow-file>')
   .option('--dry-run', 'Show what would be executed without running')
-  .action(async (workflowFile: string, options: any) => {
+  .action(async (workflowFile: string, options: Record<string, unknown>) => {
     try {
       const content = await fs.readFile(workflowFile, 'utf-8');
       const workflow = JSON.parse(content);

@@ -22,7 +22,7 @@ export const taskCommand = new Command()
     .option('-d, --dependencies <deps>', 'Comma-separated list of dependency task IDs')
     .option('-i, --input <input>', 'Task input as JSON')
     .option('-a, --assign <agent>', 'Assign to specific agent')
-    .action(async (type: string, description: string, options: any) => {
+    .action(async (type: string, description: string, options: Record<string, unknown>) => {
       const task: Task = {
         id: generateId('task'),
         type,
@@ -43,26 +43,26 @@ export const taskCommand = new Command()
     .description('List all tasks')
     .option('-s, --status <status:string>', 'Filter by status')
     .option('-a, --agent <agent:string>', 'Filter by assigned agent')
-    .action(async (options: any) => {
+    .action(async (_options: Record<string, unknown>) => {
       console.log(chalk.yellow('Task listing requires a running Claude-Flow instance'));
     })
   .command('status')
     .description('Get task status')
     .argument('<task-id>', 'Task ID')
-    .action(async (taskId: string, options: any) => {
+    .action(async (taskId: string, options: Record<string, unknown>) => {
       console.log(chalk.yellow(`Task status requires a running Claude-Flow instance`));
     })
   .command('cancel')
     .description('Cancel a task')
     .argument('<task-id>', 'Task ID')
     .option('-r, --reason <reason>', 'Cancellation reason')
-    .action(async (taskId: string, options: any) => {
+    .action(async (taskId: string, options: Record<string, unknown>) => {
       console.log(chalk.yellow(`Cancelling task ${taskId} requires a running Claude-Flow instance`));
     })
   .command('workflow')
     .description('Execute a workflow from file')
     .argument('<workflow-file>', 'Workflow file path')
-    .action(async (workflowFile: string, options: any) => {
+    .action(async (workflowFile: string, options: Record<string, unknown>) => {
       try {
         const content = await fs.readFile(workflowFile, 'utf-8');
         const workflow = JSON.parse(content);

@@ -441,7 +441,8 @@ export class SwarmOrchestrator extends EventEmitter {
         
       case 'execution':
       case 'parallel-execution':
-        // Multiple execution assignments based on complexity
+        {
+// Multiple execution assignments based on complexity
         const executionCount = Math.min(analysis.resourceRequirements.maxAgents, 3);
         for (let i = 0; i < executionCount; i++) {
           assignments.push({
@@ -486,7 +487,7 @@ export class SwarmOrchestrator extends EventEmitter {
    * Create execution checkpoints
    */
   private createCheckpoints(phases: string[]): any[] {
-    return phases.map((phase, index) => ({
+    return phases.map((phase, _index) => ({
       phase,
       index,
       requiredProgress: Math.round((index + 1) / phases.length * 100),

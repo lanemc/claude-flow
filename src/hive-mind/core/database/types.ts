@@ -148,7 +148,7 @@ export interface NamespaceStats {
 
 export interface RawSQL {
   sql: string;
-  params: any[];
+  params: Record<string, unknown>[];
 }
 
 // Type guard functions

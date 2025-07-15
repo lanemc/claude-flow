@@ -10,7 +10,7 @@ import { eventBus } from '../../../core/event-bus';
 
 export class SystemMonitor {
   private processManager: ProcessManager;
-  private events: any[] = [];
+  private events: unknown[] = [];
   private maxEvents = 100;
   private metricsInterval?: NodeJS.Timeout;
 
@@ -21,7 +21,7 @@ export class SystemMonitor {
 
   private setupEventListeners(): void {
     // System events
-    eventBus.on(SystemEvents.AGENT_SPAWNED, (data: any) => {
+    eventBus.on(SystemEvents.AGENT_SPAWNED, (data: Record<string, unknown>) => {
       this.addEvent({
         type: 'agent_spawned',
         timestamp: Date.now(),
@@ -30,7 +30,7 @@ export class SystemMonitor {
       });
     });
 
-    eventBus.on(SystemEvents.AGENT_TERMINATED, (data: any) => {
+    eventBus.on(SystemEvents.AGENT_TERMINATED, (data: Record<string, unknown>) => {
       this.addEvent({
         type: 'agent_terminated',
         timestamp: Date.now(),
@@ -39,7 +39,7 @@ export class SystemMonitor {
       });
     });
 
-    eventBus.on(SystemEvents.TASK_ASSIGNED, (data: any) => {
+    eventBus.on(SystemEvents.TASK_ASSIGNED, (data: Record<string, unknown>) => {
       this.addEvent({
         type: 'task_assigned',
         timestamp: Date.now(),
@@ -48,7 +48,7 @@ export class SystemMonitor {
       });
     });
 
-    eventBus.on(SystemEvents.TASK_COMPLETED, (data: any) => {
+    eventBus.on(SystemEvents.TASK_COMPLETED, (data: Record<string, unknown>) => {
       this.addEvent({
         type: 'task_completed',
         timestamp: Date.now(),
@@ -57,7 +57,7 @@ export class SystemMonitor {
       });
     });
 
-    eventBus.on(SystemEvents.TASK_FAILED, (data: any) => {
+    eventBus.on(SystemEvents.TASK_FAILED, (data: Record<string, unknown>) => {
       this.addEvent({
         type: 'task_failed',
         timestamp: Date.now(),
@@ -66,7 +66,7 @@ export class SystemMonitor {
       });
     });
 
-    eventBus.on(SystemEvents.SYSTEM_ERROR, (data: any) => {
+    eventBus.on(SystemEvents.SYSTEM_ERROR, (data: Record<string, unknown>) => {
       this.addEvent({
         type: 'system_error',
         timestamp: Date.now(),
@@ -104,7 +104,7 @@ export class SystemMonitor {
     });
   }
 
-  private addEvent(event: any): void {
+  private addEvent(event: Event | Record<string, unknown>): void {
     this.events.unshift(event);
     if (this.events.length > this.maxEvents) {
       this.events.pop();
@@ -141,7 +141,7 @@ export class SystemMonitor {
     }
   }
 
-  getRecentEvents(count: number = 10): any[] {
+  getRecentEvents(count: number = 10): unknown[] {
     return this.events.slice(0, count);
   }
 
@@ -195,7 +195,7 @@ export class SystemMonitor {
     }
   }
 
-  private formatEventMessage(event: any): string {
+  private formatEventMessage(event: Event | Record<string, unknown>): string {
     switch (event.type) {
       case 'agent_spawned':
         return `Agent spawned: ${event.data.agentId} (${event.data.profile?.type || 'unknown'})`;

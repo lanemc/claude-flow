@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { getErrorMessage } from '../utils/error-handler';
+// import { getErrorMessage } from '../utils/error-handler';
 import { spawn } from 'child_process';
 import { Client } from '@modelcontextprotocol/sdk/client/index';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio';
@@ -43,7 +43,7 @@ export class MCPIntegration {
       await this.claudeCodeClient.connect(transport);
 
       // Inject the client into the wrapper
-      (this.wrapper as any).claudeCodeMCP = this.claudeCodeClient;
+      (this.wrapper as unknown).claudeCodeMCP = this.claudeCodeClient;
 
       console.log('Connected to Claude Code MCP server');
     } catch (error) {
@@ -64,7 +64,7 @@ export class MCPIntegration {
 // Update the wrapper to use the real Claude Code MCP client
 export function injectClaudeCodeClient(wrapper: ClaudeCodeMCPWrapper, client: Client): void {
   // Override the forwardToClaudeCode method
-  (wrapper as any).forwardToClaudeCode = async function(toolName: string, args: any) {
+  (wrapper as unknown).forwardToClaudeCode = async function(toolName: string, args: unknown) {
     try {
       const result = await client.callTool({
         name: toolName,

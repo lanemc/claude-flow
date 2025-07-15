@@ -1,4 +1,8 @@
-import { getErrorMessage } from '../utils/error-handler';
+import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
+import { join } from 'path';
+import type { ILogger } from '../core/logger';
+import { deepMerge } from '../utils/helpers';
+
 /**
  * ruv-swarm configuration management for Claude Code integration
  * 
@@ -6,13 +10,8 @@ import { getErrorMessage } from '../utils/error-handler';
  * including topology preferences, agent limits, and coordination patterns.
  */
 
-import { readFileSync, writeFileSync, existsSync } from 'fs';
-import { join } from 'path';
-import type { ILogger } from '../core/logger';
-import { deepMerge } from '../utils/helpers';
-
 /**
- * ruv-swarm integration configuration
+ * ruv-swarm integration configuration interface
  */
 export interface RuvSwarmConfig {
   // Core swarm settings
@@ -196,8 +195,7 @@ export class RuvSwarmConfigManager {
       
       // Ensure config directory exists
       if (!existsSync(configDir)) {
-        const fs = require('fs');
-        fs.mkdirSync(configDir, { recursive: true });
+        mkdirSync(configDir, { recursive: true });
       }
       
       writeFileSync(this.configPath, JSON.stringify(this.config, null, 2), 'utf-8');

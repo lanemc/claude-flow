@@ -831,7 +831,7 @@ export class MCPToolWrapper {
         namespace: swarmId,
         pattern: pattern || '',
         total: results.length,
-        results: results
+        results
       };
     } catch (error) {
       console.error('Error searching memory:', error);

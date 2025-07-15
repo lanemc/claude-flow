@@ -100,7 +100,7 @@ export class ResearcherAgent extends BaseAgent {
     };
   }
 
-  override async executeTask(task: TaskDefinition): Promise<any> {
+  override async executeTask(task: TaskDefinition): Promise<unknown> {
     this.logger.info('Researcher executing task', {
       agentId: this.id,
       taskType: task.type,
@@ -132,7 +132,7 @@ export class ResearcherAgent extends BaseAgent {
     }
   }
 
-  private async performResearch(task: TaskDefinition): Promise<any> {
+  private async performResearch(task: TaskDefinition): Promise<unknown> {
     const query = task.parameters?.query || task.description;
     const sources = task.parameters?.sources || ['web', 'academic', 'news'];
     const depth = task.parameters?.depth || 'moderate';
@@ -145,7 +145,7 @@ export class ResearcherAgent extends BaseAgent {
 
     const results = {
       query,
-      sources: [] as any[],
+      sources: [] as unknown[],
       summary: '',
       findings: [] as string[],
       recommendations: [] as string[],
@@ -196,7 +196,7 @@ export class ResearcherAgent extends BaseAgent {
     return results;
   }
 
-  private async analyzeData(task: TaskDefinition): Promise<any> {
+  private async analyzeData(task: TaskDefinition): Promise<unknown> {
     const data = task.input?.data;
     const analysisType = task.input?.type || 'general';
 
@@ -208,8 +208,8 @@ export class ResearcherAgent extends BaseAgent {
     const analysis = {
       type: analysisType,
       insights: [] as string[],
-      patterns: [] as any[],
-      anomalies: [] as any[],
+      patterns: [] as unknown[],
+      anomalies: [] as unknown[],
       confidence: 0,
       methodology: analysisType,
       timestamp: new Date()
@@ -228,7 +228,7 @@ export class ResearcherAgent extends BaseAgent {
     return analysis;
   }
 
-  private async verifyFacts(task: TaskDefinition): Promise<any> {
+  private async verifyFacts(task: TaskDefinition): Promise<unknown> {
     const claims = task.input?.claims || [];
     const sources = task.input?.sources || ['reliable', 'academic'];
 
@@ -238,7 +238,7 @@ export class ResearcherAgent extends BaseAgent {
     });
 
     const verification = {
-      claims: [] as any[],
+      claims: [] as unknown[],
       overallAccuracy: 0,
       sourcesChecked: [] as string[],
       methodology: 'cross-reference',
@@ -254,7 +254,7 @@ export class ResearcherAgent extends BaseAgent {
     return verification;
   }
 
-  private async conductLiteratureReview(task: TaskDefinition): Promise<any> {
+  private async conductLiteratureReview(task: TaskDefinition): Promise<unknown> {
     const topic = task.input?.topic || task.description;
     const timeframe = task.input?.timeframe || '5-years';
     const scope = task.input?.scope || 'broad';
@@ -269,10 +269,10 @@ export class ResearcherAgent extends BaseAgent {
       topic,
       timeframe,
       scope,
-      papers: [] as any[],
+      papers: [] as unknown[],
       keyFindings: [] as string[],
-      gaps: [] as any[],
-      recommendations: [] as any[],
+      gaps: [] as unknown[],
+      recommendations: [] as unknown[],
       confidence: 0,
       methodology: 'systematic-review',
       timestamp: new Date()
@@ -291,7 +291,7 @@ export class ResearcherAgent extends BaseAgent {
     return review;
   }
 
-  private async analyzeMarket(task: TaskDefinition): Promise<any> {
+  private async analyzeMarket(task: TaskDefinition): Promise<unknown> {
     const market = task.input?.market || 'general';
     const metrics = task.input?.metrics || ['size', 'growth', 'competition'];
 
@@ -304,8 +304,8 @@ export class ResearcherAgent extends BaseAgent {
       market,
       metrics: {},
       trends: [] as string[],
-      opportunities: [] as any[],
-      threats: [] as any[],
+      opportunities: [] as unknown[],
+      threats: [] as unknown[],
       confidence: 0,
       timestamp: new Date()
     };
@@ -323,7 +323,7 @@ export class ResearcherAgent extends BaseAgent {
     return analysis;
   }
 
-  private async performGeneralResearch(task: TaskDefinition): Promise<any> {
+  private async performGeneralResearch(task: TaskDefinition): Promise<unknown> {
     this.logger.info('Performing general research', {
       description: task.description
     });
@@ -336,7 +336,7 @@ export class ResearcherAgent extends BaseAgent {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 
-  override getAgentStatus(): any {
+  override getAgentStatus(): unknown {
     return {
       ...super.getAgentStatus(),
       specialization: 'Research & Information Gathering',

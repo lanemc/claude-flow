@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../utils/error-handler';
+// import { getErrorMessage } from '../utils/error-handler';
 /**
  * Task Management System - Main Export
  * Comprehensive task management with orchestration features
@@ -46,18 +46,18 @@ export {
 export async function initializeTaskManagement(
   config: {
     maxConcurrentTasks?: number;
-    memoryManager?: any;
-    logger?: any;
+    memoryManager?: unknown;
+    logger?: unknown;
   } = {}
 ): Promise<{
-  taskEngine: any;
-  taskCoordinator: any;
+  taskEngine: unknown;
+  taskCoordinator: unknown;
   commands: {
-    create: any;
-    list: any;
-    status: any;
-    cancel: any;
-    workflow: any;
+    create: unknown;
+    list: unknown;
+    status: unknown;
+    cancel: unknown;
+    workflow: unknown;
   };
 }> {
   // Import required classes dynamically to avoid circular dependencies
@@ -154,7 +154,7 @@ export async function launchParallelAgents(
  */
 export async function storeCoordinationData(
   key: string,
-  value: any,
+  value: unknown,
   options: {
     namespace?: string;
     tags?: string[];

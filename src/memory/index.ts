@@ -6,51 +6,37 @@
  * @module memory
  */
 
-import SharedMemory from './shared-memory';
-import { SwarmMemory, createSwarmMemory } from './swarm-memory';
-import { SWARM_NAMESPACES } from './types';
-import type { 
-  SharedMemoryOptions, 
-  SwarmMemoryOptions, 
-  SwarmNamespace 
-} from './types';
+import SharedMemory from './shared-memory.js';
+import { SwarmMemory, createSwarmMemory } from './swarm-memory.js';
+import type { MemoryOptions, MemoryInstance } from './types.js';
 
 export { SharedMemory, SwarmMemory, createSwarmMemory };
 
 // Re-export swarm namespaces for convenience
-export { SWARM_NAMESPACES };
+export const SWARM_NAMESPACES = {
+  AGENTS: 'swarm:agents',
+  TASKS: 'swarm:tasks', 
+  COMMUNICATIONS: 'swarm:communications',
+  CONSENSUS: 'swarm:consensus',
+  PATTERNS: 'swarm:patterns',
+  METRICS: 'swarm:metrics',
+  COORDINATION: 'swarm:coordination'
+} as const;
 
-// Re-export types
-export type { 
-  SharedMemoryOptions,
-  SwarmMemoryOptions,
-  SwarmNamespace,
-  MemoryEntry,
-  MemoryStoreOptions,
-  MemorySearchOptions,
-  MemoryListOptions,
-  AgentData,
-  TaskData,
-  SessionState,
-  WorkflowData
-} from './types';
+type SwarmNamespace = typeof SWARM_NAMESPACES[keyof typeof SWARM_NAMESPACES];
 
 /**
  * Create memory instance based on context
  */
-export function createMemory(options: SwarmMemoryOptions & { type?: 'swarm' }): SwarmMemory;
-export function createMemory(options: SharedMemoryOptions): SharedMemory;
-export function createMemory(options: SharedMemoryOptions | SwarmMemoryOptions = {}): SharedMemory | SwarmMemory {
-  if ('type' in options && options.type === 'swarm' || 'swarmId' in options) {
-    return new SwarmMemory(options as SwarmMemoryOptions);
+export function createMemory(options: MemoryOptions = {}): MemoryInstance {
+  if (options.type === 'swarm' || options.swarmId) {
+    return new SwarmMemory(options);
   }
-  return new SharedMemory(options as SharedMemoryOptions);
+  return new SharedMemory(options);
 }
 
 // Default export for backwards compatibility
-export default { 
-  SharedMemory, 
-  SwarmMemory, 
-  createMemory, 
-  SWARM_NAMESPACES 
-};
+export default { SharedMemory, SwarmMemory, createMemory, SWARM_NAMESPACES };
+
+// Type exports
+export type { MemoryOptions, MemoryInstance, SwarmNamespace };

@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../utils/error-handler';
+// import { getErrorMessage } from '../utils/error-handler';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { getFilename, getDirname } from '../utils/import-meta-shim';
@@ -28,10 +28,10 @@ export async function loadSparcModes(): Promise<SparcMode[]> {
     // Convert JSON format to SparcMode format
     for (const [name, config] of Object.entries(modesData)) {
       const mode: SparcMode = {
-        name: name,
-        description: (config as any).description || '',
-        tools: (config as any).tools || [],
-        systemPrompt: (config as any).prompt || '',
+        name,
+        description: (config as unknown).description || '',
+        tools: (config as unknown).tools || [],
+        systemPrompt: (config as unknown).prompt || '',
       };
       
       // Add default best practices based on mode

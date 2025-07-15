@@ -29,7 +29,7 @@ export const mcpCommand = new Command('mcp')
     .option('-p, --port <port>', 'Port for MCP server', '3000')
     .option('-h, --host <host>', 'Host for MCP server', 'localhost')
     .option('--transport <transport>', 'Transport type (stdio, http)', 'stdio')
-    .action(async (options: any) => {
+    .action(async (_options: Record<string, unknown>) => {
       try {
         const config = await configManager.load();
         
@@ -163,7 +163,7 @@ mcpCommand
   .command('logs')
     .description('Show MCP server logs')
     .option('-n, --lines <lines>', 'Number of log lines to show', '50')
-    .action((options: any) => {
+    .action((_options: Record<string, unknown>) => {
       console.log(chalk.cyan(`MCP Server Logs (last ${options.lines} lines):`));
       
       // Mock logs since logging system might not be fully implemented

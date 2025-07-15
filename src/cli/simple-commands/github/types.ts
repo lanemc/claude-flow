@@ -478,7 +478,7 @@ export interface User {
 export interface GitHubAPIRequestOptions {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
   headers?: Record<string, string>;
-  body?: any;
+  body?: unknown;
 }
 
 export interface PaginationOptions {
@@ -506,7 +506,7 @@ export interface GitHubAPIError extends Error {
   response?: {
     status: number;
     statusText: string;
-    data?: any;
+    data?: unknown;
   };
 }
 
@@ -542,7 +542,7 @@ export class GitHubNotFoundError extends Error implements GitHubAPIError {
 export class GitHubValidationError extends Error implements GitHubAPIError {
   status = 422;
   
-  constructor(message: string = 'GitHub validation failed', public details?: any) {
+  constructor(message: string = 'GitHub validation failed', public details?: unknown) {
     super(message);
     this.name = 'GitHubValidationError';
   }
@@ -591,7 +591,7 @@ export interface ListResponse<T> {
 // GraphQL Query Types (for future enhancement)
 export interface GraphQLQuery {
   query: string;
-  variables?: Record<string, any>;
+  variables?: Record<string, unknown>;
 }
 
 export interface GraphQLResponse<T = any> {

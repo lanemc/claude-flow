@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../utils/error-handler';
+// import { getErrorMessage } from '../utils/error-handler';
 /**
  * Enhanced Tool registry for MCP with capability negotiation and discovery
  */
@@ -137,7 +137,7 @@ export class ToolRegistry extends EventEmitter {
   /**
    * Executes a tool with metrics tracking
    */
-  async executeTool(name: string, input: unknown, context?: any): Promise<unknown> {
+  async executeTool(name: string, input: unknown, context?: unknown): Promise<unknown> {
     const tool = this.tools.get(name);
     if (!tool) {
       throw new MCPError(`Tool not found: ${name}`);
@@ -220,7 +220,7 @@ export class ToolRegistry extends EventEmitter {
    */
   private validateInput(tool: MCPTool, input: unknown): void {
     // Simple validation - in production, use a JSON Schema validator
-    const schema = tool.inputSchema as any;
+    const schema = tool.inputSchema as unknown;
 
     if (schema.type === 'object' && schema.properties) {
       if (typeof input !== 'object' || input === null) {
@@ -242,7 +242,7 @@ export class ToolRegistry extends EventEmitter {
       for (const [prop, propSchema] of Object.entries(schema.properties)) {
         if (prop in inputObj) {
           const value = inputObj[prop];
-          const expectedType = (propSchema as any).type;
+          const expectedType = (propSchema as unknown).type;
 
           if (expectedType && !this.checkType(value, expectedType)) {
             throw new MCPError(
@@ -312,7 +312,7 @@ export class ToolRegistry extends EventEmitter {
   /**
    * Check tool capabilities and permissions
    */
-  private async checkToolCapabilities(toolName: string, context?: any): Promise<void> {
+  private async checkToolCapabilities(toolName: string, context?: unknown): Promise<void> {
     const capability = this.capabilities.get(toolName);
     if (!capability) {
       return; // No capability checks needed

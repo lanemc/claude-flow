@@ -44,8 +44,8 @@ export async function hiveAction(ctx: CommandContext) {
 
   const options: HiveOptions = {
     objective,
-    topology: (ctx.flags.topology as any) || 'hierarchical',
-    consensus: (ctx.flags.consensus as any) || 'quorum',
+    topology: (ctx.flags.topology as unknown) || 'hierarchical',
+    consensus: (ctx.flags.consensus as unknown) || 'quorum',
     maxAgents: Number(ctx.flags.maxAgents || ctx.flags['max-agents']) || 8,
     timeout: Number(ctx.flags.timeout) || 60,
     monitor: Boolean(ctx.flags.monitor) || false,
@@ -123,10 +123,10 @@ export async function hiveAction(ctx: CommandContext) {
       // Show results
       const status = coordinator.getSwarmStatus();
       console.log(`\n📊 Hive Mind Summary:`);
-      console.log(`  - Consensus Rounds: ${(status as any).customMetrics?.consensusRounds || 0}`);
-      console.log(`  - Decisions Made: ${(status as any).customMetrics?.decisions || 0}`);
+      console.log(`  - Consensus Rounds: ${(status as unknown).customMetrics?.consensusRounds || 0}`);
+      console.log(`  - Decisions Made: ${(status as unknown).customMetrics?.decisions || 0}`);
       console.log(`  - Tasks Completed: ${status.tasks.completed}`);
-      console.log(`  - Quality Score: ${(status as any).customMetrics?.qualityScore || 0}%`);
+      console.log(`  - Quality Score: ${(status as unknown).customMetrics?.qualityScore || 0}%`);
       
       success(`✅ Hive Mind ${hiveId} completed successfully`);
     }
@@ -146,13 +146,13 @@ async function spawnHiveAgents(coordinator: SwarmCoordinator, options: HiveOptio
     const config = agentConfigs[i % agentConfigs.length];
     const agentId = await coordinator.registerAgent(
       `${config.type}-${i + 1}`,
-      config.role as any,
+      config.role as unknown,
       config.capabilities
     );
     
     agents.push({
       id: agentId,
-      type: config.type as any,
+      type: config.type as unknown,
       role: config.role,
       capabilities: config.capabilities,
       status: 'idle',
@@ -272,7 +272,7 @@ async function conductConsensusRound(
   memory: SwarmMemory,
   agents: HiveAgent[],
   phase: string,
-  context: any
+  context: Record<string, unknown>
 ) {
   const roundId = generateId('round');
   
@@ -340,7 +340,7 @@ async function decomposeWithConsensus(
 async function assignTasksWithVoting(
   coordinator: SwarmCoordinator,
   memory: SwarmMemory,
-  tasks: any[],
+  tasks: unknown[],
   agents: HiveAgent[],
   options: HiveOptions
 ): Promise<Map<string, string>> {
@@ -363,7 +363,7 @@ async function assignTasksWithVoting(
   return assignments;
 }
 
-function calculateBidScore(agent: HiveAgent, task: any): number {
+function calculateBidScore(agent: HiveAgent, task: unknown): number {
   // Calculate how well agent capabilities match task requirements
   let score = 0;
   

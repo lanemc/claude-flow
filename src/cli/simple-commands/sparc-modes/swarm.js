@@ -431,6 +431,6 @@ Remember: The swarm system is specifically designed to handle complexity and dur
 // Export mode configuration
 export default SWARM_MODE;
 
-if (import.meta.main) {
+if (require.main === module) {
   console.log(prompt);
 }

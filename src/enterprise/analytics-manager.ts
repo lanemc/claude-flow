@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../utils/error-handler';
+// import { getErrorMessage } from '../utils/error-handler';
 import { EventEmitter } from 'events';
 import { writeFile, readFile, mkdir, readdir } from 'fs/promises';
 import { join } from 'path';
@@ -16,7 +16,7 @@ export interface AnalyticsMetric {
   tags: Record<string, string>;
   timestamp: Date;
   source: string;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
 }
 
 export interface AnalyticsDashboard {
@@ -61,7 +61,7 @@ export interface DashboardWidget {
   };
   visualization: {
     chartType?: 'line' | 'bar' | 'pie' | 'scatter' | 'heatmap' | 'area';
-    options: Record<string, any>;
+    options: Record<string, unknown>;
     thresholds?: {
       warning: number;
       critical: number;
@@ -86,7 +86,7 @@ export interface DashboardFilter {
   type: 'dropdown' | 'multiselect' | 'daterange' | 'text' | 'number';
   field: string;
   values?: string[];
-  defaultValue?: any;
+  defaultValue?: unknown;
   required: boolean;
 }
 
@@ -313,11 +313,11 @@ export interface PredictiveModel {
 export interface PredictionResult {
   id: string;
   modelId: string;
-  input: Record<string, any>;
-  prediction: any;
+  input: Record<string, unknown>;
+  prediction: unknown;
   confidence: number;
   timestamp: Date;
-  actual?: any; // For validation
+  actual?: unknown; // For validation
   accuracy?: number;
 }
 
@@ -334,7 +334,7 @@ export interface AnalyticsReport {
     recipients: string[];
   };
   sections: ReportSection[];
-  filters: Record<string, any>;
+  filters: Record<string, unknown>;
   lastGenerated?: Date;
   nextGeneration?: Date;
   generatedBy: string;
@@ -348,7 +348,7 @@ export interface ReportSection {
   type: 'summary' | 'chart' | 'table' | 'text' | 'metrics';
   content: {
     query?: string;
-    visualization?: any;
+    visualization?: unknown;
     text?: string;
     metrics?: string[];
   };
@@ -475,7 +475,7 @@ export class AnalyticsManager extends EventEmitter {
     timeRange: { start: Date; end: Date };
     aggregation?: 'sum' | 'avg' | 'min' | 'max' | 'count' | 'p95' | 'p99';
     groupBy?: string[];
-    filters?: Record<string, any>;
+    filters?: Record<string, unknown>;
   }): Promise<Record<string, any[]>> {
     const results: Record<string, any[]> = {};
 
@@ -506,7 +506,7 @@ export class AnalyticsManager extends EventEmitter {
                 m.tags[k] === v
               );
             }
-            return (m as any)[field] === value;
+            return (m as unknown)[field] === value;
           });
         }
       }
@@ -539,7 +539,7 @@ export class AnalyticsManager extends EventEmitter {
       name: dashboardData.name,
       description: dashboardData.description,
       type: dashboardData.type,
-      widgets: dashboardData.widgets.map((widget, index) => ({
+      widgets: dashboardData.widgets.map((widget, _index) => ({
         id: `widget-${Date.now()}-${index}`,
         ...widget
       })),
@@ -682,7 +682,7 @@ export class AnalyticsManager extends EventEmitter {
 
   async makePrediction(
     modelId: string,
-    input: Record<string, any>
+    input: Record<string, unknown>
   ): Promise<PredictionResult> {
     const model = this.models.get(modelId);
     if (!model) {
@@ -1295,7 +1295,7 @@ export class AnalyticsManager extends EventEmitter {
     });
 
     if (responseTimeData['response-time']?.length > 0) {
-      const values = responseTimeData['response-time'].map((d: any) => d.value);
+      const values = responseTimeData['response-time'].map((d: unknown) => d.value);
       const recent = values.slice(-5);
       const earlier = values.slice(0, -5);
 
@@ -1380,7 +1380,7 @@ export class AnalyticsManager extends EventEmitter {
     return Object.values(data).flat();
   }
 
-  private async executeModelTraining(model: PredictiveModel, data: any[]): Promise<Partial<PredictiveModel>> {
+  private async executeModelTraining(model: PredictiveModel, data: Record<string, unknown>[]): Promise<Partial<PredictiveModel>> {
     // Simplified model training
     return {
       accuracy: 85 + Math.random() * 10,
@@ -1397,7 +1397,7 @@ export class AnalyticsManager extends EventEmitter {
     };
   }
 
-  private async executePrediction(model: PredictiveModel, input: Record<string, any>): Promise<{ value: any; confidence: number }> {
+  private async executePrediction(model: PredictiveModel, input: Record<string, unknown>): Promise<{ value: unknown; confidence: number }> {
     // Simplified prediction logic
     const value = Math.random() * 100;
     const confidence = 70 + Math.random() * 25;
@@ -1413,7 +1413,7 @@ export class AnalyticsManager extends EventEmitter {
         if (field === 'tags') {
           return Object.entries(metric.tags).map(([k, v]) => `${k}:${v}`).join(',');
         }
-        return (metric as any)[field] || 'unknown';
+        return (metric as unknown)[field] || 'unknown';
       }).join('-');
       
       if (!groups[key]) {
@@ -1425,7 +1425,7 @@ export class AnalyticsManager extends EventEmitter {
     return groups;
   }
 
-  private aggregateMetrics(metrics: AnalyticsMetric[], aggregation: string): any[] {
+  private aggregateMetrics(metrics: AnalyticsMetric[], aggregation: string): unknown[] {
     if (metrics.length === 0) return [];
 
     // Group by time buckets for time series aggregation
@@ -1477,7 +1477,7 @@ export class AnalyticsManager extends EventEmitter {
     }).sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
   }
 
-  private getLatestValue(dataPoints: any[]): number {
+  private getLatestValue(dataPoints: unknown[]): number {
     if (!dataPoints || dataPoints.length === 0) return 0;
     return dataPoints[dataPoints.length - 1]?.value || 0;
   }

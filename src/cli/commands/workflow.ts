@@ -25,35 +25,35 @@ export const workflowCommand = new Command()
     .option('-w, --watch', 'Watch workflow execution progress')
     .option('--parallel', 'Allow parallel execution where possible')
     .option('--fail-fast', 'Stop on first task failure')
-    .action(async (workflowFile: string, options: any) => {
+    .action(async (workflowFile: string, options: Record<string, unknown>) => {
       await runWorkflow(workflowFile, options);
     })
   .command('validate')
     .description('Validate a workflow file')
     .argument('<workflow-file>', 'Workflow file path')
     .option('--strict', 'Use strict validation mode')
-    .action(async (workflowFile: string, options: any) => {
+    .action(async (workflowFile: string, options: Record<string, unknown>) => {
       await validateWorkflow(workflowFile, options);
     })
   .command('list')
     .description('List running workflows')
     .option('--all', 'Include completed workflows')
     .option('--format <format>', 'Output format (table, json)', 'table')
-    .action(async (options: any) => {
+    .action(async (_options: Record<string, unknown>) => {
       await listWorkflows(options);
     })
   .command('status')
     .description('Show workflow execution status')
     .argument('<workflow-id>', 'Workflow ID')
     .option('-w, --watch', 'Watch workflow progress')
-    .action(async (workflowId: string, options: any) => {
+    .action(async (workflowId: string, options: Record<string, unknown>) => {
       await showWorkflowStatus(workflowId, options);
     })
   .command('stop')
     .description('Stop a running workflow')
     .argument('<workflow-id>', 'Workflow ID')
     .option('-f, --force', 'Force stop without cleanup')
-    .action(async (workflowId: string, options: any) => {
+    .action(async (workflowId: string, options: Record<string, unknown>) => {
       await stopWorkflow(workflowId, options);
     })
   .command('template')
@@ -61,7 +61,7 @@ export const workflowCommand = new Command()
     .argument('<template-type>', 'Template type')
     .option('-o, --output <file>', 'Output file path')
     .option('--format <format>', 'Template format (json, yaml)', 'json')
-    .action(async (templateType: string, options: any) => {
+    .action(async (templateType: string, options: Record<string, unknown>) => {
       await generateTemplate(templateType, options);
     });
 
@@ -70,7 +70,7 @@ interface WorkflowDefinition {
   name: string;
   version?: string;
   description?: string;
-  variables?: Record<string, any>;
+  variables?: Record<string, unknown>;
   agents?: AgentDefinition[];
   tasks: TaskDefinition[];
   dependencies?: Record<string, string[]>;
@@ -81,7 +81,7 @@ interface AgentDefinition {
   id: string;
   type: string;
   name?: string;
-  config?: Record<string, any>;
+  config?: Record<string, unknown>;
 }
 
 interface TaskDefinition {
@@ -91,7 +91,7 @@ interface TaskDefinition {
   description: string;
   assignTo?: string;
   depends?: string[];
-  input?: Record<string, any>;
+  input?: Record<string, unknown>;
   timeout?: number;
   retries?: number;
   condition?: string;
@@ -126,10 +126,10 @@ interface TaskExecution {
   completedAt?: Date;
   assignedAgent?: string;
   error?: string;
-  output?: any;
+  output?: unknown;
 }
 
-async function runWorkflow(workflowFile: string, options: any): Promise<void> {
+async function runWorkflow(workflowFile: string, options: Record<string, unknown>): Promise<void> {
   try {
     // Load and validate workflow
     const workflow = await loadWorkflow(workflowFile);
@@ -171,7 +171,7 @@ async function runWorkflow(workflowFile: string, options: any): Promise<void> {
   }
 }
 
-async function validateWorkflow(workflowFile: string, options: any): Promise<void> {
+async function validateWorkflow(workflowFile: string, options: Record<string, unknown>): Promise<void> {
   try {
     const workflow = await loadWorkflow(workflowFile);
     await validateWorkflowDefinition(workflow, options.strict);
@@ -191,7 +191,7 @@ async function validateWorkflow(workflowFile: string, options: any): Promise<voi
   }
 }
 
-async function listWorkflows(options: any): Promise<void> {
+async function listWorkflows(options: Record<string, unknown>): Promise<void> {
   try {
     // Mock workflow list - in production, this would query the orchestrator
     const workflows = await getRunningWorkflows(options.all);
@@ -241,7 +241,7 @@ async function listWorkflows(options: any): Promise<void> {
   }
 }
 
-async function showWorkflowStatus(workflowId: string, options: any): Promise<void> {
+async function showWorkflowStatus(workflowId: string, options: Record<string, unknown>): Promise<void> {
   try {
     if (options.watch) {
       await watchWorkflowStatus(workflowId);
@@ -254,7 +254,7 @@ async function showWorkflowStatus(workflowId: string, options: any): Promise<voi
   }
 }
 
-async function stopWorkflow(workflowId: string, options: any): Promise<void> {
+async function stopWorkflow(workflowId: string, options: Record<string, unknown>): Promise<void> {
   try {
     const execution = await getWorkflowExecution(workflowId);
     
@@ -293,7 +293,7 @@ async function stopWorkflow(workflowId: string, options: any): Promise<void> {
   }
 }
 
-async function generateTemplate(templateType: string, options: any): Promise<void> {
+async function generateTemplate(templateType: string, options: Record<string, unknown>): Promise<void> {
   const templates: Record<string, WorkflowDefinition> = {
     'research': {
       name: 'Research Workflow',
@@ -528,7 +528,7 @@ async function createExecution(workflow: WorkflowDefinition): Promise<WorkflowEx
   };
 }
 
-async function executeWorkflow(execution: WorkflowExecution, workflow: WorkflowDefinition, options: any): Promise<void> {
+async function executeWorkflow(execution: WorkflowExecution, workflow: WorkflowDefinition, options: Record<string, unknown>): Promise<void> {
   execution.status = 'running';
   
   console.log(chalk.blue('Executing workflow...'));
@@ -591,7 +591,7 @@ async function executeWorkflow(execution: WorkflowExecution, workflow: WorkflowD
   }
 }
 
-async function executeWorkflowWithWatch(execution: WorkflowExecution, workflow: WorkflowDefinition, options: any): Promise<void> {
+async function executeWorkflowWithWatch(execution: WorkflowExecution, workflow: WorkflowDefinition, options: Record<string, unknown>): Promise<void> {
   console.log(chalk.yellow('Starting workflow execution in watch mode...'));
   console.log(chalk.gray('Press Ctrl+C to stop\n'));
 

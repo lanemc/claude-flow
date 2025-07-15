@@ -34,7 +34,7 @@ export class Agent extends EventEmitter {
   
   private db: DatabaseManager | null = null;
   private mcpWrapper: MCPToolWrapper | null = null;
-  private memory: Map<string, any>;
+  private memory: Map<string, unknown>;
   private communicationBuffer: Message[];
   private lastHeartbeat: number;
   private isActive: boolean = false;
@@ -84,7 +84,7 @@ export class Agent extends EventEmitter {
   /**
    * Assign a task to this agent
    */
-  async assignTask(taskId: string, executionPlan: any): Promise<void> {
+  async assignTask(taskId: string, executionPlan: unknown): Promise<void> {
     if (this.currentTask) {
       throw new Error('Agent already has an active task');
     }
@@ -113,7 +113,7 @@ export class Agent extends EventEmitter {
   /**
    * Execute assigned task
    */
-  private async executeTask(taskId: string, executionPlan: any): Promise<void> {
+  private async executeTask(taskId: string, executionPlan: unknown): Promise<void> {
     try {
       // Load task details
       if (!this.db) throw new Error('Database not initialized');
@@ -163,13 +163,13 @@ export class Agent extends EventEmitter {
   /**
    * Execute task based on agent type
    */
-  protected async executeByType(task: any, executionPlan: any): Promise<ExecutionResult> {
+  protected async executeByType(task: unknown, executionPlan: unknown): Promise<ExecutionResult> {
     // Base implementation - override in specialized agents
     const startTime = Date.now();
     
     // Simulate task execution phases
     const phases = executionPlan.phases || ['analysis', 'execution', 'validation'];
-    const results: any[] = [];
+    const results: unknown[] = [];
     
     for (const phase of phases) {
       const phaseResult = await this.executePhase(phase, task, executionPlan);
@@ -189,7 +189,7 @@ export class Agent extends EventEmitter {
       executionTime: Date.now() - startTime,
       agentId: this.id,
       metadata: {
-        phases: phases,
+        phases,
         plan: executionPlan
       }
     };
@@ -198,7 +198,7 @@ export class Agent extends EventEmitter {
   /**
    * Execute a specific phase of the task
    */
-  protected async executePhase(phase: string, task: any, plan: any): Promise<any> {
+  protected async executePhase(phase: string, task: unknown, plan: unknown): Promise<unknown> {
     // Use MCP tools based on phase and agent capabilities
     switch (phase) {
       case 'analysis':
@@ -218,7 +218,7 @@ export class Agent extends EventEmitter {
   /**
    * Perform analysis phase
    */
-  protected async performAnalysis(task: any): Promise<any> {
+  protected async performAnalysis(task: unknown): Promise<unknown> {
     // Use neural analysis for task understanding
     if (!this.mcpWrapper) throw new Error('MCP wrapper not initialized');
     const analysis = await this.mcpWrapper.analyzePattern({
@@ -245,9 +245,9 @@ export class Agent extends EventEmitter {
   /**
    * Perform execution phase
    */
-  protected async performExecution(task: any, plan: any): Promise<any> {
+  protected async performExecution(task: unknown, plan: unknown): Promise<unknown> {
     // Base execution - specialized agents override this
-    const actions = plan.agentAssignments?.find((a: any) => a.agentId === this.id)?.responsibilities || [];
+    const actions = plan.agentAssignments?.find((a: unknown) => a.agentId === this.id)?.responsibilities || [];
     const results = [];
     
     for (const action of actions) {
@@ -257,15 +257,15 @@ export class Agent extends EventEmitter {
     
     return {
       phase: 'execution',
-      actions: actions,
-      results: results
+      actions,
+      results
     };
   }
 
   /**
    * Perform validation phase
    */
-  protected async performValidation(task: any): Promise<any> {
+  protected async performValidation(task: unknown): Promise<unknown> {
     // Validate execution results
     const validation: {
       phase: string;
@@ -293,10 +293,10 @@ export class Agent extends EventEmitter {
   /**
    * Execute a specific action
    */
-  protected async executeAction(action: string, task: any): Promise<any> {
+  protected async executeAction(action: string, task: unknown): Promise<unknown> {
     // Base action execution
     return {
-      action: action,
+      action,
       status: 'completed',
       timestamp: new Date()
     };
@@ -305,7 +305,7 @@ export class Agent extends EventEmitter {
   /**
    * Send a message to another agent or broadcast
    */
-  async sendMessage(toAgentId: string | null, messageType: MessageType, content: any): Promise<void> {
+  async sendMessage(toAgentId: string | null, messageType: MessageType, content: unknown): Promise<void> {
     const message: Message = {
       id: uuidv4(),
       fromAgentId: this.id,
@@ -376,7 +376,7 @@ export class Agent extends EventEmitter {
   /**
    * Store data in agent memory
    */
-  protected async storeInMemory(key: string, value: any): Promise<void> {
+  protected async storeInMemory(key: string, value: unknown): Promise<void> {
     this.memory.set(key, value);
     
     // Also store in persistent memory
@@ -393,7 +393,7 @@ export class Agent extends EventEmitter {
   /**
    * Retrieve from agent memory
    */
-  protected async retrieveFromMemory(key: string): Promise<any> {
+  protected async retrieveFromMemory(key: string): Promise<unknown> {
     // Check local memory first
     if (this.memory.has(key)) {
       return this.memory.get(key);
@@ -413,7 +413,7 @@ export class Agent extends EventEmitter {
   /**
    * Learn from task execution
    */
-  protected async learnFromExecution(task: any, result: ExecutionResult): Promise<void> {
+  protected async learnFromExecution(task: unknown, result: ExecutionResult): Promise<void> {
     const learningData = {
       taskType: this.detectTaskType(task.description),
       agentType: this.type,
@@ -434,7 +434,7 @@ export class Agent extends EventEmitter {
   /**
    * Handle task failure
    */
-  protected async handleTaskFailure(taskId: string, error: any): Promise<void> {
+  protected async handleTaskFailure(taskId: string, error: Error | unknown): Promise<void> {
     // Update task status
     if (!this.db) throw new Error('Database not initialized');
     await this.db.updateTask(taskId, {
@@ -559,7 +559,7 @@ export class Agent extends EventEmitter {
   /**
    * Get agent state
    */
-  getState(): any {
+  getState(): unknown {
     return {
       id: this.id,
       name: this.name,
@@ -607,7 +607,7 @@ export class Agent extends EventEmitter {
     return 'general';
   }
 
-  private extractPatterns(task: any, result: ExecutionResult): any {
+  private extractPatterns(task: unknown, result: ExecutionResult): unknown {
     return {
       taskComplexity: task.priority,
       executionStrategy: task.strategy,
@@ -616,7 +616,7 @@ export class Agent extends EventEmitter {
     };
   }
 
-  private async analyzeRecentPatterns(): Promise<any> {
+  private async analyzeRecentPatterns(): Promise<unknown> {
     if (!this.mcpWrapper) throw new Error('MCP wrapper not initialized');
     return this.mcpWrapper.analyzePattern({
       action: 'analyze',
@@ -629,7 +629,7 @@ export class Agent extends EventEmitter {
     });
   }
 
-  private async updateCapabilities(patterns: any): Promise<void> {
+  private async updateCapabilities(patterns: unknown): Promise<void> {
     if (patterns.suggestedCapabilities) {
       // Update capabilities based on learning
       const newCapabilities = patterns.suggestedCapabilities.filter(
@@ -649,14 +649,14 @@ export class Agent extends EventEmitter {
     }
   }
 
-  private async handleTaskAssignment(content: any): Promise<void> {
+  private async handleTaskAssignment(content: unknown): Promise<void> {
     // Handle incoming task assignment
     if (!this.currentTask && content.taskId) {
       await this.assignTask(content.taskId, content.executionPlan || {});
     }
   }
 
-  private async handleConsensusRequest(content: any): Promise<void> {
+  private async handleConsensusRequest(content: unknown): Promise<void> {
     // Analyze proposal and vote
     const analysis = await this.analyzeProposal(content);
     await this.voteOnProposal(content.proposalId, analysis.vote, analysis.reason);
@@ -674,12 +674,12 @@ export class Agent extends EventEmitter {
     }
   }
 
-  private async handleCoordination(content: any): Promise<void> {
+  private async handleCoordination(content: unknown): Promise<void> {
     // Handle coordination messages
     this.emit('coordinationReceived', content);
   }
 
-  private async analyzeProposal(proposal: any): Promise<any> {
+  private async analyzeProposal(proposal: unknown): Promise<unknown> {
     // Simple analysis - can be overridden by specialized agents
     return {
       vote: Math.random() > 0.3, // 70% approval rate
@@ -687,7 +687,7 @@ export class Agent extends EventEmitter {
     };
   }
 
-  private async processQuery(query: any): Promise<any> {
+  private async processQuery(query: unknown): Promise<unknown> {
     // Process and respond to queries
     return {
       agentId: this.id,

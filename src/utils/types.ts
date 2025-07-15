@@ -272,14 +272,7 @@ export interface MCPConfig {
   corsOrigins?: string[];
 }
 
-export interface LoggingConfig {
-  level: 'debug' | 'info' | 'warn' | 'error';
-  format: 'json' | 'text';
-  destination: 'console' | 'file' | 'both';
-  filePath?: string;
-  maxFileSize?: number;
-  maxFiles?: number;
-}
+// LoggingConfig is already defined above, removing duplicate
 
 // Health and monitoring types
 export interface HealthStatus {
@@ -363,8 +356,16 @@ export interface MCPInitializeResult {
 export interface MCPTool {
   name: string;
   description: string;
-  inputSchema: Record<string, unknown>;
+  inputSchema: MCPToolInputSchema;
   handler: (input: unknown, context?: MCPContext) => Promise<unknown>;
+}
+
+export interface MCPToolInputSchema {
+  type: 'object';
+  properties?: Record<string, any>;
+  required?: string[];
+  additionalProperties?: boolean;
+  [key: string]: any;
 }
 
 export interface MCPPrompt {

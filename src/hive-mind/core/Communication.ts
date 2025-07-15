@@ -142,7 +142,7 @@ export class Communication extends EventEmitter {
   async broadcast(
     fromAgentId: string,
     type: MessageType,
-    content: any,
+    content: unknown,
     priority: MessagePriority = 'normal'
   ): Promise<void> {
     const message: Message = {
@@ -166,7 +166,7 @@ export class Communication extends EventEmitter {
   async sendToChannel(
     channelName: string,
     fromAgentId: string,
-    content: any,
+    content: unknown,
     priority: MessagePriority = 'normal'
   ): Promise<void> {
     const channel = this.channels.get(channelName);
@@ -203,9 +203,9 @@ export class Communication extends EventEmitter {
   async requestResponse(
     fromAgentId: string,
     toAgentId: string,
-    query: any,
+    query: unknown,
     timeout: number = 5000
-  ): Promise<any> {
+  ): Promise<unknown> {
     const message: Message = {
       id: this.generateMessageId(),
       fromAgentId,

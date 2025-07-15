@@ -147,7 +147,7 @@ export class HiveMind extends EventEmitter {
         id: agentData.id,
         name: agentData.name,
         type: agentData.type,
-        swarmId: swarmId,
+        swarmId,
         capabilities: JSON.parse(agentData.capabilities)
       });
       
@@ -401,7 +401,7 @@ export class HiveMind extends EventEmitter {
   /**
    * Get specific task
    */
-  async getTask(taskId: string): Promise<any> {
+  async getTask(taskId: string): Promise<unknown> {
     if (!this.db) throw new Error('Database not initialized');
     return this.db.getTask(taskId);
   }
@@ -523,7 +523,7 @@ export class HiveMind extends EventEmitter {
     };
   }
 
-  private determineHealth(agents: Agent[], tasks: any[], performance: any): 'healthy' | 'degraded' | 'critical' | 'unknown' {
+  private determineHealth(agents: Agent[], tasks: unknown[], performance: unknown): 'healthy' | 'degraded' | 'critical' | 'unknown' {
     if (agents.length === 0) return 'critical';
     
     const busyAgents = agents.filter(a => a.status === 'busy').length;
@@ -536,7 +536,7 @@ export class HiveMind extends EventEmitter {
     return 'healthy';
   }
 
-  private getSystemWarnings(agents: Agent[], tasks: any[], performance: any): string[] {
+  private getSystemWarnings(agents: Agent[], tasks: unknown[], performance: unknown): string[] {
     const warnings: string[] = [];
     
     const utilization = agents.filter(a => a.status === 'busy').length / agents.length;

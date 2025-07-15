@@ -97,7 +97,7 @@ export function createMigrateCommand(): Command {
   return command;
 }
 
-async function analyzeProject(projectPath: string, options: any): Promise<void> {
+async function analyzeProject(projectPath: string, options: Record<string, unknown>): Promise<void> {
   logger.info(`Analyzing project at ${projectPath}...`);
   
   const { MigrationAnalyzer } = await import('../../migration/migration-analyzer');
@@ -112,7 +112,7 @@ async function analyzeProject(projectPath: string, options: any): Promise<void> 
   analyzer.printAnalysis(analysis, options.detailed || options.verbose);
 }
 
-async function runMigration(projectPath: string, options: any): Promise<void> {
+async function runMigration(projectPath: string, options: Record<string, unknown>): Promise<void> {
   const { MigrationRunner } = await import('../../migration/migration-runner');
   const runner = new MigrationRunner({
     projectPath,

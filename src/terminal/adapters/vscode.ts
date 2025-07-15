@@ -247,7 +247,7 @@ export class VSCodeAdapter implements ITerminalAdapter {
     }
 
     // Get VSCode API from global
-    this.vscodeApi = (globalThis as any).vscode;
+    this.vscodeApi = (globalThis as unknown).vscode;
     if (!this.vscodeApi) {
       throw new TerminalError('VSCode API not available');
     }
@@ -256,7 +256,7 @@ export class VSCodeAdapter implements ITerminalAdapter {
     this.terminalCloseListener = this.vscodeApi.window.onDidCloseTerminal((terminal) => {
       // Find and clean up closed terminal
       for (const [id, wrapper] of this.terminals.entries()) {
-        if ((wrapper as any).vscodeTerminal === terminal) {
+        if ((wrapper as unknown).vscodeTerminal === terminal) {
           this.logger.info('VSCode terminal closed', { id });
           this.terminals.delete(id);
           break;
@@ -297,7 +297,7 @@ export class VSCodeAdapter implements ITerminalAdapter {
     this.terminals.set(terminal.id, terminal);
     
     // Register output processor if extension provides it
-    const outputProcessor = (globalThis as any).registerTerminalOutputProcessor;
+    const outputProcessor = (globalThis as unknown).registerTerminalOutputProcessor;
     if (outputProcessor) {
       outputProcessor(terminal.id, (data: string) => terminal.processOutput(data));
     }
@@ -312,8 +312,8 @@ export class VSCodeAdapter implements ITerminalAdapter {
 
   private isVSCodeExtensionContext(): boolean {
     // Check for VSCode extension environment
-    return typeof (globalThis as any).vscode !== 'undefined' &&
-           typeof (globalThis as any).vscode.window !== 'undefined';
+    return typeof (globalThis as unknown).vscode !== 'undefined' &&
+           typeof (globalThis as unknown).vscode.window !== 'undefined';
   }
 
   private detectShell(): string {

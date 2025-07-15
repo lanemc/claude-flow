@@ -759,7 +759,7 @@ export class MemoryToolsPanel extends EventEmitter {
         const response = await this.wsClient.sendRequest({
           type: 'tool_execute',
           tool: `mcp__ruv-swarm__${toolId}`,
-          params: params
+          params
         });
         return response;
       } catch (error) {
@@ -918,7 +918,7 @@ export class MemoryToolsPanel extends EventEmitter {
       if (this.wsClient) {
         await this.wsClient.sendRequest({
           type: 'coordination_notify',
-          message: message,
+          message,
           timestamp: new Date().toISOString(),
           agent: 'memory-tools'
         });
@@ -954,7 +954,7 @@ export class MemoryToolsPanel extends EventEmitter {
       id: `op-${Date.now()}`,
       tool: toolId,
       toolName: this.memoryTools[toolId].name,
-      result: result,
+      result,
       timestamp: new Date().toISOString(),
       success: result.success
     };

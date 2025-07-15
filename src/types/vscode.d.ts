@@ -3,9 +3,9 @@
 
 declare module 'vscode' {
   export interface ExtensionContext {
-    subscriptions: { dispose(): any }[];
-    workspaceState: any;
-    globalState: any;
+    subscriptions: { dispose(): unknown }[];
+    workspaceState: unknown;
+    globalState: unknown;
     extensionPath: string;
   }
 
@@ -35,11 +35,11 @@ declare module 'vscode' {
     env?: { [key: string]: string | undefined };
     strictEnv?: boolean;
     hideFromUser?: boolean;
-    location?: any;
+    location?: unknown;
   }
 
   export interface Event<T> {
-    (listener: (e: T) => any, thisArgs?: any, disposables?: any[]): any;
+    (listener: (e: T) => unknown, thisArgs?: unknown, disposables?: unknown[]): unknown;
   }
 
   export class EventEmitter<T> {
@@ -56,7 +56,7 @@ declare module 'vscode' {
     export function showInformationMessage(message: string, ...items: string[]): Thenable<string | undefined>;
     export function showWarningMessage(message: string, ...items: string[]): Thenable<string | undefined>;
     export const onDidCloseTerminal: Event<Terminal>;
-    export function registerTerminalProfileProvider(id: string, provider: any): any;
+    export function registerTerminalProfileProvider(id: string, provider: unknown): unknown;
   }
 
   export namespace workspace {

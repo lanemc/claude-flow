@@ -2,7 +2,7 @@
  * Simple EventEmitter implementation for process management
  */
 
-type EventHandler = (...args: any[]) => void;
+type EventHandler = (...args: unknown[]) => void;
 
 export class EventEmitter {
   private events: Map<string, EventHandler[]> = new Map();
@@ -14,7 +14,7 @@ export class EventEmitter {
     this.events.get(event)!.push(handler);
   }
 
-  emit(event: string, ...args: any[]): void {
+  emit(event: string, ...args: unknown[]): void {
     const handlers = this.events.get(event);
     if (handlers) {
       handlers.forEach(handler => handler(...args));
@@ -32,7 +32,7 @@ export class EventEmitter {
   }
 
   once(event: string, handler: EventHandler): void {
-    const onceHandler = (...args: any[]) => {
+    const onceHandler = (...args: unknown[]) => {
       handler(...args);
       this.off(event, onceHandler);
     };

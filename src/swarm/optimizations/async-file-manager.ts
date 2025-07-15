@@ -151,7 +151,7 @@ export class AsyncFileManager {
     return result;
   }
   
-  async writeJSON(path: string, data: any, pretty = true): Promise<FileOperationResult> {
+  async writeJSON(path: string, data: Record<string, unknown>, pretty = true): Promise<FileOperationResult> {
     const jsonString = pretty 
       ? JSON.stringify(data, null, 2)
       : JSON.stringify(data);

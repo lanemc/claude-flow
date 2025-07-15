@@ -137,17 +137,24 @@ export class HiveOrchestrator extends EventEmitter {
   private applyTopologyOrdering(tasks: HiveTask[]): HiveTask[] {
     switch (this.topology) {
       case 'hierarchical':
-        // Priority-based ordering with dependency respect
+        {
+// Priority-based ordering with dependency respect
         return tasks.sort((a, b) => {
           const priorityOrder = { critical: 0, high: 1, medium: 2, low: 3 };
           return priorityOrder[a.priority] - priorityOrder[b.priority];
         });
+        }
+        break;
         
       case 'ring':
-        // Sequential ordering - each task depends on previous
+        {
+// Sequential ordering - each task depends on previous
         for (let i = 1; i < tasks.length; i++) {
           if (tasks[i].dependencies.length === 0) {
             tasks[i].dependencies.push(tasks[i-1].id);
+
+        
+      }
           }
         }
         return tasks;
@@ -157,14 +164,17 @@ export class HiveOrchestrator extends EventEmitter {
         return tasks.sort((a, b) => a.dependencies.length - b.dependencies.length);
         
       case 'star':
-        // Central coordination - all tasks report to analysis
+        {
+// Central coordination - all tasks report to analysis
         const analysisTask = tasks.find(t => t.type === 'analysis');
         if (analysisTask) {
           tasks.forEach(t => {
             if (t.id !== analysisTask.id && t.dependencies.length === 0) {
               t.dependencies.push(analysisTask.id);
-            }
-          });
+
+          }
+        });
+        }
         }
         return tasks;
         

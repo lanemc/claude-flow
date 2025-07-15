@@ -22,12 +22,12 @@ import {
 } from '../utils';
 
 // Mock console for testing output functions
-let consoleLogSpy: any;
-let consoleErrorSpy: any;
+let consoleLogSpy: jest.SpiedFunction<any>;
+let consoleErrorSpy: jest.SpiedFunction<any>;
 
 beforeEach(() => {
-  consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
-  consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+  consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => undefined);
+  consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
 });
 
 afterEach(() => {

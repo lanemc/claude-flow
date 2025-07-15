@@ -328,7 +328,7 @@ export class HiveMindCore extends EventEmitter {
         count: this.state.workers.size,
         batchSize: workers.length,
         spawnTime: Date.now() - startTime,
-        workers: workers
+        workers
       });
       
       return workers;
@@ -942,7 +942,7 @@ export class HiveMindCore extends EventEmitter {
       swarmId: this.state.swarmId,
       status: this.state.status,
       queen: this.state.queen,
-      workers: workers,
+      workers,
       tasks: {
         total: this.state.tasks.size,
         pending: tasks.filter(t => t.status === 'pending').length,

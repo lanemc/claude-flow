@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../utils/error-handler';
+// import { getErrorMessage } from '../utils/error-handler';
 import { EventEmitter } from 'node:events';
 import { createLogger, ILogger } from '../core/logger';
 import { EventBus } from '../core/event-bus';
@@ -33,7 +33,7 @@ export interface SwarmTask {
   dependencies: string[];
   assignedTo?: string;
   status: 'pending' | 'running' | 'completed' | 'failed';
-  result?: any;
+  result?: unknown;
   error?: string;
   createdAt: Date;
   startedAt?: Date;
@@ -79,8 +79,8 @@ export class SwarmCoordinator extends EventEmitter {
   private memoryManager: MemoryManager;
   private backgroundWorkers: Map<string, NodeJS.Timeout>;
   private isRunning: boolean = false;
-  private workStealer?: any;
-  private circuitBreaker?: any;
+  private workStealer?: unknown;
+  private circuitBreaker?: unknown;
 
   constructor(config: Partial<SwarmConfig> = {}) {
     super();
@@ -131,17 +131,17 @@ export class SwarmCoordinator extends EventEmitter {
   private setupEventHandlers(): void {
     // Monitor events
     if (this.monitor) {
-      this.monitor.on('alert', (alert: any) => {
+      this.monitor.on('alert', (alert: unknown) => {
         this.handleMonitorAlert(alert);
       });
     }
 
     // Add custom event handlers for swarm coordination
-    this.on('task:completed', (data: any) => {
+    this.on('task:completed', (data: Record<string, unknown>) => {
       this.handleTaskCompleted(data.taskId, data.result);
     });
 
-    this.on('task:failed', (data: any) => {
+    this.on('task:failed', (data: Record<string, unknown>) => {
       this.handleTaskFailed(data.taskId, data.error);
     });
   }
@@ -418,7 +418,7 @@ export class SwarmCoordinator extends EventEmitter {
     }
   }
 
-  private async simulateTaskExecution(task: SwarmTask, agent: SwarmAgent): Promise<any> {
+  private async simulateTaskExecution(task: SwarmTask, agent: SwarmAgent): Promise<unknown> {
     // This is where we would actually spawn Claude processes
     // For now, simulate with timeout
     return new Promise((resolve, reject) => {
@@ -439,7 +439,7 @@ export class SwarmCoordinator extends EventEmitter {
     });
   }
 
-  private async handleTaskCompleted(taskId: string, result: any): Promise<void> {
+  private async handleTaskCompleted(taskId: string, result: unknown): Promise<void> {
     const task = this.tasks.get(taskId);
     if (!task) return;
 
@@ -487,7 +487,7 @@ export class SwarmCoordinator extends EventEmitter {
     this.checkObjectiveCompletion(task);
   }
 
-  private async handleTaskFailed(taskId: string, error: any): Promise<void> {
+  private async handleTaskFailed(taskId: string, error: Error | unknown): Promise<void> {
     const task = this.tasks.get(taskId);
     if (!task) return;
 
@@ -690,7 +690,7 @@ export class SwarmCoordinator extends EventEmitter {
     }
   }
 
-  private handleMonitorAlert(alert: any): void {
+  private handleMonitorAlert(alert: unknown): void {
     this.logger.warn(`Monitor alert: ${alert.message}`);
     this.emit('monitor:alert', alert);
   }

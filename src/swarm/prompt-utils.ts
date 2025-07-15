@@ -1,5 +1,5 @@
-import { getErrorMessage } from '../utils/error-handler';
 import * as fs from 'fs/promises';
+import * as fsSync from 'fs';
 import * as path from 'path';
 import { logger } from '../core/logger';
 
@@ -61,6 +61,7 @@ export const DEFAULT_CONFIG: PromptConfig = {
 };
 
 export class PromptConfigManager {
+
   private configPath: string;
   private config: PromptConfig;
 
@@ -148,7 +149,7 @@ export class PromptPathResolver {
 
   private directoryExists(dirPath: string): boolean {
     try {
-      const stats = require('fs').statSync(dirPath);
+      const stats = fsSync.statSync(dirPath);
       return stats.isDirectory();
     } catch {
       return false;
@@ -285,6 +286,7 @@ export class PromptValidator {
   }
 }
 
+// Utility function to create progress bar
 export function createProgressBar(total: number): {
   update: (current: number) => void;
   complete: () => void;
