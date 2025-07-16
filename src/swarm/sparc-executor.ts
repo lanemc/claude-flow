@@ -27,7 +27,7 @@ export class SparcTaskExecutor {
   private enableTDD: boolean;
   private qualityThreshold: number;
   private enableMemory: boolean;
-  private phases: Map<string, SparcPhase>;
+  private phases: Map<string, SparcPhase> = new Map();
 
   constructor(config: SparcExecutorConfig = {}) {
     this.logger = config.logger || new Logger(

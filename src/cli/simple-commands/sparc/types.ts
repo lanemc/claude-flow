@@ -194,6 +194,8 @@ export interface Property {
   format?: string;
   enum?: string[];
   '$ref'?: string;
+  items?: any;
+  properties?: Record<string, Property>;
 }
 
 export interface ErrorHandling {

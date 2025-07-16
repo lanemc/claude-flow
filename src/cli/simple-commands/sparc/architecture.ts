@@ -436,9 +436,9 @@ export class SparcArchitecture extends SparcPhase {
       if (componentMap.has(key)) {
         const existing = componentMap.get(key)!;
         // Merge dependencies and interfaces
-        existing.dependencies = [...new Set([...existing.dependencies, ...component.dependencies])];
-        existing.interfaces = [...new Set([...existing.interfaces, ...component.interfaces])];
-        existing.patterns = [...new Set([...existing.patterns, ...component.patterns])];
+        existing.dependencies = Array.from(new Set([...existing.dependencies, ...component.dependencies]));
+        existing.interfaces = Array.from(new Set([...existing.interfaces, ...component.interfaces]));
+        existing.patterns = Array.from(new Set([...existing.patterns, ...component.patterns]));
       } else {
         componentMap.set(key, component);
       }
@@ -469,7 +469,7 @@ export class SparcArchitecture extends SparcPhase {
       if (step.includes('cache')) dependencies.push('CacheManager');
     }
     
-    return [...new Set(dependencies)];
+    return Array.from(new Set(dependencies));
   }
 
   /**
