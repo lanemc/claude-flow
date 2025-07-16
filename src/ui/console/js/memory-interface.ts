@@ -810,8 +810,8 @@ class MemoryInterface implements IMemoryInterface {
     }, 30000); // Update every 30 seconds
   }
 
-  public render(): HTMLDivElement | null {
-    return this.container;
+  public render(): HTMLElement {
+    return this.container!;
   }
 
   // Stub methods for missing interface implementations

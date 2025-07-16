@@ -38,17 +38,13 @@ const cli = new Command()
   .description('Claude-Flow: Advanced AI agent orchestration system for multi-agent coordination')
   // .meta() commented out - not available
   // .meta() commented out - not available
-  .globalOption('-c, --config <path:string>', 'Path to configuration file', {
-    default: './claude-flow.config.json',
-  })
-  .globalOption('-v, --verbose', 'Enable verbose logging')
-  .globalOption('-q, --quiet', 'Suppress non-essential output')
-  .globalOption('--log-level <level:string>', 'Set log level (debug, info, warn, error)', {
-    default: 'info',
-  })
-  .globalOption('--no-color', 'Disable colored output')
-  .globalOption('--json', 'Output in JSON format where applicable')
-  .globalOption('--profile <profile:string>', 'Use named configuration profile')
+  .option('-c, --config <path>', 'Path to configuration file', './claude-flow.config.json')
+  .option('-v, --verbose', 'Enable verbose logging')
+  .option('-q, --quiet', 'Suppress non-essential output')
+  .option('--log-level <level>', 'Set log level (debug, info, warn, error)', 'info')
+  .option('--no-color', 'Disable colored output')
+  .option('--json', 'Output in JSON format where applicable')
+  .option('--profile <profile>', 'Use named configuration profile')
   .action(async (options: any) => {
     // If no subcommand, show banner and start REPL
     await setupLogging(options);

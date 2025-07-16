@@ -127,7 +127,7 @@ class ClaudeCodeConsole {
       
     } catch (error) {
       console.error('Failed to initialize console:', error);
-      this.showError('Failed to initialize console: ' + error.message);
+      this.showError('Failed to initialize console: ' + (error instanceof Error ? error.message : String(error)));
     }
   }
   
@@ -138,23 +138,23 @@ class ClaudeCodeConsole {
     this.elements = {
       consoleOutput: document.getElementById('consoleOutput')!,
       consoleInput: document.getElementById('consoleInput')! as HTMLInputElement,
-      settingsPanel: document.getElementById('settingsPanel'),
-      loadingOverlay: document.getElementById('loadingOverlay'),
-      connectionStatus: document.getElementById('connectionStatus'),
-      statusIndicator: document.getElementById('statusIndicator'),
-      statusText: document.getElementById('statusText'),
-      currentMode: document.getElementById('currentMode'),
-      activeAgents: document.getElementById('activeAgents'),
-      uptime: document.getElementById('uptime'),
-      memoryUsage: document.getElementById('memoryUsage'),
-      messageCount: document.getElementById('messageCount'),
-      timestamp: document.getElementById('timestamp'),
-      clearConsole: document.getElementById('clearConsole'),
-      fullscreenToggle: document.getElementById('fullscreenToggle')
+      settingsPanel: document.getElementById('settingsPanel')!,
+      loadingOverlay: document.getElementById('loadingOverlay')!,
+      connectionStatus: document.getElementById('connectionStatus')!,
+      statusIndicator: document.getElementById('statusIndicator')!,
+      statusText: document.getElementById('statusText')!,
+      currentMode: document.getElementById('currentMode')!,
+      activeAgents: document.getElementById('activeAgents')!,
+      uptime: document.getElementById('uptime')!,
+      memoryUsage: document.getElementById('memoryUsage')!,
+      messageCount: document.getElementById('messageCount')!,
+      timestamp: document.getElementById('timestamp')!,
+      clearConsole: document.getElementById('clearConsole')!,
+      fullscreenToggle: document.getElementById('fullscreenToggle')!
     };
     
     // Validate required elements
-    const required = ['consoleOutput', 'consoleInput', 'loadingOverlay'];
+    const required = ['consoleOutput', 'consoleInput', 'loadingOverlay'] as const;
     for (const elementId of required) {
       if (!this.elements[elementId]) {
         throw new Error(`Required element not found: ${elementId}`);

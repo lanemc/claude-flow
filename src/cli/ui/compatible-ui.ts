@@ -91,7 +91,7 @@ export class CompatibleUI {
       case 'h':
       case 'help':
       case '?':
-        this.outputHelp();
+        this.showHelp();
         break;
         
       case 's':

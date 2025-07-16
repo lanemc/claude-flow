@@ -496,7 +496,7 @@ export class TerminalEmulator implements ITerminalEmulator {
    */
   private setupScrollBehavior(): void {
     let isUserScrolling = false;
-    let scrollTimeout;
+    let scrollTimeout: ReturnType<typeof setTimeout>;
     let lastScrollTop = 0;
     
     this.outputElement.addEventListener('scroll', () => {
