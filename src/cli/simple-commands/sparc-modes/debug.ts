@@ -1,5 +1,27 @@
-// debug.js - Debugger mode orchestration template
-export function getDebugOrchestration(taskDescription, memoryNamespace) {
+// debug.ts - Debugger mode orchestration template
+import { OrchestrationFunction, SparcModeError } from './types.js';
+
+export const getDebugOrchestration: OrchestrationFunction = (
+  taskDescription: string,
+  memoryNamespace: string
+): string => {
+  // Validate inputs
+  if (!taskDescription || taskDescription.trim().length === 0) {
+    throw new SparcModeError(
+      'Task description is required for debug mode',
+      'debug',
+      'INVALID_INPUT'
+    );
+  }
+
+  if (!memoryNamespace || memoryNamespace.trim().length === 0) {
+    throw new SparcModeError(
+      'Memory namespace is required for debug mode',
+      'debug',
+      'INVALID_INPUT'
+    );
+  }
+
   return `
 ## Task Orchestration Steps
 
@@ -109,4 +131,4 @@ After debugging completes:
 - \`npx claude-flow sparc run security-review "Review security impact of ${taskDescription} fix" --non-interactive\`
 - \`npx claude-flow sparc run refinement-optimization-mode "Refactor affected modules for better maintainability" --non-interactive\`
 - \`npx claude-flow sparc run post-deployment-monitoring-mode "Monitor ${taskDescription} fix in production" --non-interactive\``;
-}
+};

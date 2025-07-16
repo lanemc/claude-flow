@@ -1,5 +1,27 @@
-// ask.js - Ask mode orchestration template
-export function getAskOrchestration(taskDescription, memoryNamespace) {
+// ask.ts - Ask mode orchestration template
+import { OrchestrationFunction, SparcModeError, SPARC_CONSTANTS } from './types.js';
+
+export const getAskOrchestration: OrchestrationFunction = (
+  taskDescription: string,
+  memoryNamespace: string
+): string => {
+  // Validate inputs
+  if (!taskDescription || taskDescription.trim().length === 0) {
+    throw new SparcModeError(
+      'Task description is required for ask mode',
+      'ask',
+      'INVALID_INPUT'
+    );
+  }
+
+  if (!memoryNamespace || memoryNamespace.trim().length === 0) {
+    throw new SparcModeError(
+      'Memory namespace is required for ask mode',
+      'ask',
+      'INVALID_INPUT'
+    );
+  }
+
   return `
 ## ❓ Ask Mode - SPARC Navigation Guide
 
@@ -99,7 +121,7 @@ npx claude-flow sparc run docs-writer "${taskDescription} - documentation" --non
 
 ### 4. **Best Practices Reminder**
 When using any SPARC mode, remember:
-✅ Keep files modular (< 500 lines)
+✅ Keep files modular (< ${SPARC_CONSTANTS.MAX_FILE_LINES} lines)
 ✅ Never hardcode environment variables
 ✅ Use configuration files for env-specific values
 ✅ Write tests for critical functionality
@@ -123,4 +145,4 @@ npx claude-flow memory list
 Based on your request "${taskDescription}", which SPARC mode would you like to use? Or would you like me to help you break down your task into smaller, mode-specific subtasks?
 
 Remember: The SPARC methodology ensures systematic, high-quality development. Each mode has a specific purpose - use them in combination for best results!`;
-}
+};

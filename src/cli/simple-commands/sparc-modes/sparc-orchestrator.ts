@@ -1,5 +1,7 @@
-// sparc-orchestrator.js - SPARC Orchestrator mode orchestration template
-export function getSparcOrchestratorOrchestration(taskDescription, memoryNamespace) {
+// sparc-orchestrator.ts - SPARC Orchestrator mode orchestration template
+import type { OrchestrationFunction } from './types.js';
+
+export const getSparcOrchestratorOrchestration: OrchestrationFunction = (taskDescription: string, memoryNamespace: string) => {
   return `
 ## 🚀 SPARC Orchestrator - Complex Workflow Management
 
@@ -164,4 +166,4 @@ npx claude-flow status
 I'll now begin orchestrating the SPARC workflow for "${taskDescription}". Each phase will be carefully managed with appropriate specialist modes to ensure secure, modular, and maintainable delivery.
 
 Remember: Every subtask must follow SPARC principles and end with clear deliverables. Let's build something amazing together! 🚀`;
-}
+};

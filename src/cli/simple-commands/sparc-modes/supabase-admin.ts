@@ -1,5 +1,7 @@
-// supabase-admin.js - Supabase Admin mode orchestration template
-export function getSupabaseAdminOrchestration(taskDescription, memoryNamespace) {
+// supabase-admin.ts - Supabase Admin mode orchestration template
+import type { OrchestrationFunction } from './types';
+
+export const getSupabaseAdminOrchestration: OrchestrationFunction = (taskDescription, memoryNamespace) => {
   return `
 ## Task Orchestration Steps - Supabase MCP Mode
 
@@ -146,4 +148,4 @@ After Supabase setup:
 - \`npx claude-flow sparc run code "Integrate Supabase client in application" --non-interactive\`
 - \`npx claude-flow sparc run tdd "Write tests for Supabase operations" --non-interactive\`
 - \`npx claude-flow sparc run docs-writer "Create Supabase integration guide" --non-interactive\``;
-}
+};

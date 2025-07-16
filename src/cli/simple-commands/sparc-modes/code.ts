@@ -1,5 +1,30 @@
-// code.js - Auto-Coder mode orchestration template
-export function getCodeOrchestration(taskDescription, memoryNamespace) {
+// code.ts - Auto-Coder mode orchestration template
+import { OrchestrationFunction, SparcModeError, SPARC_CONSTANTS } from './types.js';
+
+export const getCodeOrchestration: OrchestrationFunction = (
+  taskDescription: string,
+  memoryNamespace: string
+): string => {
+  // Validate inputs
+  if (!taskDescription || taskDescription.trim().length === 0) {
+    throw new SparcModeError(
+      'Task description is required for code mode',
+      'code',
+      'INVALID_INPUT'
+    );
+  }
+
+  if (!memoryNamespace || memoryNamespace.trim().length === 0) {
+    throw new SparcModeError(
+      'Memory namespace is required for code mode',
+      'code',
+      'INVALID_INPUT'
+    );
+  }
+
+  // Ensure MAX_FILE_LINES is accessible in the template
+  const maxFileLines = SPARC_CONSTANTS.MAX_FILE_LINES;
+
   return `
 ## Task Orchestration Steps
 
@@ -25,7 +50,7 @@ export function getCodeOrchestration(taskDescription, memoryNamespace) {
      - Set up config/ directory with environment loaders
      - Implement secrets management abstraction
    - Install dependencies based on tech specs
-   - Create module structure (each file < 500 lines)
+   - Create module structure (each file < ${maxFileLines} lines)
    - Store setup: \`npx claude-flow memory store ${memoryNamespace}_setup "Project structure: src/{domain,application,infrastructure}. Config: dotenv + vault integration. Dependencies: express, joi, winston."\`
 
 3. **Modular Implementation** (30 mins)
@@ -34,7 +59,7 @@ export function getCodeOrchestration(taskDescription, memoryNamespace) {
      - Application layer: Use cases and workflows
      - Infrastructure layer: External integrations
    - Follow SOLID principles and dependency injection
-   - Keep each module/file under 500 lines
+   - Keep each module/file under ${maxFileLines} lines
    - Use configuration for ALL environment-specific values
    - Implement comprehensive error handling
    - Add structured logging with context
@@ -56,7 +81,7 @@ export function getCodeOrchestration(taskDescription, memoryNamespace) {
    - Create API documentation (if applicable)
    - Generate dependency graphs
    - Update README with setup instructions
-   - Store completion: \`npx claude-flow memory store ${memoryNamespace}_code_complete "Implementation complete. All modules < 500 lines. No hardcoded secrets. Ready for testing and integration."\`
+   - Store completion: \`npx claude-flow memory store ${memoryNamespace}_code_complete "Implementation complete. All modules < ${maxFileLines} lines. No hardcoded secrets. Ready for testing and integration."\`
 
 ## Directory Safety Check
 Before creating any files:
@@ -68,8 +93,8 @@ Before creating any files:
 ## Deliverables
 All files should be created relative to the current working directory:
 - src/
-  - domain/ (business logic, < 500 lines per file)
-  - application/ (use cases, < 500 lines per file)
+  - domain/ (business logic, < ${maxFileLines} lines per file)
+  - application/ (use cases, < ${maxFileLines} lines per file)
   - infrastructure/ (external integrations)
   - config/ (environment management)
 - tests/
@@ -145,4 +170,4 @@ npx claude-flow swarm "Integration testing and production deployment preparation
 npx claude-flow status
 tail -f ./swarm-runs/*/swarm.log
 \`\`\``;
-}
+};

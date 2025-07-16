@@ -1,5 +1,7 @@
-// tutorial.js - SPARC Tutorial mode orchestration template
-export function getTutorialOrchestration(taskDescription, memoryNamespace) {
+// tutorial.ts - SPARC Tutorial mode orchestration template
+import type { OrchestrationFunction } from './types';
+
+export const getTutorialOrchestration: OrchestrationFunction = (taskDescription, memoryNamespace) => {
   return `
 ## 📘 SPARC Tutorial - Learn by Building
 
@@ -274,4 +276,4 @@ npx claude-flow sparc run devops "Deploy X" --non-interactive              # Dep
 \`\`\`
 
 Happy SPARC coding! 🚀`;
-}
+};

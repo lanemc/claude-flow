@@ -1,5 +1,7 @@
-// integration.js - System Integrator mode orchestration template
-export function getIntegrationOrchestration(taskDescription, memoryNamespace) {
+// integration.ts - System Integrator mode orchestration template
+import type { OrchestrationFunction } from './types.js';
+
+export const getIntegrationOrchestration: OrchestrationFunction = (taskDescription: string, memoryNamespace: string) => {
   return `
 ## Task Orchestration Steps
 
@@ -52,4 +54,4 @@ export function getIntegrationOrchestration(taskDescription, memoryNamespace) {
    - Configuration templates
    - Integration test suite
    - Deployment guide`;
-}
+};

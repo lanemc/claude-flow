@@ -1,5 +1,7 @@
-// devops.js - DevOps mode orchestration template
-export function getDevOpsOrchestration(taskDescription, memoryNamespace) {
+// devops.ts - DevOps mode orchestration template
+import type { OrchestrationFunction } from './types.js';
+
+export const getDevOpsOrchestration: OrchestrationFunction = (taskDescription, memoryNamespace) => {
   return `
 ## Task Orchestration Steps
 
@@ -134,4 +136,4 @@ After DevOps setup:
 - \`npx claude-flow sparc run post-deployment-monitoring-mode "Verify production deployment health" --non-interactive\`
 - \`npx claude-flow sparc run security-review "Audit infrastructure security" --non-interactive\`
 - \`npx claude-flow sparc run refinement-optimization-mode "Optimize deployment performance" --non-interactive\``;
-}
+};
