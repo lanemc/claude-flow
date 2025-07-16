@@ -3,7 +3,34 @@
  * Provides consistent, themeable components across all views
  */
 
+import {
+  ComponentLibraryConfig,
+  ComponentType,
+  ComponentFactory,
+  ToolPanelComponent,
+  MetricsChartComponent,
+  CommandPaletteComponent,
+  ProgressBarComponent,
+  StatusBadgeComponent,
+  LoadingSpinnerComponent,
+  MessageComponent,
+  InfoPanelComponent,
+  ActionButtonComponent,
+  ToolGridComponent,
+  StatsCardComponent,
+  TabContainerComponent,
+  ChartData,
+  Command,
+  UITool,
+  Tab,
+  StatusType
+} from '../types/interfaces.js';
+
 export class ComponentLibrary {
+  private components: Map<ComponentType, ComponentFactory>;
+  private theme: 'dark' | 'light';
+  private isInitialized: boolean;
+
   constructor() {
     this.components = new Map();
     this.theme = 'dark';
@@ -13,7 +40,7 @@ export class ComponentLibrary {
   /**
    * Initialize component library
    */
-  initialize() {
+  initialize(): void {
     this.registerComponents();
     this.addComponentStyles();
     this.isInitialized = true;
@@ -23,39 +50,39 @@ export class ComponentLibrary {
   /**
    * Register all reusable components
    */
-  registerComponents() {
-    this.components.set('ToolPanel', this.createToolPanel);
-    this.components.set('MetricsChart', this.createMetricsChart);
-    this.components.set('CommandPalette', this.createCommandPalette);
-    this.components.set('ProgressBar', this.createProgressBar);
-    this.components.set('StatusBadge', this.createStatusBadge);
-    this.components.set('LoadingSpinner', this.createLoadingSpinner);
-    this.components.set('ErrorMessage', this.createErrorMessage);
-    this.components.set('SuccessMessage', this.createSuccessMessage);
-    this.components.set('InfoPanel', this.createInfoPanel);
-    this.components.set('ActionButton', this.createActionButton);
-    this.components.set('ToolGrid', this.createToolGrid);
-    this.components.set('StatsCard', this.createStatsCard);
-    this.components.set('LogViewer', this.createLogViewer);
-    this.components.set('FormBuilder', this.createFormBuilder);
-    this.components.set('TabContainer', this.createTabContainer);
+  private registerComponents(): void {
+    this.components.set('ToolPanel', this.createToolPanel.bind(this));
+    this.components.set('MetricsChart', this.createMetricsChart.bind(this));
+    this.components.set('CommandPalette', this.createCommandPalette.bind(this));
+    this.components.set('ProgressBar', this.createProgressBar.bind(this));
+    this.components.set('StatusBadge', this.createStatusBadge.bind(this));
+    this.components.set('LoadingSpinner', this.createLoadingSpinner.bind(this));
+    this.components.set('ErrorMessage', this.createErrorMessage.bind(this));
+    this.components.set('SuccessMessage', this.createSuccessMessage.bind(this));
+    this.components.set('InfoPanel', this.createInfoPanel.bind(this));
+    this.components.set('ActionButton', this.createActionButton.bind(this));
+    this.components.set('ToolGrid', this.createToolGrid.bind(this));
+    this.components.set('StatsCard', this.createStatsCard.bind(this));
+    this.components.set('LogViewer', this.createLogViewer.bind(this));
+    this.components.set('FormBuilder', this.createFormBuilder.bind(this));
+    this.components.set('TabContainer', this.createTabContainer.bind(this));
   }
 
   /**
    * Get component by name
    */
-  getComponent(name) {
+  getComponent<T = any>(name: ComponentType): ComponentFactory<T> {
     const component = this.components.get(name);
     if (!component) {
       throw new Error(`Component not found: ${name}`);
     }
-    return component;
+    return component as ComponentFactory<T>;
   }
 
   /**
    * Create tool panel component
    */
-  createToolPanel(config) {
+  createToolPanel(config: ComponentLibraryConfig): ToolPanelComponent {
     const panel = document.createElement('div');
     panel.className = 'claude-tool-panel';
     
@@ -63,11 +90,11 @@ export class ComponentLibrary {
     header.className = 'claude-tool-panel-header';
     
     const title = document.createElement('h3');
-    title.textContent = config.title;
+    title.textContent = config.title || '';
     title.className = 'claude-tool-panel-title';
     
     const subtitle = document.createElement('p');
-    subtitle.textContent = config.description;
+    subtitle.textContent = config.description || '';
     subtitle.className = 'claude-tool-panel-subtitle';
     
     header.appendChild(title);
@@ -82,22 +109,22 @@ export class ComponentLibrary {
     return {
       element: panel,
       content,
-      setTitle: (newTitle) => { title.textContent = newTitle; },
-      setDescription: (newDesc) => { subtitle.textContent = newDesc; },
+      setTitle: (newTitle: string) => { title.textContent = newTitle; },
+      setDescription: (newDesc: string) => { subtitle.textContent = newDesc; },
       clear: () => { content.innerHTML = ''; },
-      append: (element) => { content.appendChild(element); }
+      append: (element: HTMLElement) => { content.appendChild(element); }
     };
   }
 
   /**
    * Create metrics chart component
    */
-  createMetricsChart(config) {
+  createMetricsChart(config: ComponentLibraryConfig): MetricsChartComponent {
     const container = document.createElement('div');
     container.className = 'claude-metrics-chart';
     
     const title = document.createElement('h4');
-    title.textContent = config.title;
+    title.textContent = config.title || '';
     title.className = 'claude-chart-title';
     
     const canvas = document.createElement('canvas');
@@ -115,16 +142,16 @@ export class ComponentLibrary {
     return {
       element: container,
       canvas,
-      updateData: (data) => this.updateChart(canvas, data, config),
-      setTitle: (newTitle) => { title.textContent = newTitle; },
-      addLegendItem: (label, color) => this.addLegendItem(legend, label, color)
+      updateData: (data: ChartData[]) => this.updateChart(canvas, data, config),
+      setTitle: (newTitle: string) => { title.textContent = newTitle; },
+      addLegendItem: (label: string, color: string) => this.addLegendItem(legend, label, color)
     };
   }
 
   /**
    * Create command palette component
    */
-  createCommandPalette(config) {
+  createCommandPalette(config: ComponentLibraryConfig): CommandPaletteComponent {
     const overlay = document.createElement('div');
     overlay.className = 'claude-command-palette-overlay';
     overlay.style.display = 'none';
@@ -150,15 +177,15 @@ export class ComponentLibrary {
       results,
       show: () => { overlay.style.display = 'flex'; input.focus(); },
       hide: () => { overlay.style.display = 'none'; },
-      updateResults: (commands) => this.updateCommandResults(results, commands),
-      onCommand: null // Set by user
+      updateResults: (commands: Command[]) => this.updateCommandResults(results, commands),
+      onCommand: null
     };
   }
 
   /**
    * Create progress bar component
    */
-  createProgressBar(config) {
+  createProgressBar(config: ComponentLibraryConfig): ProgressBarComponent {
     const container = document.createElement('div');
     container.className = 'claude-progress-container';
     
@@ -184,35 +211,35 @@ export class ComponentLibrary {
     
     return {
       element: container,
-      setProgress: (percent) => {
+      setProgress: (percent: number) => {
         fill.style.width = `${percent}%`;
         text.textContent = `${Math.round(percent)}%`;
       },
-      setLabel: (newLabel) => { label.textContent = newLabel; }
+      setLabel: (newLabel: string) => { label.textContent = newLabel; }
     };
   }
 
   /**
    * Create status badge component
    */
-  createStatusBadge(status, text) {
+  createStatusBadge(status: StatusType, text?: string): StatusBadgeComponent {
     const badge = document.createElement('span');
     badge.className = `claude-status-badge claude-status-${status}`;
     badge.textContent = text || status;
     
     return {
       element: badge,
-      setStatus: (newStatus) => {
+      setStatus: (newStatus: StatusType) => {
         badge.className = `claude-status-badge claude-status-${newStatus}`;
       },
-      setText: (newText) => { badge.textContent = newText; }
+      setText: (newText: string) => { badge.textContent = newText; }
     };
   }
 
   /**
    * Create loading spinner component
    */
-  createLoadingSpinner(config = {}) {
+  createLoadingSpinner(config: ComponentLibraryConfig = {}): LoadingSpinnerComponent {
     const container = document.createElement('div');
     container.className = 'claude-loading-container';
     
@@ -228,7 +255,7 @@ export class ComponentLibrary {
     
     return {
       element: container,
-      setMessage: (newMessage) => { message.textContent = newMessage; },
+      setMessage: (newMessage: string) => { message.textContent = newMessage; },
       show: () => { container.style.display = 'flex'; },
       hide: () => { container.style.display = 'none'; }
     };
@@ -237,7 +264,7 @@ export class ComponentLibrary {
   /**
    * Create error message component
    */
-  createErrorMessage(message, details = null) {
+  createErrorMessage(message: string, details: string | null = null): MessageComponent {
     const container = document.createElement('div');
     container.className = 'claude-error-message';
     
@@ -261,15 +288,16 @@ export class ComponentLibrary {
     
     return {
       element: container,
-      setMessage: (newMessage) => { text.textContent = newMessage; },
-      setDetails: (newDetails) => {
+      setMessage: (newMessage: string) => { text.textContent = newMessage; },
+      setDetails: (newDetails: string) => {
         if (newDetails) {
-          if (!container.querySelector('.claude-error-details')) {
-            const detailsEl = document.createElement('div');
+          let detailsEl = container.querySelector('.claude-error-details') as HTMLDivElement;
+          if (!detailsEl) {
+            detailsEl = document.createElement('div');
             detailsEl.className = 'claude-error-details';
             container.appendChild(detailsEl);
           }
-          container.querySelector('.claude-error-details').textContent = newDetails;
+          detailsEl.textContent = newDetails;
         }
       }
     };
@@ -278,7 +306,7 @@ export class ComponentLibrary {
   /**
    * Create success message component
    */
-  createSuccessMessage(message) {
+  createSuccessMessage(message: string): MessageComponent {
     const container = document.createElement('div');
     container.className = 'claude-success-message';
     
@@ -295,20 +323,20 @@ export class ComponentLibrary {
     
     return {
       element: container,
-      setMessage: (newMessage) => { text.textContent = newMessage; }
+      setMessage: (newMessage: string) => { text.textContent = newMessage; }
     };
   }
 
   /**
    * Create info panel component
    */
-  createInfoPanel(config) {
+  createInfoPanel(config: ComponentLibraryConfig): InfoPanelComponent {
     const panel = document.createElement('div');
     panel.className = 'claude-info-panel';
     
     const header = document.createElement('div');
     header.className = 'claude-info-header';
-    header.textContent = config.title;
+    header.textContent = config.title || '';
     
     const content = document.createElement('div');
     content.className = 'claude-info-content';
@@ -319,9 +347,9 @@ export class ComponentLibrary {
     return {
       element: panel,
       content,
-      setTitle: (title) => { header.textContent = title; },
-      setContent: (html) => { content.innerHTML = html; },
-      append: (element) => { content.appendChild(element); },
+      setTitle: (title: string) => { header.textContent = title; },
+      setContent: (html: string) => { content.innerHTML = html; },
+      append: (element: HTMLElement) => { content.appendChild(element); },
       clear: () => { content.innerHTML = ''; }
     };
   }
@@ -329,10 +357,10 @@ export class ComponentLibrary {
   /**
    * Create action button component
    */
-  createActionButton(config) {
+  createActionButton(config: ComponentLibraryConfig): ActionButtonComponent {
     const button = document.createElement('button');
     button.className = `claude-action-button claude-button-${config.type || 'primary'}`;
-    button.textContent = config.text;
+    button.textContent = config.text || '';
     
     if (config.icon) {
       const icon = document.createElement('span');
@@ -347,7 +375,7 @@ export class ComponentLibrary {
     
     return {
       element: button,
-      setText: (text) => { 
+      setText: (text: string) => { 
         button.textContent = text; 
         if (config.icon) {
           const icon = document.createElement('span');
@@ -356,8 +384,8 @@ export class ComponentLibrary {
           button.insertBefore(icon, button.firstChild);
         }
       },
-      setDisabled: (disabled) => { button.disabled = disabled; },
-      setLoading: (loading) => {
+      setDisabled: (disabled: boolean) => { button.disabled = disabled; },
+      setLoading: (loading: boolean) => {
         if (loading) {
           button.classList.add('claude-button-loading');
           button.disabled = true;
@@ -372,41 +400,20 @@ export class ComponentLibrary {
   /**
    * Create tool grid component
    */
-  createToolGrid(tools, onToolClick) {
+  createToolGrid(tools: UITool[], onToolClick: (tool: UITool) => void): ToolGridComponent {
     const grid = document.createElement('div');
     grid.className = 'claude-tool-grid';
     
     tools.forEach(tool => {
-      const card = document.createElement('div');
-      card.className = 'claude-tool-card';
-      
-      const icon = document.createElement('div');
-      icon.className = 'claude-tool-icon';
-      icon.textContent = tool.icon || '🔧';
-      
-      const name = document.createElement('div');
-      name.className = 'claude-tool-name';
-      name.textContent = tool.name;
-      
-      const desc = document.createElement('div');
-      desc.className = 'claude-tool-description';
-      desc.textContent = tool.description;
-      
-      card.appendChild(icon);
-      card.appendChild(name);
-      card.appendChild(desc);
-      
-      card.addEventListener('click', () => onToolClick(tool));
-      
+      const card = this.createToolCard(tool, onToolClick);
       grid.appendChild(card);
     });
     
     return {
       element: grid,
-      updateTools: (newTools) => {
+      updateTools: (newTools: UITool[]) => {
         grid.innerHTML = '';
         newTools.forEach(tool => {
-          // Recreate cards with new tools
           const card = this.createToolCard(tool, onToolClick);
           grid.appendChild(card);
         });
@@ -415,26 +422,54 @@ export class ComponentLibrary {
   }
 
   /**
+   * Create tool card element
+   */
+  private createToolCard(tool: UITool, onToolClick: (tool: UITool) => void): HTMLDivElement {
+    const card = document.createElement('div');
+    card.className = 'claude-tool-card';
+    
+    const icon = document.createElement('div');
+    icon.className = 'claude-tool-icon';
+    icon.textContent = tool.icon || '🔧';
+    
+    const name = document.createElement('div');
+    name.className = 'claude-tool-name';
+    name.textContent = tool.name;
+    
+    const desc = document.createElement('div');
+    desc.className = 'claude-tool-description';
+    desc.textContent = tool.description;
+    
+    card.appendChild(icon);
+    card.appendChild(name);
+    card.appendChild(desc);
+    
+    card.addEventListener('click', () => onToolClick(tool));
+    
+    return card;
+  }
+
+  /**
    * Create stats card component
    */
-  createStatsCard(config) {
+  createStatsCard(config: ComponentLibraryConfig): StatsCardComponent {
     const card = document.createElement('div');
     card.className = 'claude-stats-card';
     
     const icon = document.createElement('div');
     icon.className = 'claude-stats-icon';
-    icon.textContent = config.icon;
+    icon.textContent = config.icon || '';
     
     const content = document.createElement('div');
     content.className = 'claude-stats-content';
     
     const value = document.createElement('div');
     value.className = 'claude-stats-value';
-    value.textContent = config.value;
+    value.textContent = String(config.text || '');
     
     const label = document.createElement('div');
     label.className = 'claude-stats-label';
-    label.textContent = config.label;
+    label.textContent = config.label || '';
     
     content.appendChild(value);
     content.appendChild(label);
@@ -443,16 +478,16 @@ export class ComponentLibrary {
     
     return {
       element: card,
-      setValue: (newValue) => { value.textContent = newValue; },
-      setLabel: (newLabel) => { label.textContent = newLabel; },
-      setIcon: (newIcon) => { icon.textContent = newIcon; }
+      setValue: (newValue: string | number) => { value.textContent = String(newValue); },
+      setLabel: (newLabel: string) => { label.textContent = newLabel; },
+      setIcon: (newIcon: string) => { icon.textContent = newIcon; }
     };
   }
 
   /**
    * Create tab container component
    */
-  createTabContainer(tabs) {
+  createTabContainer(tabs: Tab[]): TabContainerComponent {
     const container = document.createElement('div');
     container.className = 'claude-tab-container';
     
@@ -493,22 +528,45 @@ export class ComponentLibrary {
     
     return {
       element: container,
-      setActiveTab: (index) => {
+      setActiveTab: (index: number) => {
         if (index >= 0 && index < tabs.length) {
-          tabList.children[index].click();
+          const buttons = tabList.children;
+          if (buttons[index] && buttons[index] instanceof HTMLButtonElement) {
+            buttons[index].click();
+          }
         }
       },
       getActiveTab: () => activeTab,
-      addTab: (tab) => {
+      addTab: (tab: Tab) => {
         // Implementation for adding new tabs dynamically
       }
     };
   }
 
   /**
+   * Create log viewer component (placeholder for now)
+   */
+  private createLogViewer(config: ComponentLibraryConfig): any {
+    const container = document.createElement('div');
+    container.className = 'claude-log-viewer';
+    container.textContent = 'Log Viewer Component';
+    return { element: container };
+  }
+
+  /**
+   * Create form builder component (placeholder for now)
+   */
+  private createFormBuilder(config: ComponentLibraryConfig): any {
+    const container = document.createElement('div');
+    container.className = 'claude-form-builder';
+    container.textContent = 'Form Builder Component';
+    return { element: container };
+  }
+
+  /**
    * Add component styles to document
    */
-  addComponentStyles() {
+  private addComponentStyles(): void {
     if (document.getElementById('claude-component-styles')) return;
 
     const styles = document.createElement('style');
@@ -927,12 +985,13 @@ export class ComponentLibrary {
   /**
    * Update chart with new data
    */
-  updateChart(canvas, data, config) {
+  private updateChart(canvas: HTMLCanvasElement, data: ChartData[], config: ComponentLibraryConfig): void {
     const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
     // Simple chart implementation
-    // In a real implementation, you'd use Chart.js or similar
     const padding = 40;
     const chartWidth = canvas.width - (padding * 2);
     const chartHeight = canvas.height - (padding * 2);
@@ -947,7 +1006,7 @@ export class ComponentLibrary {
   /**
    * Draw line chart
    */
-  drawLineChart(ctx, data, padding, width, height) {
+  private drawLineChart(ctx: CanvasRenderingContext2D, data: ChartData[], padding: number, width: number, height: number): void {
     if (!data || data.length === 0) return;
     
     const maxValue = Math.max(...data.map(d => d.value));
@@ -974,7 +1033,7 @@ export class ComponentLibrary {
   /**
    * Draw bar chart
    */
-  drawBarChart(ctx, data, padding, width, height) {
+  private drawBarChart(ctx: CanvasRenderingContext2D, data: ChartData[], padding: number, width: number, height: number): void {
     if (!data || data.length === 0) return;
     
     const maxValue = Math.max(...data.map(d => d.value));
@@ -993,9 +1052,74 @@ export class ComponentLibrary {
   }
 
   /**
+   * Add legend item to chart
+   */
+  private addLegendItem(legend: HTMLDivElement, label: string, color: string): void {
+    const item = document.createElement('div');
+    item.className = 'claude-chart-legend-item';
+    item.style.display = 'flex';
+    item.style.alignItems = 'center';
+    item.style.gap = '4px';
+    
+    const colorBox = document.createElement('div');
+    colorBox.style.width = '12px';
+    colorBox.style.height = '12px';
+    colorBox.style.backgroundColor = color;
+    colorBox.style.borderRadius = '2px';
+    
+    const labelText = document.createElement('span');
+    labelText.textContent = label;
+    labelText.style.fontSize = '12px';
+    labelText.style.color = '#888';
+    
+    item.appendChild(colorBox);
+    item.appendChild(labelText);
+    legend.appendChild(item);
+  }
+
+  /**
+   * Update command palette results
+   */
+  private updateCommandResults(results: HTMLDivElement, commands: Command[]): void {
+    results.innerHTML = '';
+    
+    commands.forEach(command => {
+      const item = document.createElement('div');
+      item.className = 'claude-command-item';
+      item.style.padding = '12px 16px';
+      item.style.cursor = 'pointer';
+      item.style.borderBottom = '1px solid #444';
+      
+      const label = document.createElement('div');
+      label.textContent = command.label;
+      label.style.color = '#fff';
+      label.style.marginBottom = '4px';
+      
+      if (command.description) {
+        const desc = document.createElement('div');
+        desc.textContent = command.description;
+        desc.style.color = '#888';
+        desc.style.fontSize = '12px';
+        item.appendChild(desc);
+      }
+      
+      item.addEventListener('click', () => command.action());
+      item.addEventListener('mouseenter', () => {
+        item.style.backgroundColor = '#333';
+      });
+      item.addEventListener('mouseleave', () => {
+        item.style.backgroundColor = 'transparent';
+      });
+      
+      item.appendChild(label);
+      results.appendChild(item);
+    });
+  }
+
+  /**
    * Set theme
    */
-  setTheme(theme) {
+  setTheme(theme: 'dark' | 'light'): void {
     this.theme = theme;
     // Update component styles based on theme
     // This would be more comprehensive in a real implementation

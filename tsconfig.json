@@ -31,6 +31,7 @@
     "emitDecoratorMetadata": true,
     "lib": ["ES2022"],
     "moduleDetection": "force",
+    "downlevelIteration": true,
     "types": ["node", "jest"],
     "typeRoots": ["./node_modules/@types", "./src/types"]
   },

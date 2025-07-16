@@ -5,8 +5,19 @@
 
 import UIManager from './core/UIManager.js';
 import { VIEW_CATEGORIES } from './core/UIManager.js';
+import { 
+  IEnhancedWebUI, 
+  IEnhancedProcessUI,
+  ToolExecutionResult,
+  ViewMode
+} from './types/interfaces.js';
 
-export class EnhancedWebUI {
+export class EnhancedWebUI implements IEnhancedWebUI {
+  uiManager: any | null;
+  isInitialized: boolean;
+  fallbackMode: boolean;
+  originalProcessUI: IEnhancedProcessUI | null;
+
   constructor() {
     this.uiManager = null;
     this.isInitialized = false;
@@ -17,7 +28,7 @@ export class EnhancedWebUI {
   /**
    * Initialize enhanced web UI
    */
-  async initialize(existingProcessUI = null) {
+  async initialize(existingProcessUI: IEnhancedProcessUI | null = null): Promise<boolean> {
     try {
       console.log('🚀 Initializing Enhanced Web UI...');
       
@@ -54,7 +65,7 @@ export class EnhancedWebUI {
   /**
    * Initialize fallback mode for minimal functionality
    */
-  async initializeFallbackMode() {
+  async initializeFallbackMode(): Promise<void> {
     console.log('🔄 Initializing fallback mode...');
     
     // Create minimal UI structure
@@ -67,7 +78,7 @@ export class EnhancedWebUI {
   /**
    * Create fallback UI structure
    */
-  createFallbackUI() {
+  createFallbackUI(): void {
     // Add enhanced views to existing process UI
     if (this.originalProcessUI) {
       this.addEnhancedViewsToProcessUI();
@@ -79,76 +90,81 @@ export class EnhancedWebUI {
   /**
    * Add enhanced views to existing process UI
    */
-  addEnhancedViewsToProcessUI() {
+  addEnhancedViewsToProcessUI(): void {
     // Extend the VIEWS enum
     const enhancedViews = {
-      NEURAL: 'neural',
-      MEMORY_MGMT: 'memory_mgmt',
-      MONITORING_ADV: 'monitoring_adv',
-      WORKFLOW_MGMT: 'workflow_mgmt',
-      GITHUB_INT: 'github_int',
-      DAA_CONTROL: 'daa_control',
-      SYSTEM_UTILS: 'system_utils',
-      CLI_BRIDGE: 'cli_bridge'
+      NEURAL: 'neural' as ViewMode,
+      MEMORY_MGMT: 'memory_mgmt' as ViewMode,
+      MONITORING_ADV: 'monitoring_adv' as ViewMode,
+      WORKFLOW_MGMT: 'workflow_mgmt' as ViewMode,
+      GITHUB_INT: 'github_int' as ViewMode,
+      DAA_CONTROL: 'daa_control' as ViewMode,
+      SYSTEM_UTILS: 'system_utils' as ViewMode,
+      CLI_BRIDGE: 'cli_bridge' as ViewMode
     };
 
     // Add to original UI's VIEWS if possible
-    if (this.originalProcessUI.constructor.VIEWS) {
-      Object.assign(this.originalProcessUI.constructor.VIEWS, enhancedViews);
+    if (this.originalProcessUI && 'constructor' in this.originalProcessUI) {
+      const constructor = this.originalProcessUI.constructor as any;
+      if (constructor.VIEWS) {
+        Object.assign(constructor.VIEWS, enhancedViews);
+      }
     }
 
     // Extend render method to handle new views
-    const originalRender = this.originalProcessUI.render.bind(this.originalProcessUI);
-    this.originalProcessUI.render = () => {
-      // Call original render first
-      originalRender();
-      
-      // Add enhanced view handling
-      this.handleEnhancedViews();
-    };
+    if (this.originalProcessUI) {
+      const originalRender = this.originalProcessUI.render.bind(this.originalProcessUI);
+      this.originalProcessUI.render = () => {
+        // Call original render first
+        originalRender();
+        
+        // Add enhanced view handling
+        this.handleEnhancedViews();
+      };
 
-    // Extend input handling
-    const originalHandleInput = this.originalProcessUI.handleViewSpecificInput.bind(this.originalProcessUI);
-    this.originalProcessUI.handleViewSpecificInput = async (input) => {
-      // Try enhanced views first
-      if (await this.handleEnhancedInput(input)) {
-        return; // Handled by enhanced UI
-      }
-      
-      // Fall back to original handling
-      return originalHandleInput(input);
-    };
+      // Extend input handling
+      const originalHandleInput = this.originalProcessUI.handleViewSpecificInput.bind(this.originalProcessUI);
+      this.originalProcessUI.handleViewSpecificInput = async (input: string) => {
+        // Try enhanced views first
+        if (await this.handleEnhancedInput(input)) {
+          return; // Handled by enhanced UI
+        }
+        
+        // Fall back to original handling
+        return originalHandleInput(input);
+      };
+    }
   }
 
   /**
    * Handle enhanced views in fallback mode
    */
-  handleEnhancedViews() {
-    if (!this.originalProcessUI.currentView) return;
+  handleEnhancedViews(): void {
+    if (!this.originalProcessUI || !this.originalProcessUI.currentView) return;
 
     switch (this.originalProcessUI.currentView) {
-      case 'neural':
+      case 'neural' as ViewMode:
         this.renderNeuralView();
         break;
-      case 'memory_mgmt':
+      case 'memory_mgmt' as ViewMode:
         this.renderMemoryManagementView();
         break;
-      case 'monitoring_adv':
+      case 'monitoring_adv' as ViewMode:
         this.renderAdvancedMonitoringView();
         break;
-      case 'workflow_mgmt':
+      case 'workflow_mgmt' as ViewMode:
         this.renderWorkflowManagementView();
         break;
-      case 'github_int':
+      case 'github_int' as ViewMode:
         this.renderGitHubIntegrationView();
         break;
-      case 'daa_control':
+      case 'daa_control' as ViewMode:
         this.renderDAAControlView();
         break;
-      case 'system_utils':
+      case 'system_utils' as ViewMode:
         this.renderSystemUtilitiesView();
         break;
-      case 'cli_bridge':
+      case 'cli_bridge' as ViewMode:
         this.renderCLIBridgeView();
         break;
     }
@@ -157,15 +173,17 @@ export class EnhancedWebUI {
   /**
    * Handle enhanced input in fallback mode
    */
-  async handleEnhancedInput(input) {
+  async handleEnhancedInput(input: string): Promise<boolean> {
+    if (!this.originalProcessUI) return false;
+    
     const currentView = this.originalProcessUI.currentView;
     
     // Enhanced view shortcuts
-    const enhancedShortcuts = {
-      '7': () => this.originalProcessUI.currentView = 'neural',
-      '8': () => this.originalProcessUI.currentView = 'memory_mgmt',
-      '9': () => this.originalProcessUI.currentView = 'monitoring_adv',
-      '0': () => this.originalProcessUI.currentView = 'workflow_mgmt'
+    const enhancedShortcuts: Record<string, () => void> = {
+      '7': () => { if (this.originalProcessUI) this.originalProcessUI.currentView = 'neural' as ViewMode; },
+      '8': () => { if (this.originalProcessUI) this.originalProcessUI.currentView = 'memory_mgmt' as ViewMode; },
+      '9': () => { if (this.originalProcessUI) this.originalProcessUI.currentView = 'monitoring_adv' as ViewMode; },
+      '0': () => { if (this.originalProcessUI) this.originalProcessUI.currentView = 'workflow_mgmt' as ViewMode; }
     };
 
     if (enhancedShortcuts[input]) {
@@ -175,13 +193,13 @@ export class EnhancedWebUI {
 
     // View-specific enhanced input handling
     switch (currentView) {
-      case 'neural':
+      case 'neural' as ViewMode:
         return this.handleNeuralInput(input);
-      case 'memory_mgmt':
+      case 'memory_mgmt' as ViewMode:
         return this.handleMemoryInput(input);
-      case 'monitoring_adv':
+      case 'monitoring_adv' as ViewMode:
         return this.handleMonitoringInput(input);
-      case 'workflow_mgmt':
+      case 'workflow_mgmt' as ViewMode:
         return this.handleWorkflowInput(input);
       default:
         return false;
@@ -191,7 +209,7 @@ export class EnhancedWebUI {
   /**
    * Create standalone UI for when no existing UI is available
    */
-  createStandaloneUI() {
+  createStandaloneUI(): void {
     console.log('🔧 Creating standalone enhanced UI...');
     
     // This would create a complete standalone interface
@@ -215,13 +233,13 @@ export class EnhancedWebUI {
   /**
    * Navigate to enhanced view
    */
-  async navigateToView(viewId, params = {}) {
+  async navigateToView(viewId: string, params: Record<string, any> = {}): Promise<void> {
     if (this.uiManager && !this.fallbackMode) {
       return await this.uiManager.navigateToView(viewId, params);
     } else {
       // Fallback navigation
       if (this.originalProcessUI) {
-        this.originalProcessUI.currentView = viewId;
+        this.originalProcessUI.currentView = viewId as ViewMode;
         this.originalProcessUI.selectedIndex = 0;
       } else {
         console.log(`📄 Navigating to view: ${viewId}`, params);
@@ -232,7 +250,7 @@ export class EnhancedWebUI {
   /**
    * Execute MCP tool
    */
-  async executeTool(toolName, params = {}) {
+  async executeTool(toolName: string, params: Record<string, any> = {}): Promise<ToolExecutionResult> {
     if (this.uiManager && !this.fallbackMode) {
       return await this.uiManager.executeMCPTool(toolName, params);
     } else {
@@ -242,7 +260,7 @@ export class EnhancedWebUI {
       // Simulate tool execution
       await new Promise(resolve => setTimeout(resolve, 500));
       
-      const mockResult = {
+      const mockResult: ToolExecutionResult = {
         success: true,
         tool: toolName,
         params,
@@ -258,7 +276,7 @@ export class EnhancedWebUI {
   /**
    * Get system status
    */
-  async getSystemStatus() {
+  async getSystemStatus(): Promise<any> {
     if (this.uiManager && !this.fallbackMode) {
       return await this.uiManager.getSystemStatus();
     } else {
@@ -276,7 +294,7 @@ export class EnhancedWebUI {
   /**
    * Integration with existing process UI
    */
-  integrateWithExistingUI() {
+  integrateWithExistingUI(): void {
     console.log('🔗 Integrating with existing process UI...');
     
     // Add enhanced views to the header navigation
@@ -292,7 +310,7 @@ export class EnhancedWebUI {
   /**
    * Add enhanced navigation to existing UI
    */
-  addEnhancedNavigation() {
+  addEnhancedNavigation(): void {
     // This would extend the existing navigation tabs
     console.log('📊 Added enhanced navigation tabs');
   }
@@ -300,7 +318,7 @@ export class EnhancedWebUI {
   /**
    * Add tool palette to existing UI
    */
-  addToolPalette() {
+  addToolPalette(): void {
     // This would add a tool palette overlay
     console.log('🎨 Added tool palette overlay');
   }
@@ -308,7 +326,7 @@ export class EnhancedWebUI {
   /**
    * Add quick actions to existing UI
    */
-  addQuickActions() {
+  addQuickActions(): void {
     // This would add quick action buttons
     console.log('⚡ Added quick action buttons');
   }
@@ -316,7 +334,7 @@ export class EnhancedWebUI {
   /**
    * Render enhanced views (fallback mode)
    */
-  renderNeuralView() {
+  renderNeuralView(): void {
     console.clear();
     console.log('🧠 Neural Network Operations');
     console.log('═'.repeat(50));
@@ -330,7 +348,7 @@ export class EnhancedWebUI {
     console.log('\nPress a key to execute tool...');
   }
 
-  renderMemoryManagementView() {
+  renderMemoryManagementView(): void {
     console.clear();
     console.log('💾 Memory Management');
     console.log('═'.repeat(50));
@@ -344,7 +362,7 @@ export class EnhancedWebUI {
     console.log('\nPress a key to execute tool...');
   }
 
-  renderAdvancedMonitoringView() {
+  renderAdvancedMonitoringView(): void {
     console.clear();
     console.log('📊 Advanced Monitoring');
     console.log('═'.repeat(50));
@@ -358,7 +376,7 @@ export class EnhancedWebUI {
     console.log('\nPress a key to execute tool...');
   }
 
-  renderWorkflowManagementView() {
+  renderWorkflowManagementView(): void {
     console.clear();
     console.log('🔄 Workflow & Automation Management');
     console.log('═'.repeat(50));
@@ -377,7 +395,7 @@ export class EnhancedWebUI {
     console.log('\nPress a key to execute tool...');
   }
 
-  renderGitHubIntegrationView() {
+  renderGitHubIntegrationView(): void {
     console.clear();
     console.log('🐙 GitHub Integration');
     console.log('═'.repeat(50));
@@ -391,7 +409,7 @@ export class EnhancedWebUI {
     console.log('\nPress a key to execute tool...');
   }
 
-  renderDAAControlView() {
+  renderDAAControlView(): void {
     console.clear();
     console.log('🤖 Dynamic Agent Architecture');
     console.log('═'.repeat(50));
@@ -405,7 +423,7 @@ export class EnhancedWebUI {
     console.log('\nPress a key to execute tool...');
   }
 
-  renderSystemUtilitiesView() {
+  renderSystemUtilitiesView(): void {
     console.clear();
     console.log('🛠️ System Utilities');
     console.log('═'.repeat(50));
@@ -419,7 +437,7 @@ export class EnhancedWebUI {
     console.log('\nPress a key to execute tool...');
   }
 
-  renderCLIBridgeView() {
+  renderCLIBridgeView(): void {
     console.clear();
     console.log('⌨️ CLI Command Bridge');
     console.log('═'.repeat(50));
@@ -436,8 +454,8 @@ export class EnhancedWebUI {
   /**
    * Handle input for enhanced views (fallback mode)
    */
-  async handleNeuralInput(input) {
-    const actions = {
+  async handleNeuralInput(input: string): Promise<boolean> {
+    const actions: Record<string, () => Promise<ToolExecutionResult>> = {
       't': () => this.executeTool('neural_train'),
       'p': () => this.executeTool('neural_predict'),
       's': () => this.executeTool('neural_status'),
@@ -453,8 +471,8 @@ export class EnhancedWebUI {
     return false;
   }
 
-  async handleMemoryInput(input) {
-    const actions = {
+  async handleMemoryInput(input: string): Promise<boolean> {
+    const actions: Record<string, () => Promise<ToolExecutionResult>> = {
       's': () => this.executeTool('memory_usage', { action: 'store' }),
       'r': () => this.executeTool('memory_usage', { action: 'retrieve' }),
       'b': () => this.executeTool('memory_backup'),
@@ -470,8 +488,8 @@ export class EnhancedWebUI {
     return false;
   }
 
-  async handleMonitoringInput(input) {
-    const actions = {
+  async handleMonitoringInput(input: string): Promise<boolean> {
+    const actions: Record<string, () => Promise<ToolExecutionResult>> = {
       'p': () => this.executeTool('performance_report'),
       'b': () => this.executeTool('bottleneck_analyze'),
       't': () => this.executeTool('token_usage'),
@@ -487,8 +505,8 @@ export class EnhancedWebUI {
     return false;
   }
 
-  async handleWorkflowInput(input) {
-    const actions = {
+  async handleWorkflowInput(input: string): Promise<boolean> {
+    const actions: Record<string, () => Promise<ToolExecutionResult>> = {
       'c': () => this.executeTool('workflow_create'),
       'e': () => this.executeTool('workflow_execute'),
       'a': () => this.executeTool('automation_setup'),
@@ -512,7 +530,7 @@ export class EnhancedWebUI {
   /**
    * Show help for enhanced UI
    */
-  showHelp() {
+  showHelp(): void {
     console.log('\n🎨 Enhanced Web UI Help');
     console.log('═'.repeat(60));
     console.log('Navigation:');
@@ -536,7 +554,7 @@ export class EnhancedWebUI {
   /**
    * Shutdown enhanced UI
    */
-  async shutdown() {
+  async shutdown(): Promise<void> {
     console.log('🔄 Shutting down Enhanced Web UI...');
     
     if (this.uiManager && !this.fallbackMode) {
@@ -556,11 +574,11 @@ export default EnhancedWebUI;
 if (typeof window !== 'undefined') {
   window.addEventListener('load', async () => {
     // Check if there's an existing process UI to enhance
-    if (window.claudeFlowProcessUI) {
+    if ((window as any).claudeFlowProcessUI) {
       console.log('🔗 Enhancing existing process UI...');
       const enhancedUI = new EnhancedWebUI();
-      await enhancedUI.initialize(window.claudeFlowProcessUI);
-      window.claudeFlowEnhancedUI = enhancedUI;
+      await enhancedUI.initialize((window as any).claudeFlowProcessUI);
+      (window as any).claudeFlowEnhancedUI = enhancedUI;
     }
   });
 }

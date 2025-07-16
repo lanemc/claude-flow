@@ -4,9 +4,28 @@
  */
 
 import { EventBus } from './EventBus.js';
+import {
+  StateData,
+  ViewState,
+  ToolResult,
+  StateStats,
+  PreferenceKeys
+} from '../types/interfaces.js';
 
 export class StateManager {
-  constructor(eventBus) {
+  private eventBus: EventBus;
+  private state: Map<string, any>;
+  private preferences: Map<string, any>;
+  private toolResults: Map<string, ToolResult>;
+  private viewStates: Map<string, ViewState>;
+  private sessionData: Map<string, any>;
+  private storageKey: string;
+  private isInitialized: boolean;
+  private autoSaveInterval: number;
+  private autoSaveTimer: NodeJS.Timeout | null;
+  private saveTimeout: NodeJS.Timeout | null;
+
+  constructor(eventBus: EventBus) {
     this.eventBus = eventBus;
     this.state = new Map();
     this.preferences = new Map();
@@ -17,12 +36,13 @@ export class StateManager {
     this.isInitialized = false;
     this.autoSaveInterval = 30000; // 30 seconds
     this.autoSaveTimer = null;
+    this.saveTimeout = null;
   }
 
   /**
    * Initialize state manager
    */
-  async initialize() {
+  async initialize(): Promise<void> {
     try {
       // Load persisted state
       await this.loadPersistedState();
@@ -47,9 +67,9 @@ export class StateManager {
   /**
    * Load persisted state from storage
    */
-  async loadPersistedState() {
+  private async loadPersistedState(): Promise<void> {
     try {
-      let persistedData = null;
+      let persistedData: StateData | null = null;
 
       // Try to load from localStorage in browser
       if (typeof window !== 'undefined' && window.localStorage) {
@@ -70,7 +90,7 @@ export class StateManager {
             const data = fs.readFileSync(stateFile, 'utf8');
             persistedData = JSON.parse(data);
           }
-        } catch (error) {
+        } catch (error: any) {
           console.warn('Could not load state from file system:', error.message);
         }
       }
@@ -91,7 +111,7 @@ export class StateManager {
   /**
    * Restore state from persisted data
    */
-  restoreFromData(data) {
+  private restoreFromData(data: StateData): void {
     if (data.preferences) {
       this.preferences = new Map(Object.entries(data.preferences));
     }
@@ -116,7 +136,7 @@ export class StateManager {
   /**
    * Initialize default state
    */
-  initializeDefaultState() {
+  private initializeDefaultState(): void {
     this.preferences.set('theme', 'dark');
     this.preferences.set('autoSave', true);
     this.preferences.set('showTooltips', true);
@@ -136,7 +156,7 @@ export class StateManager {
   /**
    * Setup auto-save functionality
    */
-  setupAutoSave() {
+  private setupAutoSave(): void {
     if (!this.getPreference('autoSave', true)) {
       return;
     }
@@ -149,9 +169,9 @@ export class StateManager {
   /**
    * Persist current state
    */
-  async persistState() {
+  async persistState(): Promise<void> {
     try {
-      const stateData = {
+      const stateData: StateData = {
         timestamp: Date.now(),
         version: '2.0.0',
         preferences: Object.fromEntries(this.preferences),
@@ -174,14 +194,14 @@ export class StateManager {
           const stateFile = path.join(process.cwd(), '.claude-flow-state.json');
           
           fs.writeFileSync(stateFile, JSON.stringify(stateData, null, 2));
-        } catch (error) {
+        } catch (error: any) {
           console.warn('Could not save state to file system:', error.message);
         }
       }
 
       this.eventBus.emit('state:persisted', { timestamp: Date.now() });
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to persist state:', error);
       this.eventBus.emit('state:error', { error: error.message });
     }
@@ -190,14 +210,18 @@ export class StateManager {
   /**
    * Get preference value
    */
-  getPreference(key, defaultValue = null) {
+  getPreference<K extends keyof PreferenceKeys>(key: K): PreferenceKeys[K];
+  getPreference<T = any>(key: string, defaultValue?: T): T;
+  getPreference(key: string, defaultValue: any = null): any {
     return this.preferences.get(key) ?? defaultValue;
   }
 
   /**
    * Set preference value
    */
-  setPreference(key, value) {
+  setPreference<K extends keyof PreferenceKeys>(key: K, value: PreferenceKeys[K]): void;
+  setPreference(key: string, value: any): void;
+  setPreference(key: string, value: any): void {
     this.preferences.set(key, value);
     this.eventBus.emit('preference:changed', { key, value });
     
@@ -210,8 +234,10 @@ export class StateManager {
   /**
    * Get multiple preferences
    */
-  getPreferences(keys) {
-    const result = {};
+  getPreferences<K extends keyof PreferenceKeys>(keys: K[]): Pick<PreferenceKeys, K>;
+  getPreferences(keys: string[]): Record<string, any>;
+  getPreferences(keys: string[]): Record<string, any> {
+    const result: Record<string, any> = {};
     for (const key of keys) {
       result[key] = this.preferences.get(key);
     }
@@ -221,7 +247,9 @@ export class StateManager {
   /**
    * Set multiple preferences
    */
-  setPreferences(preferences) {
+  setPreferences(preferences: Partial<PreferenceKeys>): void;
+  setPreferences(preferences: Record<string, any>): void;
+  setPreferences(preferences: Record<string, any>): void {
     for (const [key, value] of Object.entries(preferences)) {
       this.preferences.set(key, value);
     }
@@ -236,21 +264,21 @@ export class StateManager {
   /**
    * Get all user preferences
    */
-  getUserPreferences() {
+  getUserPreferences(): Record<string, any> {
     return Object.fromEntries(this.preferences);
   }
 
   /**
    * Get state value
    */
-  getState(key, defaultValue = null) {
+  getState<T = any>(key: string, defaultValue: T | null = null): T | null {
     return this.state.get(key) ?? defaultValue;
   }
 
   /**
    * Set state value
    */
-  setState(key, value) {
+  setState(key: string, value: any): void {
     this.state.set(key, value);
     this.eventBus.emit('state:changed', { key, value });
     
@@ -262,16 +290,16 @@ export class StateManager {
   /**
    * Get view state
    */
-  getViewState(viewId) {
+  getViewState(viewId: string): ViewState | undefined {
     return this.viewStates.get(viewId);
   }
 
   /**
    * Set view state
    */
-  setViewState(viewId, state) {
+  setViewState(viewId: string, state: Partial<ViewState>): void {
     const existing = this.viewStates.get(viewId) || {};
-    const newState = { ...existing, ...state, lastUpdate: Date.now() };
+    const newState: ViewState = { ...existing, ...state, lastUpdate: Date.now() };
     
     this.viewStates.set(viewId, newState);
     this.eventBus.emit('view-state:changed', { viewId, state: newState });
@@ -284,7 +312,7 @@ export class StateManager {
   /**
    * Clear view state
    */
-  clearViewState(viewId) {
+  clearViewState(viewId: string): void {
     this.viewStates.delete(viewId);
     this.eventBus.emit('view-state:cleared', { viewId });
   }
@@ -292,15 +320,15 @@ export class StateManager {
   /**
    * Get tool result
    */
-  getToolResult(toolName) {
+  getToolResult(toolName: string): ToolResult | undefined {
     return this.toolResults.get(toolName);
   }
 
   /**
    * Set tool result
    */
-  setToolResult(toolName, result) {
-    const resultData = {
+  setToolResult(toolName: string, result: any): void {
+    const resultData: ToolResult = {
       result,
       timestamp: Date.now(),
       tool: toolName
@@ -328,7 +356,7 @@ export class StateManager {
   /**
    * Get recent tool results
    */
-  getRecentToolResults(limit = 10) {
+  getRecentToolResults(limit: number = 10): Array<{ tool: string } & ToolResult> {
     const results = Array.from(this.toolResults.entries())
       .sort((a, b) => b[1].timestamp - a[1].timestamp)
       .slice(0, limit);
@@ -342,14 +370,14 @@ export class StateManager {
   /**
    * Get session data
    */
-  getSessionData(key) {
+  getSessionData<T = any>(key: string): T | undefined {
     return this.sessionData.get(key);
   }
 
   /**
    * Set session data
    */
-  setSessionData(key, value) {
+  setSessionData(key: string, value: any): void {
     this.sessionData.set(key, value);
     this.eventBus.emit('session-data:changed', { key, value });
   }
@@ -357,7 +385,7 @@ export class StateManager {
   /**
    * Clear session data
    */
-  clearSessionData() {
+  clearSessionData(): void {
     this.sessionData.clear();
     this.eventBus.emit('session-data:cleared');
   }
@@ -365,7 +393,7 @@ export class StateManager {
   /**
    * Export state data
    */
-  exportState() {
+  exportState(): StateData {
     return {
       timestamp: Date.now(),
       version: '2.0.0',
@@ -380,7 +408,7 @@ export class StateManager {
   /**
    * Import state data
    */
-  importState(stateData) {
+  importState(stateData: StateData): void {
     try {
       this.restoreFromData(stateData);
       this.eventBus.emit('state:imported', { timestamp: Date.now() });
@@ -394,7 +422,7 @@ export class StateManager {
   /**
    * Reset to default state
    */
-  resetState() {
+  resetState(): void {
     this.state.clear();
     this.preferences.clear();
     this.viewStates.clear();
@@ -411,7 +439,7 @@ export class StateManager {
   /**
    * Clear specific data types
    */
-  clearData(types = []) {
+  clearData(types: Array<'preferences' | 'viewStates' | 'toolResults' | 'sessionData'> = []): void {
     if (types.includes('preferences') || types.length === 0) {
       this.preferences.clear();
     }
@@ -434,7 +462,7 @@ export class StateManager {
   /**
    * Get state statistics
    */
-  getStateStats() {
+  getStateStats(): StateStats {
     return {
       preferences: this.preferences.size,
       viewStates: this.viewStates.size,
@@ -449,7 +477,7 @@ export class StateManager {
   /**
    * Setup debounced save to avoid excessive writes
    */
-  debouncedSave() {
+  private debouncedSave(): void {
     if (this.saveTimeout) {
       clearTimeout(this.saveTimeout);
     }
@@ -462,7 +490,7 @@ export class StateManager {
   /**
    * Persist all state immediately
    */
-  async persistAllState() {
+  async persistAllState(): Promise<void> {
     if (this.saveTimeout) {
       clearTimeout(this.saveTimeout);
     }
@@ -473,24 +501,24 @@ export class StateManager {
   /**
    * Setup event handlers
    */
-  setupEventHandlers() {
+  private setupEventHandlers(): void {
     // Listen for shutdown events
     this.eventBus.on('ui:shutdown', async () => {
       await this.persistAllState();
     });
     
     // Listen for preference changes from UI
-    this.eventBus.on('ui:preference:set', (data) => {
+    this.eventBus.on('ui:preference:set', (data: { key: string; value: any }) => {
       this.setPreference(data.key, data.value);
     });
     
     // Listen for state changes from UI
-    this.eventBus.on('ui:state:set', (data) => {
+    this.eventBus.on('ui:state:set', (data: { key: string; value: any }) => {
       this.setState(data.key, data.value);
     });
     
     // Listen for tool results
-    this.eventBus.on('tool:executed', (data) => {
+    this.eventBus.on('tool:executed', (data: { tool: string; result: any }) => {
       this.setToolResult(data.tool, data.result);
     });
   }
@@ -498,7 +526,7 @@ export class StateManager {
   /**
    * Cleanup and shutdown
    */
-  async shutdown() {
+  async shutdown(): Promise<void> {
     // Clear auto-save timer
     if (this.autoSaveTimer) {
       clearInterval(this.autoSaveTimer);

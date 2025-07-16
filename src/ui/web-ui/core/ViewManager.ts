@@ -5,8 +5,79 @@
 
 import { EventBus } from './EventBus.js';
 
+// View configuration interface
+interface ViewConfig {
+  id: string;
+  name: string;
+  icon: string;
+  description: string;
+  component: string;
+  shortcut?: string;
+  toolCount?: number;
+  lazy?: boolean;
+  preload?: boolean;
+  permissions?: string[];
+  dependencies?: string[];
+  metadata?: Record<string, any>;
+}
+
+// Loaded view information
+interface LoadedView {
+  component: ViewComponent;
+  config: ViewConfig;
+  element: HTMLElement | null;
+  instance: ViewInstance | null;
+  loadTime: number;
+}
+
+// View component interface
+interface ViewComponent {
+  element?: HTMLElement | null;
+  instance?: ViewInstance | null;
+  render: (params: any) => Promise<void> | void;
+  destroy?: () => Promise<void> | void;
+}
+
+// View instance interface
+interface ViewInstance {
+  render: (params: any) => Promise<void> | void;
+  destroy?: () => Promise<void> | void;
+}
+
+// View state information
+interface ViewState {
+  params: any;
+  loadTime: number;
+  lastAccess: number;
+}
+
+// View history entry
+interface ViewHistoryEntry {
+  viewId: string;
+  timestamp: number;
+  params: any;
+}
+
+// Memory statistics
+interface MemoryStats {
+  registeredViews: number;
+  loadedViews: number;
+  viewStates: number;
+  currentView: string | null;
+}
+
 export class ViewManager {
-  constructor(eventBus) {
+  private eventBus: EventBus;
+  private registeredViews: Map<string, ViewConfig>;
+  private loadedViews: Map<string, LoadedView>;
+  private currentView: string | null;
+  private viewStack: ViewHistoryEntry[];
+  private viewStates: Map<string, ViewState>;
+  private isInitialized: boolean;
+  private containerElement: HTMLElement | null;
+  private transitionDuration: number;
+
+  constructor(eventBus: EventBus) {
     this.eventBus = eventBus;
     this.registeredViews = new Map();
     this.loadedViews = new Map();
@@ -21,7 +92,7 @@ export class ViewManager {
   /**
    * Initialize view manager
    */
-  async initialize() {
+  async initialize(): Promise<void> {
     try {
       // Create main view container if in browser
       if (typeof document !== 'undefined') {
@@ -45,7 +116,7 @@ export class ViewManager {
   /**
    * Setup DOM container for web environment
    */
-  setupDOMContainer() {
+  private setupDOMContainer(): void {
     // Create main container
     this.containerElement = document.getElementById('claude-flow-ui') || 
                            document.createElement('div');
@@ -63,7 +134,7 @@ export class ViewManager {
   /**
    * Add CSS styles for view transitions
    */
-  addTransitionStyles() {
+  private addTransitionStyles(): void {
     if (document.getElementById('claude-flow-styles')) return;
 
     const styles = document.createElement('style');
@@ -171,12 +242,12 @@ export class ViewManager {
   /**
    * Register a view configuration
    */
-  async registerView(viewConfig) {
+  async registerView(viewConfig: Partial<ViewConfig> & { id: string; component: string }): Promise<void> {
     if (!viewConfig.id || !viewConfig.component) {
       throw new Error('View config must have id and component');
     }
 
-    const config = {
+    const config: ViewConfig = {
       id: viewConfig.id,
       name: viewConfig.name || viewConfig.id,
       icon: viewConfig.icon || '📄',
@@ -206,7 +277,7 @@ export class ViewManager {
   /**
    * Load and display a view
    */
-  async loadView(viewId, params = {}) {
+  async loadView(viewId: string, params: any = {}): Promise<void> {
     if (!this.isInitialized) {
       throw new Error('ViewManager not initialized');
     }
@@ -248,7 +319,7 @@ export class ViewManager {
       console.log(`🖼️ Loaded view: ${viewConfig.name}`);
 
     } catch (error) {
-      this.eventBus.emit('view:error', { viewId, error: error.message, params });
+      this.eventBus.emit('view:error', { viewId, error: (error as Error).message, params });
       throw error;
     }
   }
@@ -256,9 +327,9 @@ export class ViewManager {
   /**
    * Load view component
    */
-  async loadViewComponent(viewId, viewConfig) {
+  private async loadViewComponent(viewId: string, viewConfig: ViewConfig): Promise<void> {
     try {
-      let ViewComponent;
+      let ViewComponent: ViewComponent;
 
       // Check if we're in a browser environment
       if (typeof document !== 'undefined') {
@@ -286,7 +357,7 @@ export class ViewManager {
   /**
    * Create DOM-based view for browser
    */
-  async createDOMView(viewId, viewConfig) {
+  private async createDOMView(viewId: string, viewConfig: ViewConfig): Promise<ViewComponent> {
     const element = document.createElement('div');
     element.className = 'claude-flow-view hidden';
     element.id = `view-${viewId}`;
@@ -315,10 +386,13 @@ export class ViewManager {
 
     element.appendChild(header);
     element.appendChild(content);
-    this.containerElement.appendChild(element);
+    
+    if (this.containerElement) {
+      this.containerElement.appendChild(element);
+    }
 
     // Create view instance based on component type
-    let instance;
+    let instance: ViewInstance;
     try {
       // Try to dynamically import the view component
       const module = await this.importViewComponent(viewConfig.component);
@@ -331,7 +405,7 @@ export class ViewManager {
     return {
       element,
       instance,
-      render: (params) => instance.render(params),
+      render: (params: any) => instance.render(params),
       destroy: () => instance.destroy?.()
     };
   }
@@ -339,9 +413,9 @@ export class ViewManager {
   /**
    * Create terminal-based view for Node.js
    */
-  async createTerminalView(viewId, viewConfig) {
+  private async createTerminalView(viewId: string, viewConfig: ViewConfig): Promise<ViewComponent> {
     // For terminal environment, create a text-based view
-    let instance;
+    let instance: ViewInstance;
     try {
       const module = await this.importViewComponent(viewConfig.component);
       instance = new module.default(null, this.eventBus, viewConfig);
@@ -352,7 +426,7 @@ export class ViewManager {
     return {
       element: null,
       instance,
-      render: (params) => instance.render(params),
+      render: (params: any) => instance.render(params),
       destroy: () => instance.destroy?.()
     };
   }
@@ -360,7 +434,7 @@ export class ViewManager {
   /**
    * Import view component dynamically
    */
-  async importViewComponent(componentName) {
+  private async importViewComponent(componentName: string): Promise<any> {
     try {
       // Try to import from views directory
       return await import(`../views/${componentName}.js`);
@@ -373,9 +447,9 @@ export class ViewManager {
   /**
    * Create basic fallback view for browser
    */
-  createBasicView(container, viewConfig) {
+  private createBasicView(container: HTMLElement, viewConfig: ViewConfig): ViewInstance {
     return {
-      render: (params) => {
+      render: (params: any) => {
         container.innerHTML = `
           <div class="claude-flow-loading">
             <div>
@@ -397,9 +471,9 @@ export class ViewManager {
   /**
    * Create basic fallback view for terminal
    */
-  createBasicTerminalView(viewConfig) {
+  private createBasicTerminalView(viewConfig: ViewConfig): ViewInstance {
     return {
-      render: (params) => {
+      render: (params: any) => {
         console.log(`\n📄 ${viewConfig.name}`);
         console.log(`   ${viewConfig.description}`);
         if (viewConfig.toolCount) {
@@ -415,7 +489,7 @@ export class ViewManager {
   /**
    * Show view with transition
    */
-  async showView(viewId, params) {
+  private async showView(viewId: string, params: any): Promise<void> {
     const loadedView = this.loadedViews.get(viewId);
     if (!loadedView) {
       throw new Error(`View not loaded: ${viewId}`);
@@ -443,7 +517,7 @@ export class ViewManager {
   /**
    * Hide current view with transition
    */
-  async hideCurrentView() {
+  private async hideCurrentView(): Promise<void> {
     if (!this.currentView) return;
 
     const loadedView = this.loadedViews.get(this.currentView);
@@ -465,7 +539,7 @@ export class ViewManager {
   /**
    * Refresh current view
    */
-  async refreshView(viewId) {
+  async refreshView(viewId: string): Promise<void> {
     const viewState = this.viewStates.get(viewId);
     if (viewState) {
       await this.loadView(viewId, viewState.params);
@@ -475,7 +549,7 @@ export class ViewManager {
   /**
    * Preload a view
    */
-  async preloadView(viewId) {
+  private async preloadView(viewId: string): Promise<void> {
     const viewConfig = this.registeredViews.get(viewId);
     if (!viewConfig || this.loadedViews.has(viewId)) {
       return;
@@ -488,7 +562,7 @@ export class ViewManager {
   /**
    * Check view dependencies
    */
-  async checkDependencies(viewConfig) {
+  private async checkDependencies(viewConfig: ViewConfig): Promise<void> {
     if (!viewConfig.dependencies || viewConfig.dependencies.length === 0) {
       return;
     }
@@ -503,7 +577,7 @@ export class ViewManager {
   /**
    * Unload a view
    */
-  async unloadView(viewId) {
+  async unloadView(viewId: string): Promise<void> {
     const loadedView = this.loadedViews.get(viewId);
     if (!loadedView) return;
 
@@ -530,59 +604,59 @@ export class ViewManager {
   /**
    * Get view configuration
    */
-  getViewConfig(viewId) {
+  getViewConfig(viewId: string): ViewConfig | undefined {
     return this.registeredViews.get(viewId);
   }
 
   /**
    * Get all registered views
    */
-  getAllViews() {
+  getAllViews(): ViewConfig[] {
     return Array.from(this.registeredViews.values());
   }
 
   /**
    * Get view count
    */
-  getViewCount() {
+  getViewCount(): number {
     return this.registeredViews.size;
   }
 
   /**
    * Check if view exists
    */
-  hasView(viewId) {
+  hasView(viewId: string): boolean {
     return this.registeredViews.has(viewId);
   }
 
   /**
    * Get view state
    */
-  getViewState(viewId) {
+  getViewState(viewId: string): ViewState | undefined {
     return this.viewStates.get(viewId);
   }
 
   /**
    * Set view state
    */
-  setViewState(viewId, state) {
-    const existing = this.viewStates.get(viewId) || {};
+  setViewState(viewId: string, state: Partial<ViewState>): void {
+    const existing = this.viewStates.get(viewId) || {} as ViewState;
     this.viewStates.set(viewId, { ...existing, ...state });
   }
 
   /**
    * Setup event handlers
    */
-  setupEventHandlers() {
-    this.eventBus.on('view:reload', async (data) => {
+  private setupEventHandlers(): void {
+    this.eventBus.on('view:reload', async (data: { viewId: string }) => {
       await this.refreshView(data.viewId);
     });
 
-    this.eventBus.on('view:unload', async (data) => {
+    this.eventBus.on('view:unload', async (data: { viewId: string }) => {
       await this.unloadView(data.viewId);
     });
 
-    this.eventBus.on('view:preload', async (data) => {
+    this.eventBus.on('view:preload', async (data: { viewId: string }) => {
       await this.preloadView(data.viewId);
     });
   }
@@ -590,7 +664,7 @@ export class ViewManager {
   /**
    * Get memory usage statistics
    */
-  getMemoryStats() {
+  getMemoryStats(): MemoryStats {
     return {
       registeredViews: this.registeredViews.size,
       loadedViews: this.loadedViews.size,
@@ -602,7 +676,7 @@ export class ViewManager {
   /**
    * Cleanup and shutdown
    */
-  async shutdown() {
+  async shutdown(): Promise<void> {
     // Unload all views
     for (const viewId of this.loadedViews.keys()) {
       await this.unloadView(viewId);

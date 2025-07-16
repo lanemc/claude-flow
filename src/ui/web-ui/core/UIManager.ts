@@ -10,22 +10,22 @@ import { StateManager } from './StateManager.js';
 import { ComponentLibrary } from '../components/ComponentLibrary.js';
 
 // View category definitions
-export const VIEW_CATEGORIES = {
-  OVERVIEW: 'overview',
-  PROCESSES: 'processes',
-  NEURAL: 'neural',
-  MEMORY: 'memory',
-  MONITORING: 'monitoring',
-  WORKFLOW: 'workflow',
-  GITHUB: 'github',
-  DAA: 'daa',
-  SYSTEM: 'system',
-  CLI: 'cli',
-  HELP: 'help'
-};
+export enum VIEW_CATEGORIES {
+  OVERVIEW = 'overview',
+  PROCESSES = 'processes',
+  NEURAL = 'neural',
+  MEMORY = 'memory',
+  MONITORING = 'monitoring',
+  WORKFLOW = 'workflow',
+  GITHUB = 'github',
+  DAA = 'daa',
+  SYSTEM = 'system',
+  CLI = 'cli',
+  HELP = 'help'
+}
 
 // MCP Tool Categories mapping
-export const MCP_TOOL_CATEGORIES = {
+export const MCP_TOOL_CATEGORIES: Record<string, string[]> = {
   NEURAL: [
     'neural_train', 'neural_predict', 'neural_status', 'neural_patterns',
     'model_load', 'model_save', 'pattern_recognize', 'cognitive_analyze',
@@ -64,7 +64,68 @@ export const MCP_TOOL_CATEGORIES = {
   ]
 };
 
+// View configuration interface
+interface ViewConfiguration {
+  id: VIEW_CATEGORIES;
+  name: string;
+  icon: string;
+  description: string;
+  component: string;
+  shortcut?: string;
+  toolCount?: number;
+}
+
+// Navigation params interface
+interface NavigationParams {
+  [key: string]: any;
+}
+
+// View history entry interface
+interface ViewHistoryEntry {
+  viewId: VIEW_CATEGORIES;
+  timestamp: number;
+  params: any;
+}
+
+// System status interface
+interface SystemStatus {
+  uptime: number;
+  activeTools: string[];
+  memoryUsage: {
+    used: number;
+    total: number;
+    external: number;
+  };
+  swarmStatus: any;
+  toolsAvailable: number;
+  viewsRegistered: number;
+}
+
+// Theme type
+type Theme = 'dark' | 'light';
+
+// User preferences interface
+interface UserPreferences {
+  theme?: Theme;
+  responsive?: boolean;
+}
+
+// Keyboard shortcut handler type
+type ShortcutHandler = () => void | Promise<void>;
+
 export class UIManager {
+  private eventBus: EventBus;
+  private mcpIntegration: MCPIntegrationLayer;
+  private viewManager: ViewManager;
+  private stateManager: StateManager;
+  private componentLibrary: ComponentLibrary;
+  
+  private currentView: VIEW_CATEGORIES;
+  private viewHistory: ViewHistoryEntry[];
+  private shortcuts: Map<string, ShortcutHandler>;
+  private theme: Theme;
+  private isResponsive: boolean;
+  
   constructor() {
     this.eventBus = new EventBus();
     this.mcpIntegration = new MCPIntegrationLayer(this.eventBus);
@@ -85,7 +146,7 @@ export class UIManager {
   /**
    * Initialize the complete UI system
    */
-  async initialize() {
+  async initialize(): Promise<void> {
     try {
       // Initialize core systems
       await this.stateManager.initialize();
@@ -116,8 +177,8 @@ export class UIManager {
   /**
    * Register all available views
    */
-  async registerAllViews() {
-    const viewConfigs = [
+  private async registerAllViews(): Promise<void> {
+    const viewConfigs: ViewConfiguration[] = [
       {
         id: VIEW_CATEGORIES.OVERVIEW,
         name: 'Overview',
@@ -223,7 +284,7 @@ export class UIManager {
   /**
    * Navigate to a specific view
    */
-  async navigateToView(viewId, params = {}) {
+  async navigateToView(viewId: VIEW_CATEGORIES, params: NavigationParams = {}): Promise<void> {
     if (!this.viewManager.hasView(viewId)) {
       throw new Error(`View not found: ${viewId}`);
     }
@@ -258,17 +319,19 @@ export class UIManager {
   /**
    * Go back to previous view
    */
-  async goBack() {
+  async goBack(): Promise<void> {
     if (this.viewHistory.length === 0) return;
     
     const previousView = this.viewHistory.pop();
-    await this.navigateToView(previousView.viewId, previousView.params);
+    if (previousView) {
+      await this.navigateToView(previousView.viewId, previousView.params);
+    }
   }
 
   /**
    * Execute MCP tool with UI integration
    */
-  async executeMCPTool(toolName, params = {}) {
+  async executeMCPTool(toolName: string, params: Record<string, any> = {}): Promise<any> {
     try {
       // Show loading indicator
       this.eventBus.emit('ui:loading', { tool: toolName, params });
@@ -293,7 +356,7 @@ export class UIManager {
   /**
    * Handle tool execution results
    */
-  async handleToolResult(toolName, result, originalParams) {
+  private async handleToolResult(toolName: string, result: any, originalParams: Record<string, any>): Promise<void> {
     // Update relevant views with new data
     const category = this.getToolCategory(toolName);
     
@@ -319,7 +382,7 @@ export class UIManager {
   /**
    * Get tool category for a given tool name
    */
-  getToolCategory(toolName) {
+  private getToolCategory(toolName: string): string | null {
     for (const [category, tools] of Object.entries(MCP_TOOL_CATEGORIES)) {
       if (tools.includes(toolName)) {
         return category.toLowerCase();
@@ -331,7 +394,7 @@ export class UIManager {
   /**
    * Setup keyboard shortcuts
    */
-  setupKeyboardShortcuts() {
+  private setupKeyboardShortcuts(): void {
     // View navigation shortcuts
     Object.values(VIEW_CATEGORIES).forEach((viewId, index) => {
       const key = (index + 1).toString();
@@ -350,7 +413,7 @@ export class UIManager {
     
     // Setup event listener for keyboard events
     if (typeof window !== 'undefined') {
-      window.addEventListener('keydown', (event) => {
+      window.addEventListener('keydown', (event: KeyboardEvent) => {
         const key = this.getKeyString(event);
         const handler = this.shortcuts.get(key);
         if (handler) {
@@ -364,8 +427,8 @@ export class UIManager {
   /**
    * Get key string from keyboard event
    */
-  getKeyString(event) {
-    const parts = [];
+  private getKeyString(event: KeyboardEvent): string {
+    const parts: string[] = [];
     if (event.ctrlKey) parts.push('ctrl');
     if (event.shiftKey) parts.push('shift');
     if (event.altKey) parts.push('alt');
@@ -383,28 +446,28 @@ export class UIManager {
   /**
    * Show command palette
    */
-  showCommandPalette() {
+  private showCommandPalette(): void {
     this.eventBus.emit('ui:command-palette:show');
   }
 
   /**
    * Hide all overlays
    */
-  hideAllOverlays() {
+  private hideAllOverlays(): void {
     this.eventBus.emit('ui:overlays:hide');
   }
 
   /**
    * Refresh current view
    */
-  async refreshCurrentView() {
+  private async refreshCurrentView(): Promise<void> {
     await this.viewManager.refreshView(this.currentView);
   }
 
   /**
    * Toggle theme
    */
-  toggleTheme() {
+  private toggleTheme(): void {
     this.theme = this.theme === 'dark' ? 'light' : 'dark';
     this.eventBus.emit('ui:theme:changed', this.theme);
   }
@@ -412,14 +475,14 @@ export class UIManager {
   /**
    * Setup real-time updates
    */
-  setupRealTimeUpdates() {
+  private setupRealTimeUpdates(): void {
     // Update every 5 seconds for live data
     setInterval(() => {
       this.eventBus.emit('ui:real-time:update');
     }, 5000);
     
     // Setup MCP tool result streaming
-    this.mcpIntegration.on('tool:result', (result) => {
+    this.mcpIntegration.on('tool:result', (result: any) => {
       this.eventBus.emit('ui:real-time:tool-result', result);
     });
   }
@@ -427,24 +490,24 @@ export class UIManager {
   /**
    * Initialize event handlers
    */
-  initializeEventHandlers() {
+  private initializeEventHandlers(): void {
     // Handle tool execution requests
-    this.eventBus.on('tool:execute', async (data) => {
+    this.eventBus.on('tool:execute', async (data: { tool: string; params: Record<string, any> }) => {
       await this.executeMCPTool(data.tool, data.params);
     });
     
     // Handle view navigation requests
-    this.eventBus.on('view:navigate', async (data) => {
+    this.eventBus.on('view:navigate', async (data: { viewId: VIEW_CATEGORIES; params: NavigationParams }) => {
       await this.navigateToView(data.viewId, data.params);
     });
     
     // Handle state persistence
-    this.eventBus.on('state:persist', async (data) => {
+    this.eventBus.on('state:persist', async (data: any) => {
       await this.stateManager.persistState(data);
     });
     
     // Handle errors
-    this.eventBus.on('ui:error', (error) => {
+    this.eventBus.on('ui:error', (error: any) => {
       console.error('UI Error:', error);
       // Could show error toast/notification here
     });
@@ -453,7 +516,7 @@ export class UIManager {
   /**
    * Load user preferences
    */
-  async loadUserPreferences() {
+  private async loadUserPreferences(): Promise<void> {
     const preferences = await this.stateManager.getUserPreferences();
     if (preferences) {
       this.theme = preferences.theme || 'dark';
@@ -464,8 +527,8 @@ export class UIManager {
   /**
    * Get system status for overview
    */
-  async getSystemStatus() {
-    const status = {
+  async getSystemStatus(): Promise<SystemStatus> {
+    const status: SystemStatus = {
       uptime: await this.mcpIntegration.getSystemUptime(),
       activeTools: await this.mcpIntegration.getActiveTools(),
       memoryUsage: await this.mcpIntegration.getMemoryUsage(),
@@ -480,7 +543,7 @@ export class UIManager {
   /**
    * Shutdown UI Manager
    */
-  async shutdown() {
+  async shutdown(): Promise<void> {
     await this.stateManager.persistAllState();
     await this.mcpIntegration.shutdown();
     this.eventBus.emit('ui:shutdown');

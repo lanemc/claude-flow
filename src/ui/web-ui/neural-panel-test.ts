@@ -3,7 +3,73 @@
  * Tests all 5 tabs and 15 tools comprehensively
  */
 
+interface TabTestResult {
+  found: boolean;
+  clicked: boolean;
+  content: boolean;
+}
+
+interface TestResults {
+  panelOpen: boolean;
+  tabs: {
+    tools: TabTestResult;
+    training: TabTestResult;
+    models: TabTestResult;
+    patterns: TabTestResult;
+    performance: TabTestResult;
+  };
+  tools: {
+    total: number;
+    categories: string[];
+    executeButtons: number;
+    configureButtons: number;
+    tested: string[];
+  };
+  controls: {
+    refresh: boolean;
+    export: boolean;
+    close: boolean;
+  };
+  animations: {
+    smooth: boolean;
+    transitions: boolean;
+  };
+  responsiveness: {
+    tested: boolean;
+    mobile: boolean;
+    tablet: boolean;
+    desktop: boolean;
+  };
+}
+
+interface OverallStatus {
+  passed: number;
+  total: number;
+  percentage: number;
+  status: 'PASS' | 'PARTIAL' | 'FAIL';
+}
+
+interface TestReport {
+  summary: {
+    timestamp: string;
+    duration: string;
+    overallStatus: OverallStatus;
+  };
+  details: TestResults;
+  screenshots: any[];
+  recommendations: string[];
+}
+
+interface StateCapture {
+  timestamp: string;
+  description: string;
+  viewport: string;
+  panelVisible: boolean;
+}
+
 export class NeuralPanelTest {
+  private testResults: TestResults;
+
   constructor() {
     this.testResults = {
       panelOpen: false,
@@ -40,7 +106,7 @@ export class NeuralPanelTest {
   }
 
   // Main test runner
-  async runTests() {
+  async runTests(): Promise<TestReport> {
     console.log('🧪 Starting Neural Networks Panel Test Suite');
     
     // Test 1: Open Neural Panel
@@ -66,7 +132,7 @@ export class NeuralPanelTest {
   }
 
   // Test opening the neural panel
-  async testOpenPanel() {
+  private async testOpenPanel(): Promise<void> {
     console.log('📋 Test 1: Opening Neural Panel');
     
     // Find neural button in header
@@ -96,10 +162,10 @@ export class NeuralPanelTest {
   }
 
   // Test all 5 tabs
-  async testAllTabs() {
+  private async testAllTabs(): Promise<void> {
     console.log('📋 Test 2: Testing all 5 tabs');
     
-    const tabs = ['tools', 'training', 'models', 'patterns', 'performance'];
+    const tabs: Array<keyof TestResults['tabs']> = ['tools', 'training', 'models', 'patterns', 'performance'];
     
     for (const tabName of tabs) {
       console.log(`  Testing ${tabName} tab...`);
@@ -130,7 +196,7 @@ export class NeuralPanelTest {
   }
 
   // Detailed test of Tools tab
-  async testToolsTab() {
+  private async testToolsTab(): Promise<void> {
     console.log('📋 Test 3: Testing Tools tab in detail');
     
     // Switch to Tools tab
@@ -174,13 +240,13 @@ export class NeuralPanelTest {
   }
 
   // Test individual tool card
-  async testToolCard(card, index) {
+  private async testToolCard(card: Element, index: number): Promise<void> {
     console.log(`  Testing tool card ${index + 1}...`);
     
     const toolName = card.querySelector('.tool-name, h3, h4')?.textContent || `Tool ${index + 1}`;
     
     // Test execute button
-    const execBtn = card.querySelector('.execute-btn, [data-action="execute"]');
+    const execBtn = card.querySelector('.execute-btn, [data-action="execute"]') as HTMLElement;
     if (execBtn) {
       execBtn.click();
       await this.wait(200);
@@ -191,13 +257,13 @@ export class NeuralPanelTest {
       if (response) {
         console.log(`    ✅ Response shown for ${toolName}`);
         // Close if needed
-        const closeBtn = response.querySelector('.close, [data-action="close"]');
+        const closeBtn = response.querySelector('.close, [data-action="close"]') as HTMLElement;
         if (closeBtn) closeBtn.click();
       }
     }
     
     // Test configure button
-    const configBtn = card.querySelector('.config-btn, [data-action="configure"]');
+    const configBtn = card.querySelector('.config-btn, [data-action="configure"]') as HTMLElement;
     if (configBtn) {
       configBtn.click();
       await this.wait(200);
@@ -206,7 +272,7 @@ export class NeuralPanelTest {
       // Close any config modal
       const modal = document.querySelector('.config-modal, .modal');
       if (modal) {
-        const closeBtn = modal.querySelector('.close, [data-action="close"]');
+        const closeBtn = modal.querySelector('.close, [data-action="close"]') as HTMLElement;
         if (closeBtn) closeBtn.click();
       }
     }
@@ -215,7 +281,7 @@ export class NeuralPanelTest {
   }
 
   // Test panel controls
-  async testPanelControls() {
+  private async testPanelControls(): Promise<void> {
     console.log('📋 Test 4: Testing panel controls');
     
     // Test refresh button
@@ -245,7 +311,7 @@ export class NeuralPanelTest {
   }
 
   // Test animations and transitions
-  async testAnimations() {
+  private async testAnimations(): Promise<void> {
     console.log('📋 Test 5: Testing animations');
     
     // Check for CSS transitions
@@ -262,9 +328,9 @@ export class NeuralPanelTest {
       // Test tab switching animation
       const tabs = document.querySelectorAll('.tab, [role="tab"]');
       if (tabs.length >= 2) {
-        tabs[0].click();
+        (tabs[0] as HTMLElement).click();
         await this.wait(150);
-        tabs[1].click();
+        (tabs[1] as HTMLElement).click();
         await this.wait(150);
         
         this.testResults.animations.smooth = true;
@@ -274,7 +340,7 @@ export class NeuralPanelTest {
   }
 
   // Test responsiveness
-  async testResponsiveness() {
+  private async testResponsiveness(): Promise<void> {
     console.log('📋 Test 6: Testing responsiveness');
     
     const originalWidth = window.innerWidth;
@@ -305,7 +371,7 @@ export class NeuralPanelTest {
   }
 
   // Helper methods
-  findNeuralButton() {
+  private findNeuralButton(): HTMLElement | null {
     return document.querySelector(
       '[data-view="neural"], ' +
       'button[aria-label*="Neural"], ' +
@@ -313,11 +379,11 @@ export class NeuralPanelTest {
       '.neural-button, ' +
       '.header-nav button:nth-of-type(5)'
     ) || Array.from(document.querySelectorAll('button')).find(btn => 
-      btn.textContent.includes('Neural') || btn.textContent.includes('🧠')
-    );
+      btn.textContent?.includes('Neural') || btn.textContent?.includes('🧠')
+    ) as HTMLElement || null;
   }
 
-  findNeuralPanel() {
+  private findNeuralPanel(): HTMLElement | null {
     return document.querySelector(
       '.neural-panel, ' +
       '.panel-neural, ' +
@@ -326,17 +392,17 @@ export class NeuralPanelTest {
     );
   }
 
-  findTab(tabName) {
+  private findTab(tabName: string): HTMLElement | null {
     return document.querySelector(
       `[data-tab="${tabName}"], ` +
       `[role="tab"][aria-label*="${tabName}"], ` +
       `.tab-${tabName}`
     ) || Array.from(document.querySelectorAll('.tab, [role="tab"]')).find(tab =>
-      tab.textContent.toLowerCase().includes(tabName)
-    );
+      tab.textContent?.toLowerCase().includes(tabName)
+    ) as HTMLElement || null;
   }
 
-  findTabContent(tabName) {
+  private findTabContent(tabName: string): HTMLElement | null {
     return document.querySelector(
       `[data-tab-content="${tabName}"], ` +
       `.tab-content-${tabName}, ` +
@@ -344,7 +410,7 @@ export class NeuralPanelTest {
     );
   }
 
-  findToolCards() {
+  private findToolCards(): NodeListOf<Element> {
     return document.querySelectorAll(
       '.tool-card, ' +
       '.neural-tool-card, ' +
@@ -353,12 +419,12 @@ export class NeuralPanelTest {
     );
   }
 
-  findToolCategories() {
+  private findToolCategories(): string[] {
     const categoryElements = document.querySelectorAll('.tool-category, .category-header');
-    return Array.from(categoryElements).map(el => el.textContent.trim());
+    return Array.from(categoryElements).map(el => el.textContent?.trim() || '').filter(Boolean);
   }
 
-  findControl(type) {
+  private findControl(type: 'refresh' | 'export' | 'close'): HTMLElement | null {
     const selectors = {
       refresh: '[data-action="refresh"], .refresh-btn, button[aria-label*="Refresh"]',
       export: '[data-action="export"], .export-btn, button[aria-label*="Export"]',
@@ -367,11 +433,11 @@ export class NeuralPanelTest {
     
     return document.querySelector(selectors[type]) || 
       Array.from(document.querySelectorAll('button')).find(btn => 
-        btn.textContent.toLowerCase().includes(type)
-      );
+        btn.textContent?.toLowerCase().includes(type)
+      ) as HTMLElement || null;
   }
 
-  checkLayout() {
+  private checkLayout(): boolean {
     const panel = this.findNeuralPanel();
     if (!panel) return false;
     
@@ -380,12 +446,12 @@ export class NeuralPanelTest {
            rect.top >= 0 && rect.left >= 0;
   }
 
-  captureState(description) {
+  private captureState(description: string): StateCapture {
     // Simulate screenshot capture
     console.log(`📸 Screenshot: ${description}`);
     
     // In real implementation, this would capture actual screenshots
-    const state = {
+    const state: StateCapture = {
       timestamp: new Date().toISOString(),
       description,
       viewport: `${window.innerWidth}x${window.innerHeight}`,
@@ -395,13 +461,13 @@ export class NeuralPanelTest {
     return state;
   }
 
-  async wait(ms) {
+  private async wait(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 
   // Generate comprehensive report
-  generateReport() {
-    const report = {
+  private generateReport(): TestReport {
+    const report: TestReport = {
       summary: {
         timestamp: new Date().toISOString(),
         duration: 'Completed',
@@ -419,7 +485,7 @@ export class NeuralPanelTest {
     return report;
   }
 
-  calculateOverallStatus() {
+  private calculateOverallStatus(): OverallStatus {
     const checks = [
       this.testResults.panelOpen,
       Object.values(this.testResults.tabs).every(tab => tab.found),
@@ -439,8 +505,8 @@ export class NeuralPanelTest {
     };
   }
 
-  generateRecommendations() {
-    const recommendations = [];
+  private generateRecommendations(): string[] {
+    const recommendations: string[] = [];
     
     if (!this.testResults.panelOpen) {
       recommendations.push('Fix Neural button visibility or click handler');

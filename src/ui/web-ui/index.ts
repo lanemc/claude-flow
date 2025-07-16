@@ -23,12 +23,24 @@ export { default as DAAView } from './views/DAAView.js';
 export { EnhancedWebUI } from './EnhancedWebUI.js';
 export { EnhancedProcessUI, launchEnhancedUI } from './EnhancedProcessUI.js';
 
+// Type imports
+import type { 
+  IEnhancedWebUI, 
+  IEnhancedProcessUI, 
+  ToolCategoryInfo, 
+  ArchitectureInfo,
+  InitializeEnhancedUIFunction,
+  LaunchTerminalUIFunction,
+  GetTotalToolCountFunction,
+  GetArchitectureInfoFunction
+} from './types/interfaces.js';
+
 /**
  * Initialize Enhanced Web UI System
  * @param {Object} options Configuration options
- * @returns {Promise<EnhancedWebUI>} Initialized UI system
+ * @returns {Promise<IEnhancedWebUI | IEnhancedProcessUI | any>} Initialized UI system
  */
-export async function initializeEnhancedUI(options = {}) {
+export const initializeEnhancedUI: InitializeEnhancedUIFunction = async (options = {}) => {
   const {
     mode = 'auto', // 'full', 'enhanced', 'fallback', 'auto'
     existingUI = null,
@@ -65,20 +77,20 @@ export async function initializeEnhancedUI(options = {}) {
     const processUI = new EnhancedProcessUI();
     return processUI;
   }
-}
+};
 
 /**
  * Launch Enhanced UI in terminal mode
  */
-export async function launchTerminalUI() {
+export const launchTerminalUI: LaunchTerminalUIFunction = async () => {
   const { launchEnhancedUI } = await import('./EnhancedProcessUI.js');
   return launchEnhancedUI();
-}
+};
 
 /**
  * Tool Categories and Counts
  */
-export const TOOL_CATEGORIES_INFO = {
+export const TOOL_CATEGORIES_INFO: Record<string, ToolCategoryInfo> = {
   neural: {
     name: 'Neural Network Tools',
     count: 15,
@@ -156,16 +168,16 @@ export const TOOL_CATEGORIES_INFO = {
 /**
  * Get total tool count
  */
-export function getTotalToolCount() {
+export const getTotalToolCount: GetTotalToolCountFunction = () => {
   return Object.values(TOOL_CATEGORIES_INFO).reduce((total, category) => {
     return total + category.count;
   }, 0);
-}
+};
 
 /**
  * Get architecture information
  */
-export function getArchitectureInfo() {
+export const getArchitectureInfo: GetArchitectureInfoFunction = () => {
   return {
     version: '2.0.0',
     totalTools: getTotalToolCount(),
@@ -189,6 +201,14 @@ export function getArchitectureInfo() {
       vscode: true
     }
   };
+};
+
+// Define interfaces for window extensions
+interface ClaudeFlowEnhancedUI {
+  initialize: InitializeEnhancedUIFunction;
+  launch: LaunchTerminalUIFunction;
+  getInfo: GetArchitectureInfoFunction;
+  toolCategories: typeof TOOL_CATEGORIES_INFO;
 }
 
 // Auto-initialization for browser environments
