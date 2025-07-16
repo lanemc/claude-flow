@@ -8,7 +8,8 @@
   },
   "scripts": {
     "dev": "tsx src/cli/main.ts",
-    "build": "npm run clean && npm run update-version && npm run build:esm && npm run build:cjs && npm run build:binary",
+    "build": "npm run clean && npm run update-version && npm run build:esm && npm run build:cjs && npm run build:web-ui && npm run build:binary",
+    "build:web-ui": "cd src/ui/web-ui && tsc || true",
     "update-version": "node scripts/update-bin-version.js",
     "clean": "rm -rf dist dist-cjs",
     "build:esm": "tsc",
