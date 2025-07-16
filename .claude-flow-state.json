@@ -1,0 +1,22 @@
+{
+  "timestamp": 1752668996078,
+  "version": "2.0.0",
+  "preferences": {
+    "theme": "dark",
+    "autoSave": true,
+    "showTooltips": true,
+    "animationSpeed": "normal",
+    "defaultView": "overview",
+    "keyboardShortcuts": true,
+    "realTimeUpdates": true,
+    "logLevel": "info"
+  },
+  "viewStates": {},
+  "toolResults": {},
+  "sessionData": {},
+  "state": {
+    "initialized": true,
+    "version": "2.0.0",
+    "installDate": 1752668876071
+  }
+}
