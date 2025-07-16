@@ -1,10 +1,231 @@
 import { printSuccess, printError, printWarning, execRuvSwarmHook, checkRuvSwarmAvailable } from "../utils.js";
 import { SqliteMemoryStore } from '../../memory/sqlite-store.js';
 
-// Initialize memory store
-let memoryStore = null;
+// ===== TYPE DEFINITIONS =====
 
-async function getMemoryStore() {
+export interface HookOptions {
+  help?: boolean;
+  h?: boolean;
+}
+
+export interface PreTaskOptions extends HookOptions {
+  description?: string;
+  'task-id'?: string;
+  taskId?: string;
+  'agent-id'?: string;
+  agentId?: string;
+  'auto-spawn-agents'?: string | boolean;
+}
+
+export interface PostTaskOptions extends HookOptions {
+  'task-id'?: string;
+  taskId?: string;
+  'analyze-performance'?: string | boolean;
+}
+
+export interface PreEditOptions extends HookOptions {
+  file?: string;
+  operation?: string;
+  'auto-assign-agents'?: boolean;
+  'load-context'?: boolean;
+}
+
+export interface PostEditOptions extends HookOptions {
+  file?: string;
+  'memory-key'?: string;
+  memoryKey?: string;
+  format?: boolean;
+  'update-memory'?: boolean;
+  'train-neural'?: boolean;
+}
+
+export interface PreBashOptions extends HookOptions {
+  command?: string;
+  cwd?: string;
+  'validate-safety'?: boolean;
+  validate?: boolean;
+  'prepare-resources'?: boolean;
+}
+
+export interface PostBashOptions extends HookOptions {
+  command?: string;
+  'exit-code'?: string;
+  output?: string;
+  'track-metrics'?: boolean;
+  'store-results'?: boolean;
+  duration?: number;
+}
+
+export interface PostSearchOptions extends HookOptions {
+  query?: string;
+  'result-count'?: string;
+  type?: string;
+}
+
+export interface McpInitializedOptions extends HookOptions {
+  server?: string;
+  'session-id'?: string;
+}
+
+export interface AgentSpawnedOptions extends HookOptions {
+  type?: string;
+  name?: string;
+  'swarm-id'?: string;
+}
+
+export interface TaskOrchestratedOptions extends HookOptions {
+  'task-id'?: string;
+  strategy?: string;
+  priority?: string;
+}
+
+export interface NeuralTrainedOptions extends HookOptions {
+  model?: string;
+  accuracy?: string;
+  patterns?: string;
+}
+
+export interface SessionEndOptions extends HookOptions {
+  'generate-summary'?: string | boolean;
+  'persist-state'?: string | boolean;
+  'export-metrics'?: boolean;
+}
+
+export interface SessionRestoreOptions extends HookOptions {
+  'session-id'?: string;
+}
+
+export interface NotifyOptions extends HookOptions {
+  message?: string;
+  level?: string;
+  'swarm-status'?: string;
+}
+
+export interface TaskData {
+  taskId: string;
+  description: string;
+  agentId?: string;
+  autoSpawnAgents: boolean;
+  status: string;
+  startedAt: string;
+}
+
+export interface EditData {
+  file: string;
+  operation: string;
+  timestamp: string;
+  editId: string;
+  autoAssignAgents: boolean;
+  loadContext: boolean;
+  assignedAgentType: string;
+  recommendedAgent?: RecommendedAgent | null;
+  contextData?: ContextData | null;
+}
+
+export interface RecommendedAgent {
+  type: string;
+  file: string;
+  extension: string;
+  recommended: boolean;
+}
+
+export interface ContextData {
+  fileExists: boolean;
+  size?: number;
+  modified?: Date;
+  directory: string;
+  filename: string;
+  isDirectory?: boolean;
+  willCreate?: boolean;
+  error?: string;
+}
+
+export interface BashData {
+  command: string;
+  workingDir: string;
+  timestamp: string;
+  bashId: string;
+  safety: string;
+  validationEnabled: boolean;
+  resourcesPrepped: boolean;
+}
+
+export interface SearchData {
+  query: string;
+  resultCount: number;
+  searchType: string;
+  timestamp: string;
+  searchId: string;
+}
+
+export interface McpData {
+  serverName: string;
+  sessionId: string;
+  initializedAt: string;
+  status: string;
+}
+
+export interface AgentData {
+  agentName: string;
+  agentType: string;
+  swarmId: string;
+  spawnedAt: string;
+  status: string;
+}
+
+export interface OrchestrationData {
+  taskId: string;
+  strategy: string;
+  priority: string;
+  orchestratedAt: string;
+  status: string;
+}
+
+export interface TrainingData {
+  modelName: string;
+  accuracy: number;
+  patternsLearned: number;
+  trainedAt: string;
+}
+
+export interface SessionData {
+  endedAt: string;
+  totalTasks: number;
+  totalEdits: number;
+  totalCommands: number;
+  uniqueAgents: number;
+  sessionId: string;
+  generateSummary: boolean;
+  persistState: boolean;
+  exportMetrics: boolean;
+  metrics?: SessionMetrics;
+}
+
+export interface SessionMetrics {
+  sessionDuration: number;
+  sessionDurationHuman: string;
+  totalTasks: number;
+  totalEdits: number;
+  totalCommands: number;
+  uniqueAgents: number;
+  commandSuccessRate: number;
+  avgTasksPerMinute: number;
+  avgEditsPerMinute: number;
+  timestamp: string;
+}
+
+export interface NotificationData {
+  message: string;
+  level: string;
+  swarmStatus: string;
+  timestamp: string;
+  notifyId: string;
+}
+
+// Initialize memory store
+let memoryStore: SqliteMemoryStore | null = null;
+
+async function getMemoryStore(): Promise<SqliteMemoryStore> {
     if (!memoryStore) {
         memoryStore = new SqliteMemoryStore();
         await memoryStore.initialize();
@@ -13,11 +234,11 @@ async function getMemoryStore() {
 }
 
 // Simple ID generator
-function generateId(prefix = 'id') {
+function generateId(prefix: string = 'id'): string {
     return `${prefix}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 }
 
-export async function hooksAction(subArgs, flags) {
+export async function hooksAction(subArgs: string[], flags: HookOptions): Promise<void> {
     const subcommand = subArgs[0];
     const options = flags;
 
@@ -30,54 +251,54 @@ export async function hooksAction(subArgs, flags) {
         switch (subcommand) {
             // Pre-Operation Hooks
             case 'pre-task':
-                await preTaskCommand(subArgs, flags);
+                await preTaskCommand(subArgs, flags as PreTaskOptions);
                 break;
             case 'pre-edit':
-                await preEditCommand(subArgs, flags);
+                await preEditCommand(subArgs, flags as PreEditOptions);
                 break;
             case 'pre-bash':
             case 'pre-command':  // Support both names for compatibility
-                await preBashCommand(subArgs, flags);
+                await preBashCommand(subArgs, flags as PreBashOptions);
                 break;
                 
             // Post-Operation Hooks
             case 'post-task':
-                await postTaskCommand(subArgs, flags);
+                await postTaskCommand(subArgs, flags as PostTaskOptions);
                 break;
             case 'post-edit':
-                await postEditCommand(subArgs, flags);
+                await postEditCommand(subArgs, flags as PostEditOptions);
                 break;
             case 'post-bash':
             case 'post-command':  // Support both names for compatibility
-                await postBashCommand(subArgs, flags);
+                await postBashCommand(subArgs, flags as PostBashOptions);
                 break;
             case 'post-search':
-                await postSearchCommand(subArgs, flags);
+                await postSearchCommand(subArgs, flags as PostSearchOptions);
                 break;
                 
             // MCP Integration Hooks
             case 'mcp-initialized':
-                await mcpInitializedCommand(subArgs, flags);
+                await mcpInitializedCommand(subArgs, flags as McpInitializedOptions);
                 break;
             case 'agent-spawned':
-                await agentSpawnedCommand(subArgs, flags);
+                await agentSpawnedCommand(subArgs, flags as AgentSpawnedOptions);
                 break;
             case 'task-orchestrated':
-                await taskOrchestratedCommand(subArgs, flags);
+                await taskOrchestratedCommand(subArgs, flags as TaskOrchestratedOptions);
                 break;
             case 'neural-trained':
-                await neuralTrainedCommand(subArgs, flags);
+                await neuralTrainedCommand(subArgs, flags as NeuralTrainedOptions);
                 break;
                 
             // Session Hooks
             case 'session-end':
-                await sessionEndCommand(subArgs, flags);
+                await sessionEndCommand(subArgs, flags as SessionEndOptions);
                 break;
             case 'session-restore':
-                await sessionRestoreCommand(subArgs, flags);
+                await sessionRestoreCommand(subArgs, flags as SessionRestoreOptions);
                 break;
             case 'notify':
-                await notifyCommand(subArgs, flags);
+                await notifyCommand(subArgs, flags as NotifyOptions);
                 break;
                 
             default:
@@ -85,13 +306,14 @@ export async function hooksAction(subArgs, flags) {
                 showHooksHelp();
         }
     } catch (err) {
-        printError(`Hooks command failed: ${err.message}`);
+        const errorMessage = err instanceof Error ? err.message : String(err);
+        printError(`Hooks command failed: ${errorMessage}`);
     }
 }
 
 // ===== PRE-OPERATION HOOKS =====
 
-async function preTaskCommand(subArgs, flags) {
+async function preTaskCommand(subArgs: string[], flags: PreTaskOptions): Promise<void> {
     const options = flags;
     const description = options.description || 'Unnamed task';
     const taskId = options['task-id'] || options.taskId || generateId('task');
@@ -105,7 +327,7 @@ async function preTaskCommand(subArgs, flags) {
 
     try {
         const store = await getMemoryStore();
-        const taskData = {
+        const taskData: TaskData = {
             taskId,
             description,
             agentId,
@@ -150,11 +372,12 @@ async function preTaskCommand(subArgs, flags) {
         
         console.log(`\n🎯 TASK PREPARATION COMPLETE`);
     } catch (err) {
-        printError(`Pre-task hook failed: ${err.message}`);
+        const errorMessage = err instanceof Error ? err.message : String(err);
+        printError(`Pre-task hook failed: ${errorMessage}`);
     }
 }
 
-async function preEditCommand(subArgs, flags) {
+async function preEditCommand(subArgs: string[], flags: PreEditOptions): Promise<void> {
     const options = flags;
     const file = options.file || 'unknown-file';
     const operation = options.operation || 'edit';
@@ -172,13 +395,13 @@ async function preEditCommand(subArgs, flags) {
         
         // Auto-assign agents based on file type
         let assignedAgentType = 'general';
-        let recommendedAgent = null;
+        let recommendedAgent: RecommendedAgent | null = null;
         
         if (autoAssignAgents) {
             const path = await import('path');
             const ext = path.extname(file).toLowerCase();
             
-            const agentMapping = {
+            const agentMapping: Record<string, string> = {
                 '.js': 'javascript-developer',
                 '.ts': 'typescript-developer',
                 '.py': 'python-developer',
@@ -212,7 +435,7 @@ async function preEditCommand(subArgs, flags) {
         }
         
         // Load context if requested
-        let contextData = null;
+        let contextData: ContextData | null = null;
         if (loadContext) {
             try {
                 // Check if file exists and get basic info
@@ -245,11 +468,17 @@ async function preEditCommand(subArgs, flags) {
                 }
             } catch (err) {
                 console.log(`  ⚠️  Warning: Could not load context for ${file}`);
-                contextData = { error: err.message };
+                const errorMessage = err instanceof Error ? err.message : String(err);
+                contextData = { 
+                    fileExists: false,
+                    directory: '',
+                    filename: '',
+                    error: errorMessage 
+                };
             }
         }
 
-        const editData = {
+        const editData: EditData = {
             file,
             operation,
             timestamp: new Date().toISOString(),
@@ -277,11 +506,12 @@ async function preEditCommand(subArgs, flags) {
         console.log(`  💾 Pre-edit state saved to .swarm/memory.db`);
         printSuccess(`✅ Pre-edit hook completed`);
     } catch (err) {
-        printError(`Pre-edit hook failed: ${err.message}`);
+        const errorMessage = err instanceof Error ? err.message : String(err);
+        printError(`Pre-edit hook failed: ${errorMessage}`);
     }
 }
 
-async function preBashCommand(subArgs, flags) {
+async function preBashCommand(subArgs: string[], flags: PreBashOptions): Promise<void> {
     const options = flags;
     const command = options.command || subArgs.slice(1).join(' ');
     const workingDir = options.cwd || process.cwd();
@@ -322,7 +552,6 @@ async function preBashCommand(subArgs, flags) {
         if (prepareResources) {
             // Resource preparation - create working directory if needed
             const fs = await import('fs');
-            const path = await import('path');
             
             if (!fs.existsSync(workingDir)) {
                 fs.mkdirSync(workingDir, { recursive: true });
@@ -331,14 +560,14 @@ async function preBashCommand(subArgs, flags) {
             
             // Check available disk space
             try {
-                const stats = fs.statSync(workingDir);
+                fs.statSync(workingDir);
                 console.log(`  💾 Working directory prepared`);
             } catch (err) {
                 console.log(`  ⚠️  Warning: Could not check working directory`);
             }
         }
 
-        const bashData = {
+        const bashData: BashData = {
             command,
             workingDir,
             timestamp: new Date().toISOString(),
@@ -357,13 +586,14 @@ async function preBashCommand(subArgs, flags) {
         console.log(`  🔒 Safety check: ${safetyResult.toUpperCase()}`);
         printSuccess(`✅ Pre-bash hook completed`);
     } catch (err) {
-        printError(`Pre-bash hook failed: ${err.message}`);
+        const errorMessage = err instanceof Error ? err.message : String(err);
+        printError(`Pre-bash hook failed: ${errorMessage}`);
     }
 }
 
 // ===== POST-OPERATION HOOKS =====
 
-async function postTaskCommand(subArgs, flags) {
+async function postTaskCommand(subArgs: string[], flags: PostTaskOptions): Promise<void> {
     const options = flags;
     const taskId = options['task-id'] || options.taskId || generateId('task');
     const analyzePerformance = options['analyze-performance'] !== 'false';
@@ -375,7 +605,7 @@ async function postTaskCommand(subArgs, flags) {
         const store = await getMemoryStore();
         const taskData = await store.retrieve(`task:${taskId}`, {
             namespace: 'hooks:pre-task'
-        });
+        }) as TaskData | null;
 
         const completedData = {
             ...(taskData || {}),
@@ -406,11 +636,12 @@ async function postTaskCommand(subArgs, flags) {
         console.log(`  💾 Task completion saved to .swarm/memory.db`);
         printSuccess(`✅ Post-task hook completed`);
     } catch (err) {
-        printError(`Post-task hook failed: ${err.message}`);
+        const errorMessage = err instanceof Error ? err.message : String(err);
+        printError(`Post-task hook failed: ${errorMessage}`);
     }
 }
 
-async function postEditCommand(subArgs, flags) {
+async function postEditCommand(subArgs: string[], flags: PostEditOptions): Promise<void> {
     const options = flags;
     const file = options.file || 'unknown-file';
     const memoryKey = options['memory-key'] || options.memoryKey;
@@ -431,10 +662,10 @@ async function postEditCommand(subArgs, flags) {
         const fs = await import('fs');
         
         // Auto-format file if requested
-        let formatResult = null;
+        let formatResult: any = null;
         if (format && fs.existsSync(file)) {
             const ext = path.extname(file).toLowerCase();
-            const formatters = {
+            const formatters: Record<string, string> = {
                 '.js': 'prettier',
                 '.ts': 'prettier',
                 '.json': 'prettier',
@@ -468,7 +699,7 @@ async function postEditCommand(subArgs, flags) {
         }
         
         // Update memory with edit context
-        let memoryUpdate = null;
+        let memoryUpdate: any = null;
         if (updateMemory) {
             const editContext = {
                 file,
@@ -492,7 +723,7 @@ async function postEditCommand(subArgs, flags) {
         }
         
         // Train neural patterns if requested
-        let neuralTraining = null;
+        let neuralTraining: any = null;
         if (trainNeural) {
             // Simulate neural training with file patterns
             const ext = path.extname(file).toLowerCase();
@@ -567,11 +798,12 @@ async function postEditCommand(subArgs, flags) {
         console.log(`  💾 Post-edit data saved to .swarm/memory.db`);
         printSuccess(`✅ Post-edit hook completed`);
     } catch (err) {
-        printError(`Post-edit hook failed: ${err.message}`);
+        const errorMessage = err instanceof Error ? err.message : String(err);
+        printError(`Post-edit hook failed: ${errorMessage}`);
     }
 }
 
-async function postBashCommand(subArgs, flags) {
+async function postBashCommand(subArgs: string[], flags: PostBashOptions): Promise<void> {
     const options = flags;
     const command = options.command || subArgs.slice(1).join(' ');
     const exitCode = options['exit-code'] || '0';
@@ -588,10 +820,9 @@ async function postBashCommand(subArgs, flags) {
 
     try {
         const store = await getMemoryStore();
-        const startTime = Date.now();
         
         // Calculate performance metrics if enabled
-        let metrics = null;
+        let metrics: any = null;
         if (trackMetrics) {
             const commandLength = command.length;
             const outputLength = output.length;
@@ -601,7 +832,7 @@ async function postBashCommand(subArgs, flags) {
                 commandLength,
                 outputLength,
                 success,
-                duration: parseInt(duration) || 0,
+                duration: parseInt(duration.toString()) || 0,
                 exitCode: parseInt(exitCode),
                 timestamp: new Date().toISOString(),
                 complexity: commandLength > 100 ? 'high' : commandLength > 50 ? 'medium' : 'low'
@@ -648,7 +879,7 @@ async function postBashCommand(subArgs, flags) {
             // Update running metrics
             const existingMetrics = await store.retrieve('command-metrics-summary', {
                 namespace: 'performance-metrics'
-            }) || { totalCommands: 0, successRate: 0, avgDuration: 0 };
+            }) as any || { totalCommands: 0, successRate: 0, avgDuration: 0 };
             
             existingMetrics.totalCommands += 1;
             existingMetrics.successRate = ((existingMetrics.successRate * (existingMetrics.totalCommands - 1)) + (metrics.success ? 1 : 0)) / existingMetrics.totalCommands;
@@ -673,11 +904,12 @@ async function postBashCommand(subArgs, flags) {
         console.log(`  💾 Command execution logged to .swarm/memory.db`);
         printSuccess(`✅ Post-bash hook completed`);
     } catch (err) {
-        printError(`Post-bash hook failed: ${err.message}`);
+        const errorMessage = err instanceof Error ? err.message : String(err);
+        printError(`Post-bash hook failed: ${errorMessage}`);
     }
 }
 
-async function postSearchCommand(subArgs, flags) {
+async function postSearchCommand(subArgs: string[], flags: PostSearchOptions): Promise<void> {
     const options = flags;
     const query = options.query || subArgs.slice(1).join(' ');
     const resultCount = options['result-count'] || '0';
@@ -689,7 +921,7 @@ async function postSearchCommand(subArgs, flags) {
 
     try {
         const store = await getMemoryStore();
-        const searchData = {
+        const searchData: SearchData = {
             query,
             resultCount: parseInt(resultCount),
             searchType,
@@ -711,13 +943,14 @@ async function postSearchCommand(subArgs, flags) {
         console.log(`  💾 Search results cached to .swarm/memory.db`);
         printSuccess(`✅ Post-search hook completed`);
     } catch (err) {
-        printError(`Post-search hook failed: ${err.message}`);
+        const errorMessage = err instanceof Error ? err.message : String(err);
+        printError(`Post-search hook failed: ${errorMessage}`);
     }
 }
 
 // ===== MCP INTEGRATION HOOKS =====
 
-async function mcpInitializedCommand(subArgs, flags) {
+async function mcpInitializedCommand(subArgs: string[], flags: McpInitializedOptions): Promise<void> {
     const options = flags;
     const serverName = options.server || 'claude-flow';
     const sessionId = options['session-id'] || generateId('mcp-session');
@@ -728,7 +961,7 @@ async function mcpInitializedCommand(subArgs, flags) {
 
     try {
         const store = await getMemoryStore();
-        const mcpData = {
+        const mcpData: McpData = {
             serverName,
             sessionId,
             initializedAt: new Date().toISOString(),
@@ -743,11 +976,12 @@ async function mcpInitializedCommand(subArgs, flags) {
         console.log(`  💾 MCP session saved to .swarm/memory.db`);
         printSuccess(`✅ MCP initialized hook completed`);
     } catch (err) {
-        printError(`MCP initialized hook failed: ${err.message}`);
+        const errorMessage = err instanceof Error ? err.message : String(err);
+        printError(`MCP initialized hook failed: ${errorMessage}`);
     }
 }
 
-async function agentSpawnedCommand(subArgs, flags) {
+async function agentSpawnedCommand(subArgs: string[], flags: AgentSpawnedOptions): Promise<void> {
     const options = flags;
     const agentType = options.type || 'generic';
     const agentName = options.name || generateId('agent');
@@ -759,7 +993,7 @@ async function agentSpawnedCommand(subArgs, flags) {
 
     try {
         const store = await getMemoryStore();
-        const agentData = {
+        const agentData: AgentData = {
             agentName,
             agentType,
             swarmId,
@@ -782,11 +1016,12 @@ async function agentSpawnedCommand(subArgs, flags) {
         console.log(`  💾 Agent registered to .swarm/memory.db`);
         printSuccess(`✅ Agent spawned hook completed`);
     } catch (err) {
-        printError(`Agent spawned hook failed: ${err.message}`);
+        const errorMessage = err instanceof Error ? err.message : String(err);
+        printError(`Agent spawned hook failed: ${errorMessage}`);
     }
 }
 
-async function taskOrchestratedCommand(subArgs, flags) {
+async function taskOrchestratedCommand(subArgs: string[], flags: TaskOrchestratedOptions): Promise<void> {
     const options = flags;
     const taskId = options['task-id'] || generateId('orchestrated-task');
     const strategy = options.strategy || 'balanced';
@@ -798,7 +1033,7 @@ async function taskOrchestratedCommand(subArgs, flags) {
 
     try {
         const store = await getMemoryStore();
-        const orchestrationData = {
+        const orchestrationData: OrchestrationData = {
             taskId,
             strategy,
             priority,
@@ -814,11 +1049,12 @@ async function taskOrchestratedCommand(subArgs, flags) {
         console.log(`  💾 Orchestration saved to .swarm/memory.db`);
         printSuccess(`✅ Task orchestrated hook completed`);
     } catch (err) {
-        printError(`Task orchestrated hook failed: ${err.message}`);
+        const errorMessage = err instanceof Error ? err.message : String(err);
+        printError(`Task orchestrated hook failed: ${errorMessage}`);
     }
 }
 
-async function neuralTrainedCommand(subArgs, flags) {
+async function neuralTrainedCommand(subArgs: string[], flags: NeuralTrainedOptions): Promise<void> {
     const options = flags;
     const modelName = options.model || 'default-neural';
     const accuracy = options.accuracy || '0.0';
@@ -830,7 +1066,7 @@ async function neuralTrainedCommand(subArgs, flags) {
 
     try {
         const store = await getMemoryStore();
-        const trainingData = {
+        const trainingData: TrainingData = {
             modelName,
             accuracy: parseFloat(accuracy),
             patternsLearned: parseInt(patterns),
@@ -845,13 +1081,14 @@ async function neuralTrainedCommand(subArgs, flags) {
         console.log(`  💾 Training results saved to .swarm/memory.db`);
         printSuccess(`✅ Neural trained hook completed`);
     } catch (err) {
-        printError(`Neural trained hook failed: ${err.message}`);
+        const errorMessage = err instanceof Error ? err.message : String(err);
+        printError(`Neural trained hook failed: ${errorMessage}`);
     }
 }
 
 // ===== SESSION HOOKS =====
 
-async function sessionEndCommand(subArgs, flags) {
+async function sessionEndCommand(subArgs: string[], flags: SessionEndOptions): Promise<void> {
     const options = flags;
     const generateSummary = options['generate-summary'] !== 'false';
     const persistState = options['persist-state'] !== 'false';
@@ -870,7 +1107,7 @@ async function sessionEndCommand(subArgs, flags) {
         const agents = await store.list({ namespace: 'agent-roster', limit: 1000 });
         
         // Calculate session metrics
-        let metrics = null;
+        let metrics: SessionMetrics | undefined = undefined;
         if (exportMetrics) {
             const now = new Date();
             const sessionStart = Math.min(
@@ -897,7 +1134,7 @@ async function sessionEndCommand(subArgs, flags) {
             };
         }
         
-        const sessionData = {
+        const sessionData: SessionData = {
             endedAt: new Date().toISOString(),
             totalTasks: tasks.length,
             totalEdits: edits.length,
@@ -969,11 +1206,12 @@ async function sessionEndCommand(subArgs, flags) {
 
         printSuccess(`✅ Session-end hook completed`);
     } catch (err) {
-        printError(`Session-end hook failed: ${err.message}`);
+        const errorMessage = err instanceof Error ? err.message : String(err);
+        printError(`Session-end hook failed: ${errorMessage}`);
     }
 }
 
-async function sessionRestoreCommand(subArgs, flags) {
+async function sessionRestoreCommand(subArgs: string[], flags: SessionRestoreOptions): Promise<void> {
     const options = flags;
     const sessionId = options['session-id'] || 'latest';
 
@@ -984,7 +1222,7 @@ async function sessionRestoreCommand(subArgs, flags) {
         const store = await getMemoryStore();
         
         // Find session to restore
-        let sessionData;
+        let sessionData: any;
         if (sessionId === 'latest') {
             const sessions = await store.list({ namespace: 'sessions', limit: 1 });
             sessionData = sessions[0]?.value;
@@ -1011,11 +1249,12 @@ async function sessionRestoreCommand(subArgs, flags) {
             printWarning(`No session found with ID: ${sessionId}`);
         }
     } catch (err) {
-        printError(`Session restore hook failed: ${err.message}`);
+        const errorMessage = err instanceof Error ? err.message : String(err);
+        printError(`Session restore hook failed: ${errorMessage}`);
     }
 }
 
-async function notifyCommand(subArgs, flags) {
+async function notifyCommand(subArgs: string[], flags: NotifyOptions): Promise<void> {
     const options = flags;
     const message = options.message || subArgs.slice(1).join(' ');
     const level = options.level || 'info';
@@ -1027,7 +1266,7 @@ async function notifyCommand(subArgs, flags) {
 
     try {
         const store = await getMemoryStore();
-        const notificationData = {
+        const notificationData: NotificationData = {
             message,
             level,
             swarmStatus,
@@ -1049,11 +1288,12 @@ async function notifyCommand(subArgs, flags) {
         console.log(`\n  💾 Notification saved to .swarm/memory.db`);
         printSuccess(`✅ Notify hook completed`);
     } catch (err) {
-        printError(`Notify hook failed: ${err.message}`);
+        const errorMessage = err instanceof Error ? err.message : String(err);
+        printError(`Notify hook failed: ${errorMessage}`);
     }
 }
 
-function showHooksHelp() {
+function showHooksHelp(): void {
     console.log('Claude Flow Hooks (with .swarm/memory.db persistence):\n');
     
     console.log('Pre-Operation Hooks:');
