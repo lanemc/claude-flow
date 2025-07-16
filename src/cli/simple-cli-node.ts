@@ -215,7 +215,7 @@ async function runInteractiveMode(): Promise<void> {
 
 async function main(): Promise<void> {
   try {
-    const rawArgs = args();
+    const rawArgs = process.argv.slice(2);
     const flags = parseFlags(rawArgs) as CLIFlags;
     
     // Handle version flag

@@ -11,7 +11,7 @@
     "build": "npm run clean && npm run update-version && npm run build:esm && npm run build:cjs && npm run build:binary",
     "update-version": "node scripts/update-bin-version.js",
     "clean": "rm -rf dist dist-cjs",
-    "build:esm": "tsc",
+    "build:esm": "tsc -p tsconfig.ci.json",
     "build:cjs": "tsc -p tsconfig.cjs.json",
     "build:ts": "npm run build:esm && npm run build:cjs",
     "build:binary": "pkg dist/cli/main.js --targets node20-linux-x64,node20-macos-x64,node20-win-x64 --output bin/claude-flow",

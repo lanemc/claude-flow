@@ -192,8 +192,8 @@ async function main() {
     case 'help':
     case '--help':
     case '-h':
-      if (parsedArgs.length > 0) {
-        showCommandHelp(parsedArgs[0]);
+      if (parsedArgs && Array.isArray(parsedArgs) && parsedArgs.length > 0) {
+        showCommandHelp(parsedArgs[0] as string);
       } else {
         showHelpWithCommands();
       }
@@ -233,8 +233,8 @@ async function main() {
       
     case 'spawn':
       // Convenience alias for agent spawn
-      const spawnType = subArgs[0] || 'general';
-      const spawnName = flags.name || `agent-${Date.now()}`;
+      const spawnType = (subArgs && Array.isArray(subArgs) && subArgs.length > 0) ? subArgs[0] as string : 'general';
+      const spawnName = (flags && typeof flags === 'object' && 'name' in flags) ? flags.name as string : `agent-${Date.now()}`;
       
       printSuccess(`Spawning ${spawnType} agent: ${spawnName}`);
       console.log('🤖 Agent would be created with the following configuration:');
@@ -246,11 +246,11 @@ async function main() {
       break;
       
     case 'terminal':
-      const terminalCmd = subArgs[0];
+      const terminalCmd = (subArgs && Array.isArray(subArgs) && subArgs.length > 0) ? subArgs[0] as string : '';
       switch (terminalCmd) {
         case 'pool':
-          const poolCmd = subArgs[1];
-          const detailed = subArgs.includes('--detailed') || subArgs.includes('-d');
+          const poolCmd = (subArgs && Array.isArray(subArgs) && subArgs.length > 1) ? subArgs[1] as string : '';
+          const detailed = (subArgs && Array.isArray(subArgs)) ? (subArgs.includes('--detailed') || subArgs.includes('-d')) : false;
           
           if (poolCmd === 'status') {
             printSuccess('Terminal Pool Status:');

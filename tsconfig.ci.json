@@ -1,0 +1,41 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "allowJs": true,
+    "checkJs": false,
+    "skipLibCheck": true,
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "strict": false,
+    "noImplicitAny": false,
+    "strictNullChecks": false,
+    "declaration": false,
+    "declarationMap": false,
+    "sourceMap": false,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": false,
+    "lib": ["ES2022"],
+    "moduleDetection": "force",
+    "types": ["node", "jest"]
+  },
+  "files": [
+    "src/index.ts",
+    "src/cli/swarm-standalone.ts",
+    "src/cli/create-enhanced-task.ts",
+    "src/cli/help-text.ts",
+    "src/cli/types.ts",
+    "src/cli/utils.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "**/*.test.ts",
+    "**/*.spec.ts"
+  ]
+}

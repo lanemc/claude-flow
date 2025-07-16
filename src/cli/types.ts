@@ -92,7 +92,7 @@ export interface NeuralFlags extends BaseFlags {
 }
 
 // GitHub integration flags
-export interface GitHubFlags extends BaseFlags {
+export interface GitHubFlags {
   repo?: string;
   'pr-number'?: number;
   action?: 'review' | 'merge' | 'close' | 'track' | 'coord';
@@ -182,23 +182,4 @@ export type FlagValue = string | number | boolean | string[] | undefined;
 export type FlagParser = (value: string) => FlagValue;
 export type CommandHandler = (flags: any, args: string[]) => Promise<CommandResult>;
 
-// Export all types
-export type {
-  BaseFlags,
-  SwarmFlags,
-  TaskFlags,
-  AgentFlags,
-  MemoryFlags,
-  NeuralFlags,
-  GitHubFlags,
-  ConfigFlags,
-  CommandResult,
-  CLICommand,
-  CLIContext,
-  HookContext,
-  ProgressInfo,
-  CLIError,
-  FlagValue,
-  FlagParser,
-  CommandHandler,
-};
+// All types are exported inline above

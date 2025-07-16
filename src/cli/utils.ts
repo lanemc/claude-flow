@@ -224,27 +224,4 @@ export function getOSInfo(): { platform: string; arch: string; version: string }
 }
 
 // Export utility functions
-export {
-  printSuccess,
-  printError,
-  printWarning,
-  printInfo,
-  validateArgs,
-  parseFlags,
-  resolvePath,
-  validatePath,
-  loadConfig,
-  printProgress,
-  createCLIError,
-  handleError,
-  formatBytes,
-  formatDuration,
-  truncateString,
-  validateEmail,
-  validateUrl,
-  validatePort,
-  isWindows,
-  isMacOS,
-  isLinux,
-  getOSInfo,
-};
+// All functions are exported inline above
