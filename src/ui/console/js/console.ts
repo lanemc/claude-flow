@@ -7,14 +7,56 @@ import { WebSocketClient } from './websocket-client.js';
 import { TerminalEmulator } from './terminal-emulator.js';
 import { CommandHandler } from './command-handler.js';
 import { SettingsManager } from './settings.js';
+import type {
+  ConsoleElements,
+  ConsoleStats,
+  StreamingOutput,
+  AgentStatusUpdate,
+  SwarmUpdate,
+  MemoryUpdate,
+  LogMessage,
+  ConnectionEstablished,
+  WebSocketMessage,
+  WebSocketNotification,
+  ConnectionConfig,
+  IWebSocketClient,
+  ITerminalEmulator,
+  ICommandHandler,
+  ISettingsManager,
+  SettingsChangeEvent,
+  OutputType
+} from './types.js';
+
+// Extend Performance interface for Chrome's memory API
+declare global {
+  interface Performance {
+    memory?: {
+      usedJSHeapSize: number;
+      totalJSHeapSize: number;
+      jsHeapSizeLimit: number;
+    };
+  }
+}
 
 class ClaudeCodeConsole {
+  private wsClient: IWebSocketClient;
+  private terminal: ITerminalEmulator | null;
+  private commandHandler: ICommandHandler | null;
+  private settings: ISettingsManager;
+  private isInitialized: boolean;
+  private startTime: number;
+  private messageCount: number;
+  private activeAgents: number;
+  private elements: ConsoleElements;
+  private statusInterval: NodeJS.Timeout | null;
+  private uptimeInterval: NodeJS.Timeout | null;
+
   constructor() {
     // Initialize components
-    this.wsClient = new WebSocketClient();
+    this.wsClient = new WebSocketClient() as IWebSocketClient;
     this.terminal = null;
     this.commandHandler = null;
-    this.settings = new SettingsManager();
+    this.settings = new SettingsManager() as ISettingsManager;
     
     // State management
     this.isInitialized = false;
@@ -23,7 +65,7 @@ class ClaudeCodeConsole {
     this.activeAgents = 0;
     
     // DOM elements
-    this.elements = {};
+    this.elements = {} as ConsoleElements;
     
     // Status update intervals
     this.statusInterval = null;
@@ -35,7 +77,7 @@ class ClaudeCodeConsole {
   /**
    * Initialize the console application
    */
-  async init() {
+  async init(): Promise<void> {
     if (this.isInitialized) return;
     
     try {
@@ -92,10 +134,10 @@ class ClaudeCodeConsole {
   /**
    * Get DOM elements
    */
-  getDOMElements() {
+  private getDOMElements(): void {
     this.elements = {
-      consoleOutput: document.getElementById('consoleOutput'),
-      consoleInput: document.getElementById('consoleInput'),
+      consoleOutput: document.getElementById('consoleOutput')!,
+      consoleInput: document.getElementById('consoleInput')! as HTMLInputElement,
       settingsPanel: document.getElementById('settingsPanel'),
       loadingOverlay: document.getElementById('loadingOverlay'),
       connectionStatus: document.getElementById('connectionStatus'),
@@ -123,65 +165,65 @@ class ClaudeCodeConsole {
   /**
    * Setup component interactions
    */
-  setupComponentInteractions() {
+  private setupComponentInteractions(): void {
     // Terminal -> Command Handler
-    this.terminal.on('command', (command) => {
-      this.commandHandler.processCommand(command);
+    this.terminal!.on('command', (command: string) => {
+      this.commandHandler!.processCommand(command);
     });
     
-    this.terminal.on('interrupt', () => {
+    this.terminal!.on('interrupt', () => {
       this.handleInterrupt();
     });
     
     // WebSocket -> Terminal
     this.wsClient.on('connected', () => {
       this.updateConnectionStatus(true, false);
-      this.terminal.writeSuccess('Connected to Claude Code server');
-      this.terminal.setPrompt('claude-flow>');
+      this.terminal!.writeSuccess('Connected to Claude Code server');
+      this.terminal!.setPrompt('claude-flow>');
     });
     
-    this.wsClient.on('disconnected', (info) => {
+    this.wsClient.on('disconnected', (info: any) => {
       this.updateConnectionStatus(false, false);
-      this.terminal.writeWarning('Disconnected from server');
-      this.terminal.setPrompt('offline>');
+      this.terminal!.writeWarning('Disconnected from server');
+      this.terminal!.setPrompt('offline>');
       
       if (info && info.code !== 1000) {
-        this.terminal.writeError(`Connection lost: ${info.reason || 'Unknown reason'}`);
+        this.terminal!.writeError(`Connection lost: ${info.reason || 'Unknown reason'}`);
       }
     });
     
-    this.wsClient.on('reconnecting', (info) => {
+    this.wsClient.on('reconnecting', (info: any) => {
       this.updateConnectionStatus(false, true);
-      this.terminal.writeInfo(`Reconnecting... (${info.attempt}/${this.wsClient.maxReconnectAttempts})`);
+      this.terminal!.writeInfo(`Reconnecting... (${info.attempt}/5)`);
     });
     
-    this.wsClient.on('error', (error) => {
-      this.terminal.writeError(`WebSocket error: ${error.message || 'Unknown error'}`);
+    this.wsClient.on('error', (error: Error) => {
+      this.terminal!.writeError(`WebSocket error: ${error.message || 'Unknown error'}`);
     });
     
-    this.wsClient.on('message_received', (message) => {
+    this.wsClient.on('message_received', (message: WebSocketMessage) => {
       this.messageCount++;
       this.handleIncomingMessage(message);
     });
     
-    this.wsClient.on('notification', (notification) => {
+    this.wsClient.on('notification', (notification: WebSocketNotification) => {
       this.handleNotification(notification);
     });
     
     // Settings -> Application
-    this.settings.on('connect_requested', async (config) => {
-      await this.connect(config.url, config.token);
+    this.settings.on('connect_requested', async (config: ConnectionConfig) => {
+      await this.connect(config.url, config.token || '');
     });
     
     this.settings.on('disconnect_requested', () => {
       this.disconnect();
     });
     
-    this.settings.on('max_lines_changed', (maxLines) => {
-      this.terminal.setMaxLines(maxLines);
+    this.settings.on('max_lines_changed', (maxLines: number) => {
+      this.terminal!.setMaxLines(maxLines);
     });
     
-    this.settings.on('setting_changed', ({ key, value }) => {
+    this.settings.on('setting_changed', ({ key, value }: SettingsChangeEvent) => {
       this.handleSettingChange(key, value);
     });
   }
@@ -189,7 +231,7 @@ class ClaudeCodeConsole {
   /**
    * Setup UI event handlers
    */
-  setupUIEventHandlers() {
+  private setupUIEventHandlers(): void {
     // Clear console button
     if (this.elements.clearConsole) {
       this.elements.clearConsole.addEventListener('click', () => {
@@ -232,7 +274,7 @@ class ClaudeCodeConsole {
   /**
    * Apply initial settings
    */
-  applyInitialSettings() {
+  private applyInitialSettings(): void {
     const maxLines = this.settings.get('maxLines');
     if (maxLines) {
       this.terminal.setMaxLines(maxLines);
@@ -245,7 +287,7 @@ class ClaudeCodeConsole {
   /**
    * Show welcome message
    */
-  showWelcomeMessage() {
+  private showWelcomeMessage(): void {
     this.terminal.showWelcomeMessage();
     this.terminal.writeInfo('Console ready. Type "help" for available commands.');
     
@@ -258,7 +300,7 @@ class ClaudeCodeConsole {
   /**
    * Auto-connect to server
    */
-  async autoConnect() {
+  private async autoConnect(): Promise<void> {
     const config = this.settings.getConnectionConfig();
     
     if (config.url) {
@@ -270,7 +312,7 @@ class ClaudeCodeConsole {
   /**
    * Connect to server
    */
-  async connect(url, token = '') {
+  async connect(url: string, token: string = ''): Promise<void> {
     try {
       this.updateConnectionStatus(false, true);
       await this.wsClient.connect(url, token);
@@ -291,7 +333,7 @@ class ClaudeCodeConsole {
   /**
    * Disconnect from server
    */
-  disconnect() {
+  disconnect(): void {
     this.wsClient.disconnect();
     this.updateConnectionStatus(false, false);
   }
@@ -299,7 +341,7 @@ class ClaudeCodeConsole {
   /**
    * Update connection status in UI
    */
-  updateConnectionStatus(connected, connecting) {
+  private updateConnectionStatus(connected: boolean, connecting: boolean): void {
     const status = this.wsClient.getStatus();
     
     // Update status indicator
@@ -322,7 +364,7 @@ class ClaudeCodeConsole {
   /**
    * Handle incoming messages
    */
-  handleIncomingMessage(message) {
+  private handleIncomingMessage(message: WebSocketMessage): void {
     // Handle streaming output
     if (message.method === 'output/stream') {
       this.handleStreamingOutput(message.params);
@@ -337,7 +379,7 @@ class ClaudeCodeConsole {
   /**
    * Handle notifications
    */
-  handleNotification(notification) {
+  private handleNotification(notification: WebSocketNotification): void {
     const { method, params } = notification;
     
     switch (method) {
@@ -369,9 +411,9 @@ class ClaudeCodeConsole {
   /**
    * Handle streaming output
    */
-  handleStreamingOutput(params) {
+  private handleStreamingOutput(params: StreamingOutput): void {
     if (params && params.content) {
-      const type = params.type || 'output';
+      const type = (params.type || 'output') as OutputType;
       
       if (params.streaming) {
         // Use streaming text effect for long outputs
@@ -385,7 +427,7 @@ class ClaudeCodeConsole {
   /**
    * Handle Claude Flow notifications
    */
-  handleClaudeFlowNotification(message) {
+  private handleClaudeFlowNotification(message: WebSocketMessage): void {
     const { method, params } = message;
     
     switch (method) {
@@ -409,7 +451,7 @@ class ClaudeCodeConsole {
   /**
    * Handle agent status updates
    */
-  handleAgentStatus(params) {
+  private handleAgentStatus(params: AgentStatusUpdate): void {
     if (params.active !== undefined) {
       this.activeAgents = params.active;
     }
@@ -422,7 +464,7 @@ class ClaudeCodeConsole {
   /**
    * Handle swarm updates
    */
-  handleSwarmUpdate(params) {
+  private handleSwarmUpdate(params: SwarmUpdate): void {
     if (params.message) {
       this.terminal.writeInfo(`Swarm: ${params.message}`);
     }
@@ -431,7 +473,7 @@ class ClaudeCodeConsole {
   /**
    * Handle memory updates
    */
-  handleMemoryUpdate(params) {
+  private handleMemoryUpdate(params: MemoryUpdate): void {
     if (params.message) {
       this.terminal.writeInfo(`Memory: ${params.message}`);
     }
@@ -440,7 +482,7 @@ class ClaudeCodeConsole {
   /**
    * Handle log messages
    */
-  handleLogMessage(params) {
+  private handleLogMessage(params: LogMessage): void {
     if (params.level && params.message) {
       const type = params.level === 'error' ? 'error' : 
                   params.level === 'warn' ? 'warning' : 'info';
@@ -451,7 +493,7 @@ class ClaudeCodeConsole {
   /**
    * Handle connection established notification
    */
-  handleConnectionEstablished(params) {
+  private handleConnectionEstablished(params: ConnectionEstablished): void {
     // Log connection details without cluttering the terminal
     console.log('Connection established:', params);
     // Optionally show a brief success message
@@ -461,7 +503,7 @@ class ClaudeCodeConsole {
   /**
    * Handle interrupt (Ctrl+C)
    */
-  handleInterrupt() {
+  private handleInterrupt(): void {
     // Could be used to cancel running commands
     this.terminal.writeWarning('Interrupt signal sent');
   }
@@ -469,7 +511,7 @@ class ClaudeCodeConsole {
   /**
    * Handle setting changes
    */
-  handleSettingChange(key, value) {
+  private handleSettingChange(key: string, value: any): void {
     switch (key) {
       case 'theme':
         document.documentElement.setAttribute('data-theme', value);
@@ -488,7 +530,7 @@ class ClaudeCodeConsole {
   /**
    * Start status updates
    */
-  startStatusUpdates() {
+  private startStatusUpdates(): void {
     // Update status every 5 seconds
     this.statusInterval = setInterval(() => {
       this.updateStatus();
@@ -509,7 +551,7 @@ class ClaudeCodeConsole {
   /**
    * Update status bar
    */
-  updateStatus() {
+  private updateStatus(): void {
     // Update active agents
     if (this.elements.activeAgents) {
       this.elements.activeAgents.textContent = `Agents: ${this.activeAgents}`;
@@ -530,7 +572,7 @@ class ClaudeCodeConsole {
   /**
    * Update uptime
    */
-  updateUptime() {
+  private updateUptime(): void {
     if (this.elements.uptime) {
       const uptime = Date.now() - this.startTime;
       const hours = Math.floor(uptime / (1000 * 60 * 60));
@@ -545,7 +587,7 @@ class ClaudeCodeConsole {
   /**
    * Update timestamp
    */
-  updateTimestamp() {
+  private updateTimestamp(): void {
     if (this.elements.timestamp) {
       this.elements.timestamp.textContent = new Date().toLocaleTimeString();
     }
@@ -554,7 +596,7 @@ class ClaudeCodeConsole {
   /**
    * Toggle fullscreen mode
    */
-  toggleFullscreen() {
+  private toggleFullscreen(): void {
     if (!document.fullscreenElement) {
       document.documentElement.requestFullscreen().catch(err => {
         console.error('Error attempting to enable fullscreen:', err);
@@ -567,7 +609,7 @@ class ClaudeCodeConsole {
   /**
    * Show loading overlay
    */
-  showLoading(message = 'Loading...') {
+  private showLoading(message: string = 'Loading...'): void {
     if (this.elements.loadingOverlay) {
       const loadingText = this.elements.loadingOverlay.querySelector('.loading-text');
       if (loadingText) {
@@ -580,7 +622,7 @@ class ClaudeCodeConsole {
   /**
    * Hide loading overlay
    */
-  hideLoading() {
+  private hideLoading(): void {
     if (this.elements.loadingOverlay) {
       this.elements.loadingOverlay.classList.add('hidden');
     }
@@ -589,7 +631,7 @@ class ClaudeCodeConsole {
   /**
    * Show error message
    */
-  showError(message) {
+  private showError(message: string): void {
     this.hideLoading();
     
     if (this.terminal) {
@@ -604,7 +646,7 @@ class ClaudeCodeConsole {
   /**
    * Setup global event listeners
    */
-  setupEventListeners() {
+  private setupEventListeners(): void {
     // Handle unhandled promise rejections
     window.addEventListener('unhandledrejection', (event) => {
       console.error('Unhandled promise rejection:', event.reason);
@@ -625,7 +667,7 @@ class ClaudeCodeConsole {
   /**
    * Cleanup on shutdown
    */
-  cleanup() {
+  private cleanup(): void {
     // Clear intervals
     if (this.statusInterval) {
       clearInterval(this.statusInterval);
@@ -644,7 +686,7 @@ class ClaudeCodeConsole {
   /**
    * Get console statistics
    */
-  getStats() {
+  getStats(): ConsoleStats {
     return {
       initialized: this.isInitialized,
       uptime: Date.now() - this.startTime,
@@ -661,7 +703,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const console = new ClaudeCodeConsole();
   
   // Make console globally available for debugging
-  window.claudeConsole = console;
+  (window as any).claudeConsole = console;
   
   // Initialize the application
   await console.init();

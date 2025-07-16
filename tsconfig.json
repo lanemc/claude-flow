@@ -9,7 +9,7 @@
     "checkJs": false,
     "skipLibCheck": true,
     "outDir": "./dist",
-    "rootDir": "./src",
+    "rootDir": "./",
     "strict": true,
     "noImplicitAny": true,
     "strictNullChecks": true,
@@ -29,13 +29,17 @@
     "verbatimModuleSyntax": false,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "lib": ["ES2022"],
+    "downlevelIteration": true,
+    "lib": ["ES2022", "DOM"],
     "moduleDetection": "force",
     "types": ["node", "jest"],
     "typeRoots": ["./node_modules/@types", "./src/types"]
   },
   "include": [
-    "src/**/*.ts"
+    "src/**/*.ts",
+    "src/**/*.js",
+    "src/ui/console/js/**/*.ts",
+    "src/ui/console/js/**/*.js"
   ],
   "exclude": [
     "node_modules",

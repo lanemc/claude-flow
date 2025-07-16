@@ -3,8 +3,40 @@
  * Tests the memory management functionality
  */
 
+import { ITerminalEmulator } from './types.js';
+
+interface MemoryManager {
+  togglePanel(): void;
+  currentNamespace: string;
+  memoryTools: Record<string, MemoryTool>;
+  switchNamespace(namespace: string): Promise<void>;
+  formatSize(size: number): string;
+  formatTTL(ttl: number): string;
+  truncateValue(value: string): string;
+  escapeHtml(html: string): string;
+  updateMemoryTable(entries: MemoryEntry[]): void;
+  filterMemoryEntries(filter: string): void;
+}
+
+interface MemoryTool {
+  name: string;
+  icon: string;
+  description: string;
+}
+
+interface MemoryEntry {
+  key: string;
+  value: string | object;
+  size: number;
+  ttl: number | null;
+  namespace: string;
+}
+
 export class MemoryTest {
-  constructor(memoryManager, terminal) {
+  private memoryManager: MemoryManager;
+  private terminal: ITerminalEmulator;
+
+  constructor(memoryManager: MemoryManager, terminal: ITerminalEmulator) {
     this.memoryManager = memoryManager;
     this.terminal = terminal;
   }
@@ -12,7 +44,7 @@ export class MemoryTest {
   /**
    * Run comprehensive memory tests
    */
-  async runTests() {
+  async runTests(): Promise<void> {
     this.terminal.writeInfo('🧪 Starting Memory Manager Tests...');
     
     try {
@@ -23,14 +55,14 @@ export class MemoryTest {
       
       this.terminal.writeSuccess('✅ All memory tests completed successfully!');
     } catch (error) {
-      this.terminal.writeError(`❌ Memory tests failed: ${error.message}`);
+      this.terminal.writeError(`❌ Memory tests failed: ${(error as Error).message}`);
     }
   }
   
   /**
    * Test memory panel functionality
    */
-  async testMemoryPanel() {
+  private async testMemoryPanel(): Promise<void> {
     this.terminal.writeInfo('Testing memory panel...');
     
     // Test panel toggle
@@ -65,7 +97,7 @@ export class MemoryTest {
   /**
    * Test memory tools
    */
-  async testMemoryTools() {
+  private async testMemoryTools(): Promise<void> {
     this.terminal.writeInfo('Testing memory tools...');
     
     const tools = Object.keys(this.memoryManager.memoryTools);
@@ -86,7 +118,7 @@ export class MemoryTest {
   /**
    * Test namespace operations
    */
-  async testNamespaceOperations() {
+  private async testNamespaceOperations(): Promise<void> {
     this.terminal.writeInfo('Testing namespace operations...');
     
     // Test namespace switching
@@ -108,7 +140,7 @@ export class MemoryTest {
   /**
    * Test memory operations
    */
-  async testMemoryOperations() {
+  private async testMemoryOperations(): Promise<void> {
     this.terminal.writeInfo('Testing memory operations...');
     
     // Test utility functions
@@ -148,10 +180,10 @@ export class MemoryTest {
   /**
    * Test mock memory data
    */
-  async testMockData() {
+  async testMockData(): Promise<void> {
     this.terminal.writeInfo('Testing with mock data...');
     
-    const mockEntries = [
+    const mockEntries: MemoryEntry[] = [
       {
         key: 'test/key1',
         value: 'test value 1',
@@ -183,7 +215,7 @@ export class MemoryTest {
     
     // Test filtering
     this.memoryManager.filterMemoryEntries('key1');
-    const visibleRows = Array.from(rows).filter(row => row.style.display !== 'none');
+    const visibleRows = rows ? Array.from(rows).filter(row => (row as HTMLElement).style.display !== 'none') : [];
     
     if (visibleRows.length === 1) {
       this.terminal.writeSuccess('✅ Memory filtering works');
@@ -198,8 +230,8 @@ export class MemoryTest {
   /**
    * Generate test report
    */
-  generateReport() {
-    const report = {
+  generateReport(): TestReport {
+    const report: TestReport = {
       timestamp: new Date().toISOString(),
       tests: {
         panel: 'passed',
@@ -227,10 +259,23 @@ export class MemoryTest {
   }
 }
 
+interface TestReport {
+  timestamp: string;
+  tests: {
+    panel: string;
+    tools: string;
+    namespaces: string;
+    operations: string;
+  };
+  memoryTools: string[];
+  features: string[];
+}
+
 // Export test runner function
-export async function runMemoryTests() {
-  if (window.memoryManager && window.claudeConsole) {
-    const tester = new MemoryTest(window.memoryManager, window.claudeConsole.terminal);
+export async function runMemoryTests(): Promise<TestReport | null> {
+  const win = window as any;
+  if (win.memoryManager && win.claudeConsole) {
+    const tester = new MemoryTest(win.memoryManager, win.claudeConsole.terminal);
     await tester.runTests();
     await tester.testMockData();
     return tester.generateReport();
@@ -241,4 +286,4 @@ export async function runMemoryTests() {
 }
 
 // Make test runner globally available
-window.runMemoryTests = runMemoryTests;
+(window as any).runMemoryTests = runMemoryTests;

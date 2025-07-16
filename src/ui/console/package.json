@@ -1,0 +1,42 @@
+{
+  "name": "@claude-flow/ui-console",
+  "version": "1.0.0",
+  "description": "Claude Code Console UI - TypeScript components for memory management and settings",
+  "type": "module",
+  "main": "js/index.js",
+  "types": "js/index.d.ts",
+  "scripts": {
+    "build": "./build.sh",
+    "build:watch": "tsc -p ./tsconfig.json --watch",
+    "clean": "rm -rf ./js/*.js ./js/*.js.map ./js/*.d.ts",
+    "typecheck": "tsc --noEmit -p ./tsconfig.json",
+    "lint": "eslint ts/**/*.ts",
+    "test": "node js/memory-test.js && node js/test-neural-networks.js"
+  },
+  "keywords": [
+    "claude-flow",
+    "ui",
+    "console",
+    "typescript",
+    "memory-management",
+    "settings"
+  ],
+  "author": "Claude Flow Team",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.0.0",
+    "typescript": "^5.0.0"
+  },
+  "files": [
+    "js/",
+    "ts/",
+    "tsconfig.json",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

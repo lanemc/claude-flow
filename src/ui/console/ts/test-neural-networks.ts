@@ -3,8 +3,10 @@
  * Tests all functionality of the neural networks panel
  */
 
+import { NeuralTestReport, NeuralPanel } from './types';
+
 // Test report object
-const testReport = {
+const testReport: NeuralTestReport = {
   timestamp: new Date().toISOString(),
   passed: [],
   failed: [],
@@ -12,7 +14,7 @@ const testReport = {
 };
 
 // Helper function to log test results
-function logTest(name, passed, message = '') {
+function logTest(name: string, passed: boolean, message = ''): void {
   if (passed) {
     testReport.passed.push(name);
     console.log(`✅ ${name}`);
@@ -23,27 +25,27 @@ function logTest(name, passed, message = '') {
 }
 
 // Helper function to log warnings
-function logWarning(message) {
+function logWarning(message: string): void {
   testReport.warnings.push(message);
   console.warn(`⚠️ ${message}`);
 }
 
 // Test 1: Check if neural networks panel exists
-function testPanelExists() {
+function testPanelExists(): boolean {
   const panel = document.getElementById('neuralNetworksPanel');
   logTest('Neural Networks Panel Exists', !!panel, panel ? '' : 'Panel element not found');
   return !!panel;
 }
 
 // Test 2: Check if toggle button exists
-function testToggleButton() {
+function testToggleButton(): boolean {
   const button = document.getElementById('neuralToggle');
   logTest('Neural Toggle Button Exists', !!button, button ? '' : 'Toggle button not found');
   return !!button;
 }
 
 // Test 3: Test panel toggle functionality
-function testPanelToggle() {
+function testPanelToggle(): boolean {
   const button = document.getElementById('neuralToggle');
   const panel = document.getElementById('neuralNetworksPanel');
   
@@ -73,7 +75,7 @@ function testPanelToggle() {
 }
 
 // Test 4: Check all tabs exist and can be switched
-function testTabSwitching() {
+function testTabSwitching(): boolean {
   const tabs = ['tools', 'training', 'models', 'patterns', 'performance'];
   let allTabsWork = true;
   
@@ -88,7 +90,7 @@ function testTabSwitching() {
     }
     
     // Click the tab
-    tabButton.click();
+    (tabButton as HTMLElement).click();
     
     // Check if tab is active
     const isActive = tabButton.classList.contains('active') && tabContent.classList.contains('active');
@@ -101,9 +103,9 @@ function testTabSwitching() {
 }
 
 // Test 5: Check tool cards and their buttons
-function testToolCards() {
+function testToolCards(): boolean {
   // Switch to tools tab first
-  const toolsTab = document.querySelector('[data-tab="tools"]');
+  const toolsTab = document.querySelector('[data-tab="tools"]') as HTMLElement;
   if (toolsTab) toolsTab.click();
   
   const toolCards = document.querySelectorAll('.neural-tool-card');
@@ -127,12 +129,12 @@ function testToolCards() {
 }
 
 // Test 6: Check training controls
-function testTrainingControls() {
+function testTrainingControls(): boolean {
   // Switch to training tab
-  const trainingTab = document.querySelector('[data-tab="training"]');
+  const trainingTab = document.querySelector('[data-tab="training"]') as HTMLElement;
   if (trainingTab) trainingTab.click();
   
-  const controls = {
+  const controls: Record<string, HTMLElement | null> = {
     'Training Type Select': document.getElementById('trainingType'),
     'Training Data Textarea': document.getElementById('trainingData'),
     'Epochs Input': document.getElementById('trainingEpochs'),
@@ -152,9 +154,9 @@ function testTrainingControls() {
 }
 
 // Test 7: Check model management controls
-function testModelControls() {
+function testModelControls(): boolean {
   // Switch to models tab
-  const modelsTab = document.querySelector('[data-tab="models"]');
+  const modelsTab = document.querySelector('[data-tab="models"]') as HTMLElement;
   if (modelsTab) modelsTab.click();
   
   const loadButton = document.getElementById('loadModel');
@@ -169,9 +171,9 @@ function testModelControls() {
 }
 
 // Test 8: Check pattern analysis controls
-function testPatternControls() {
+function testPatternControls(): boolean {
   // Switch to patterns tab
-  const patternsTab = document.querySelector('[data-tab="patterns"]');
+  const patternsTab = document.querySelector('[data-tab="patterns"]') as HTMLElement;
   if (patternsTab) patternsTab.click();
   
   const analyzeButton = document.getElementById('analyzePatterns');
@@ -188,9 +190,9 @@ function testPatternControls() {
 }
 
 // Test 9: Check performance controls
-function testPerformanceControls() {
+function testPerformanceControls(): boolean {
   // Switch to performance tab
-  const performanceTab = document.querySelector('[data-tab="performance"]');
+  const performanceTab = document.querySelector('[data-tab="performance"]') as HTMLElement;
   if (performanceTab) performanceTab.click();
   
   const optimizeButton = document.getElementById('optimizeWasm');
@@ -205,7 +207,7 @@ function testPerformanceControls() {
 }
 
 // Test 10: Check header buttons
-function testHeaderButtons() {
+function testHeaderButtons(): boolean {
   const refreshButton = document.getElementById('refreshNeuralData');
   const exportButton = document.getElementById('exportNeuralData');
   const closeButton = document.getElementById('closeNeuralPanel');
@@ -218,7 +220,7 @@ function testHeaderButtons() {
 }
 
 // Test 11: Check visual elements
-function testVisualElements() {
+function testVisualElements(): boolean {
   const statusIndicator = document.getElementById('neuralStatusIndicator');
   const statusText = document.getElementById('neuralStatusText');
   const performanceMetrics = document.getElementById('performanceMetrics');
@@ -230,24 +232,27 @@ function testVisualElements() {
 }
 
 // Test 12: Check WebSocket integration
-function testWebSocketIntegration() {
-  const hasNeuralPanel = window.neuralPanel && window.neuralPanel.panel;
-  const hasExtended = window.neuralPanel && window.neuralPanel.extended;
+function testWebSocketIntegration(): boolean {
+  const windowWithNeuralPanel = window as any;
+  const neuralPanel = windowWithNeuralPanel.neuralPanel as NeuralPanel | undefined;
   
-  logTest('Neural panel global object exists', hasNeuralPanel);
-  logTest('Neural extended functionality exists', hasExtended);
+  const hasNeuralPanel = neuralPanel && neuralPanel.panel;
+  const hasExtended = neuralPanel && neuralPanel.extended;
   
-  if (hasNeuralPanel) {
-    const panel = window.neuralPanel.panel;
+  logTest('Neural panel global object exists', !!hasNeuralPanel);
+  logTest('Neural extended functionality exists', !!hasExtended);
+  
+  if (hasNeuralPanel && neuralPanel) {
+    const panel = neuralPanel.panel;
     logTest('Panel is initialized', panel.isInitialized);
     logTest('WebSocket client exists', !!panel.wsClient);
   }
   
-  return hasNeuralPanel && hasExtended;
+  return !!(hasNeuralPanel && hasExtended);
 }
 
 // Run all tests
-async function runAllTests() {
+async function runAllTests(): Promise<NeuralTestReport> {
   console.log('🧪 Starting Neural Networks Dialog Tests...\n');
   
   // Wait for page to fully load
@@ -297,7 +302,7 @@ async function runAllTests() {
 }
 
 // Export for use in console
-window.testNeuralNetworks = runAllTests;
+(window as any).testNeuralNetworks = runAllTests;
 
 // Auto-run if script is loaded directly
 if (document.readyState === 'complete') {
