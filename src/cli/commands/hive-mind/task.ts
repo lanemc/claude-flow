@@ -10,10 +10,10 @@ import { Command } from 'commander';
 import chalk from 'chalk';
 import ora from 'ora';
 import inquirer from 'inquirer';
-import { HiveMind } from '../../../hive-mind/core/HiveMind.js';
-import { TaskPriority, TaskStrategy } from '../../../hive-mind/types.js';
+import { HiveMind } from '../../../hive-mind/core/HiveMind';
+import { TaskPriority, TaskStrategy } from '../../../hive-mind/types';
 import { formatSuccess, formatError, formatInfo, formatWarning } from '../../formatter.js';
-import { DatabaseManager } from '../../../hive-mind/core/DatabaseManager.js';
+import { DatabaseManager } from '../../../hive-mind/core/DatabaseManager';
 
 export const taskCommand = new Command('task')
   .description('Submit and manage tasks in the Hive Mind')

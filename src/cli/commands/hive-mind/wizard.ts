@@ -11,8 +11,8 @@ import chalk from 'chalk';
 import inquirer from 'inquirer';
 import figlet from 'figlet';
 import gradient from 'gradient-string';
-import { HiveMind } from '../../../hive-mind/core/HiveMind.js';
-import { DatabaseManager } from '../../../hive-mind/core/DatabaseManager.js';
+import { HiveMind } from '../../../hive-mind/core/HiveMind';
+import { DatabaseManager } from '../../../hive-mind/core/DatabaseManager';
 import { formatSuccess, formatError, formatInfo, formatWarning } from '../../formatter.js';
 
 type WizardAction = 

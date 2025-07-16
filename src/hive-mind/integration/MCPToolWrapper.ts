@@ -9,7 +9,7 @@
 import { EventEmitter } from 'events';
 import { exec } from 'child_process';
 import { promisify } from 'util';
-import { getErrorMessage } from '../../utils/type-guards.js';
+import { getErrorMessage } from '../../utils/type-guards';
 
 const execAsync = promisify(exec);
 

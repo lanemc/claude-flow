@@ -1,14 +1,107 @@
 /**
- * Simple Swarm Executor - Provides basic swarm functionality without TypeScript dependencies
+ * Simple Swarm Executor - Provides basic swarm functionality with TypeScript types
  */
 
 import { generateId } from '../../utils/helpers.js';
 import { promises as fs } from 'fs';
-import path from 'path';
+import * as path from 'path';
+
+// Types for swarm configuration and execution
+export interface SwarmConfig {
+  name?: string;
+  description: string;
+  mode: 'centralized' | 'distributed' | 'hybrid';
+  strategy: 'auto' | 'development' | 'research' | 'testing' | 'parallel' | 'sequential';
+  maxAgents: number;
+  maxTasks: number;
+  timeout: number;
+  taskTimeoutMinutes: number;
+  qualityThreshold: number;
+  reviewRequired: boolean;
+  testingRequired: boolean;
+  monitoring: {
+    enabled: boolean;
+  };
+  memory: {
+    namespace: string;
+    persistent: boolean;
+  };
+  security: {
+    encryptionEnabled: boolean;
+  };
+}
+
+export interface Agent {
+  id: string;
+  type: AgentType;
+  name: string;
+  status: 'active' | 'inactive' | 'busy' | 'error';
+  tasks: string[];
+}
+
+export interface SwarmTask {
+  id: string;
+  description: string;
+  status: 'pending' | 'in_progress' | 'completed' | 'failed';
+  startTime: number;
+  endTime?: number;
+}
+
+export interface SwarmStatus {
+  id: string;
+  status: 'initializing' | 'active' | 'completed' | 'error';
+  agents: number;
+  tasks: {
+    total: number;
+    completed: number;
+    in_progress: number;
+  };
+  runtime: number;
+}
+
+export interface SwarmSummary extends SwarmStatus {
+  tasks: {
+    total: number;
+    completed: number;
+    in_progress: number;
+    failed?: number;
+  };
+}
+
+export interface ExecuteSwarmFlags {
+  mode?: string;
+  strategy?: string;
+  'max-agents'?: string;
+  'max-tasks'?: string;
+  timeout?: string;
+  'task-timeout-minutes'?: string;
+  'quality-threshold'?: string;
+  review?: boolean;
+  testing?: boolean;
+  monitor?: boolean;
+  'memory-namespace'?: string;
+  persistence?: boolean;
+  encryption?: boolean;
+}
+
+export interface SwarmExecutionResult {
+  success: boolean;
+  summary?: SwarmSummary;
+  error?: string;
+}
+
+export type AgentType = 'architect' | 'coder' | 'analyst' | 'tester' | 'reviewer' | 'researcher' | 'coordinator';
 
 // Simple SwarmCoordinator implementation
 export class SwarmCoordinator {
-  constructor(config) {
+  private config: SwarmConfig;
+  private id: string;
+  private agents: Agent[];
+  private tasks: SwarmTask[];
+  private status: 'initializing' | 'active' | 'completed' | 'error';
+  private startTime: number;
+
+  constructor(config: SwarmConfig) {
     this.config = config;
     this.id = config.name || generateId('swarm');
     this.agents = [];
@@ -17,7 +110,7 @@ export class SwarmCoordinator {
     this.startTime = Date.now();
   }
 
-  async initialize() {
+  async initialize(): Promise<SwarmCoordinator> {
     console.log(`\n🚀 Swarm initialized: ${this.id}`);
     console.log(`📋 Description: ${this.config.description}`);
     console.log(`🎯 Strategy: ${this.config.strategy}`);
@@ -39,8 +132,8 @@ export class SwarmCoordinator {
     return this;
   }
 
-  async addAgent(type, name) {
-    const agent = {
+  async addAgent(type: AgentType, name?: string): Promise<Agent> {
+    const agent: Agent = {
       id: generateId('agent'),
       type,
       name: name || `${type}-${this.agents.length + 1}`,
@@ -54,8 +147,8 @@ export class SwarmCoordinator {
     return agent;
   }
 
-  async executeTask(task) {
-    const taskObj = {
+  async executeTask(task: string): Promise<SwarmTask> {
+    const taskObj: SwarmTask = {
       id: generateId('task'),
       description: task,
       status: 'in_progress',
@@ -80,12 +173,12 @@ export class SwarmCoordinator {
     taskObj.status = 'completed';
     taskObj.endTime = Date.now();
     
-    console.log(`  ✅ Task completed in ${(taskObj.endTime - taskObj.startTime) / 1000}s`);
+    console.log(`  ✅ Task completed in ${((taskObj.endTime - taskObj.startTime) / 1000).toFixed(1)}s`);
     
     return taskObj;
   }
 
-  async createAPIProject() {
+  private async createAPIProject(): Promise<void> {
     console.log(`  🏗️  Creating API project structure...`);
     
     const projectDir = './api-project';
@@ -141,21 +234,21 @@ module.exports = app;
     console.log(`  ✅ Created API project in ${projectDir}`);
   }
 
-  async runTests() {
+  private async runTests(): Promise<void> {
     console.log(`  🧪 Running tests...`);
     console.log(`  ✅ All tests passed (0 tests)`);
   }
 
-  async genericTaskExecution(task) {
+  private async genericTaskExecution(task: string): Promise<void> {
     console.log(`  🔄 Executing: ${task}`);
     
     // Simulate work being done
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise<void>(resolve => setTimeout(resolve, 1000));
     
     console.log(`  ✅ Generic task completed`);
   }
 
-  async getStatus() {
+  async getStatus(): Promise<SwarmStatus> {
     return {
       id: this.id,
       status: this.status,
@@ -169,10 +262,10 @@ module.exports = app;
     };
   }
 
-  async complete() {
+  async complete(): Promise<SwarmSummary> {
     this.status = 'completed';
     
-    const summary = await this.getStatus();
+    const summary = await this.getStatus() as SwarmSummary;
     console.log(`\n✅ Swarm completed successfully!`);
     console.log(`📊 Summary:`);
     console.log(`  • Swarm ID: ${summary.id}`);
@@ -192,19 +285,19 @@ module.exports = app;
 }
 
 // Main execution function
-export async function executeSwarm(objective, flags = {}) {
+export async function executeSwarm(objective: string, flags: ExecuteSwarmFlags = {}): Promise<SwarmExecutionResult> {
   try {
     // Parse configuration from flags
-    const config = {
+    const config: SwarmConfig = {
       name: generateId('swarm'),
       description: objective,
-      mode: flags.mode || 'centralized',
-      strategy: flags.strategy || 'auto',
-      maxAgents: parseInt(flags['max-agents']) || 5,
-      maxTasks: parseInt(flags['max-tasks']) || 100,
-      timeout: (parseInt(flags.timeout) || 60) * 60 * 1000,
-      taskTimeoutMinutes: parseInt(flags['task-timeout-minutes']) || 59,
-      qualityThreshold: parseFloat(flags['quality-threshold']) || 0.8,
+      mode: (flags.mode as SwarmConfig['mode']) || 'centralized',
+      strategy: (flags.strategy as SwarmConfig['strategy']) || 'auto',
+      maxAgents: parseInt(flags['max-agents'] || '5'),
+      maxTasks: parseInt(flags['max-tasks'] || '100'),
+      timeout: (parseInt(flags.timeout || '60')) * 60 * 1000,
+      taskTimeoutMinutes: parseInt(flags['task-timeout-minutes'] || '59'),
+      qualityThreshold: parseFloat(flags['quality-threshold'] || '0.8'),
       reviewRequired: flags.review || false,
       testingRequired: flags.testing || false,
       monitoring: {
@@ -249,10 +342,10 @@ export async function executeSwarm(objective, flags = {}) {
     return { success: true, summary };
 
   } catch (error) {
-    console.error(`❌ Swarm execution failed: ${error.message}`);
-    return { success: false, error: error.message };
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error(`❌ Swarm execution failed: ${errorMessage}`);
+    return { success: false, error: errorMessage };
   }
 }
 
-// Export for use in swarm.js
-export { SwarmCoordinator, executeSwarm };
+// Classes and functions exported above

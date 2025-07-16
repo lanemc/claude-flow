@@ -1,9 +1,38 @@
-// start-wrapper.js - Wrapper to maintain backward compatibility with the new modular start command
+// start-wrapper.ts - Wrapper to maintain backward compatibility with the new modular start command (TypeScript version)
 import { printSuccess, printError, printWarning, printInfo } from '../utils.js';
 import { Deno, cwd, exit, existsSync } from '../node-compat.js';
 import { compat } from '../runtime-detector.js';
 
-export async function startCommand(subArgs, flags) {
+// Types for start command system
+interface StartFlags {
+  help?: boolean;
+  h?: boolean;
+  daemon?: boolean;
+  d?: boolean;
+  port?: number | string;
+  p?: number | string;
+  verbose?: boolean;
+  v?: boolean;
+  ui?: boolean;
+  u?: boolean;
+  web?: boolean;
+  w?: boolean;
+}
+
+interface WebServer {
+  start(): Promise<void>;
+}
+
+interface WebServerModule {
+  startWebServer(port: number): Promise<any>;
+  ClaudeCodeWebServer: new (port: number) => WebServer;
+}
+
+interface ProcessUIModule {
+  launchEnhancedUI(): Promise<void>;
+}
+
+export async function startCommand(subArgs: string[], flags: StartFlags): Promise<void> {
   // Show help if requested
   if (flags.help || flags.h || subArgs.includes('--help') || subArgs.includes('-h')) {
     showStartHelp();
@@ -11,11 +40,11 @@ export async function startCommand(subArgs, flags) {
   }
   
   // Parse start options
-  const daemon = subArgs.includes('--daemon') || subArgs.includes('-d') || flags.daemon;
-  const port = flags.port || getArgValue(subArgs, '--port') || getArgValue(subArgs, '-p') || 3000;
-  const verbose = subArgs.includes('--verbose') || subArgs.includes('-v') || flags.verbose;
-  const ui = subArgs.includes('--ui') || subArgs.includes('-u') || flags.ui;
-  const web = subArgs.includes('--web') || subArgs.includes('-w') || flags.web;
+  const daemon: boolean = subArgs.includes('--daemon') || subArgs.includes('-d') || !!flags.daemon;
+  const port: number = parseInt(String(flags.port || getArgValue(subArgs, '--port') || getArgValue(subArgs, '-p') || 3000));
+  const verbose: boolean = subArgs.includes('--verbose') || subArgs.includes('-v') || !!flags.verbose;
+  const ui: boolean = subArgs.includes('--ui') || subArgs.includes('-u') || !!flags.ui;
+  const web: boolean = subArgs.includes('--web') || subArgs.includes('-w') || !!flags.web;
   
   try {
     printSuccess('Starting Claude-Flow Orchestration System...');
@@ -25,8 +54,8 @@ export async function startCommand(subArgs, flags) {
     if (web) {
       try {
         // Launch the web server
-        const { startWebServer } = await import('./web-server.js');
-        const server = await startWebServer(port);
+        const webServerModule = await import('./web-server.js') as WebServerModule;
+        const server = await webServerModule.startWebServer(port);
         
         printSuccess(`🌐 Web UI is running!`);
         console.log(`📍 Open your browser to: http://localhost:${port}/console`);
@@ -36,7 +65,7 @@ export async function startCommand(subArgs, flags) {
         // Keep process running
         await new Promise(() => {});
         return;
-      } catch (err) {
+      } catch (err: any) {
         printError('Failed to launch web UI: ' + err.message);
         console.error(err.stack);
         return;
@@ -47,8 +76,8 @@ export async function startCommand(subArgs, flags) {
     if (ui && !web) {
       try {
         // Launch the web UI by default when --ui is used
-        const { ClaudeCodeWebServer } = await import('./web-server.js');
-        const webServer = new ClaudeCodeWebServer(port);
+        const webServerModule = await import('./web-server.js') as WebServerModule;
+        const webServer = new webServerModule.ClaudeCodeWebServer(port);
         await webServer.start();
         
         printSuccess('🌐 Claude Flow Web UI is running!');
@@ -59,14 +88,14 @@ export async function startCommand(subArgs, flags) {
         // Keep process running
         await new Promise(() => {});
         return;
-      } catch (err) {
+      } catch (err: any) {
         // If web UI fails, fall back to terminal UI
         printWarning('Web UI failed, launching terminal UI...');
         try {
-          const { launchEnhancedUI } = await import('./process-ui-enhanced.js');
-          await launchEnhancedUI();
+          const processUIModule = await import('./process-ui-enhanced.js') as ProcessUIModule;
+          await processUIModule.launchEnhancedUI();
           return;
-        } catch (fallbackErr) {
+        } catch (fallbackErr: any) {
           // If both fail, show error
           printError('Failed to launch UI: ' + err.message);
           console.error(err.stack);
@@ -76,8 +105,8 @@ export async function startCommand(subArgs, flags) {
     }
     
     // Check if required directories exist
-    const requiredDirs = ['memory', 'coordination'];
-    let missingDirs = [];
+    const requiredDirs: string[] = ['memory', 'coordination'];
+    let missingDirs: string[] = [];
     
     for (const dir of requiredDirs) {
       try {
@@ -134,7 +163,7 @@ export async function startCommand(subArgs, flags) {
       console.log('The orchestrator would run in the background on port ' + port);
       
       // Create a simple PID file to simulate daemon
-      const pid = compat.terminal.getPid();
+      const pid: number = compat.terminal.getPid();
       await compat.safeCall(async () => {
         if (compat.runtime === 'deno') {
           await Deno.writeTextFile('.claude-flow.pid', pid.toString());
@@ -196,21 +225,21 @@ export async function startCommand(subArgs, flags) {
       }
     }
     
-  } catch (err) {
+  } catch (err: any) {
     printError(`Failed to start orchestration system: ${err.message}`);
     console.error('Stack trace:', err.stack);
   }
 }
 
-function getArgValue(args, flag) {
-  const index = args.indexOf(flag);
+function getArgValue(args: string[], flag: string): string | null {
+  const index: number = args.indexOf(flag);
   if (index !== -1 && index < args.length - 1) {
     return args[index + 1];
   }
   return null;
 }
 
-async function cleanup() {
+async function cleanup(): Promise<void> {
   // Clean up resources
   try {
     await compat.safeCall(async () => {
@@ -231,7 +260,7 @@ async function cleanup() {
   console.log('✓ Cleanup complete');
 }
 
-function showStartHelp() {
+function showStartHelp(): void {
   console.log('Start the Claude-Flow orchestration system');
   console.log();
   console.log('Usage: claude-flow start [options]');

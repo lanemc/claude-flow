@@ -1,12 +1,99 @@
-// monitor.js - System monitoring commands with real metrics
+// monitor.ts - System monitoring commands with real metrics and TypeScript types
 import { printSuccess, printError, printWarning } from '../utils.js';
-import os from 'os';
+import * as os from 'os';
 import { performance } from 'perf_hooks';
-import fs from 'fs/promises';
-import path from 'path';
+import { promises as fs } from 'fs';
+import * as path from 'path';
 
-export async function monitorCommand(subArgs, flags) {
-  const interval = getFlag(subArgs, '--interval') || flags.interval || 5000;
+// Types for monitoring system
+export interface MonitorFlags {
+  interval?: number;
+  format?: 'pretty' | 'json';
+  watch?: boolean;
+}
+
+export interface CPUInfo {
+  user: number;
+  nice: number;
+  sys: number;
+  idle: number;
+  irq: number;
+}
+
+export interface SystemMetrics {
+  uptime: number;
+  cpu_usage: number;
+  memory_usage: number;
+  memory_total: number;
+  memory_percentage: number;
+  disk_usage: number;
+  disk_used: number;
+  disk_total: number;
+  load_average: number[];
+  cpu_count: number;
+  platform: string;
+  node_version: string;
+}
+
+export interface OrchestratorMetrics {
+  status: 'running' | 'stopped' | 'error';
+  active_agents: number;
+  queued_tasks: number;
+  completed_tasks: number;
+  failed_tasks: number;
+  errors: number;
+  uptime: number;
+}
+
+export interface PerformanceMetrics {
+  avg_task_duration: number;
+  throughput: number;
+  success_rate: number;
+  memory_heap_used: number;
+  memory_heap_total: number;
+  memory_external: number;
+  cpu_user: number;
+  cpu_system: number;
+}
+
+export interface ResourceMetrics {
+  memory_entries: string | number;
+  terminal_sessions: number;
+  mcp_connections: number;
+  open_files: number;
+  open_requests: number;
+}
+
+export interface DiskUsage {
+  totalGB: number;
+  usedGB: number;
+  freeGB: number;
+  percentage: number;
+}
+
+export interface MemoryInfo {
+  totalMB: number;
+  freeMB: number;
+  usedMB: number;
+  percentage: number;
+}
+
+export interface SystemStatus {
+  timestamp: number;
+  system: SystemMetrics;
+  orchestrator: OrchestratorMetrics;
+  performance: PerformanceMetrics;
+  resources: ResourceMetrics;
+}
+
+export interface MonitorCommandArgs {
+  interval?: string;
+  format?: string;
+  watch?: boolean;
+}
+
+export async function monitorCommand(subArgs: string[], flags: MonitorFlags): Promise<void> {
+  const interval = parseInt(getFlag(subArgs, '--interval') || '') || flags.interval || 5000;
   const format = getFlag(subArgs, '--format') || flags.format || 'pretty';
   const continuous = subArgs.includes('--watch') || flags.watch;
   
@@ -17,7 +104,7 @@ export async function monitorCommand(subArgs, flags) {
   }
 }
 
-async function showCurrentMetrics(format) {
+async function showCurrentMetrics(format: string): Promise<void> {
   const metrics = await collectMetrics();
   
   if (format === 'json') {
@@ -27,13 +114,13 @@ async function showCurrentMetrics(format) {
   }
 }
 
-async function runContinuousMonitoring(interval, format) {
+async function runContinuousMonitoring(interval: number, format: string): Promise<void> {
   printSuccess(`Starting continuous monitoring (interval: ${interval}ms)`);
   console.log('Press Ctrl+C to stop monitoring\n');
   
   // Set up signal handler for graceful shutdown
-  let monitorInterval;
-  const cleanup = () => {
+  let monitorInterval: NodeJS.Timeout | undefined;
+  const cleanup = (): void => {
     if (monitorInterval) {
       clearInterval(monitorInterval);
     }
@@ -76,7 +163,7 @@ async function runContinuousMonitoring(interval, format) {
   }, interval);
 }
 
-async function collectMetrics() {
+async function collectMetrics(): Promise<SystemStatus> {
   const timestamp = Date.now();
   
   // Collect real system metrics
@@ -117,14 +204,14 @@ async function collectMetrics() {
 }
 
 // Get real CPU usage
-async function getCPUUsage() {
+async function getCPUUsage(): Promise<number> {
   const cpus = os.cpus();
   let totalIdle = 0;
   let totalTick = 0;
   
   cpus.forEach(cpu => {
     for (const type in cpu.times) {
-      totalTick += cpu.times[type];
+      totalTick += cpu.times[type as keyof typeof cpu.times];
     }
     totalIdle += cpu.times.idle;
   });
@@ -137,7 +224,7 @@ async function getCPUUsage() {
 }
 
 // Get real memory information
-function getMemoryInfo() {
+function getMemoryInfo(): MemoryInfo {
   const totalMem = os.totalmem();
   const freeMem = os.freemem();
   const usedMem = totalMem - freeMem;
@@ -151,7 +238,7 @@ function getMemoryInfo() {
 }
 
 // Get real disk usage (simplified - checks current working directory)
-async function getDiskUsage() {
+async function getDiskUsage(): Promise<DiskUsage> {
   try {
     const stats = await fs.statfs(process.cwd());
     const totalBytes = stats.blocks * stats.bsize;
@@ -176,7 +263,7 @@ async function getDiskUsage() {
 }
 
 // Get orchestrator metrics from running instance
-async function getOrchestratorMetrics() {
+async function getOrchestratorMetrics(): Promise<OrchestratorMetrics> {
   try {
     // Try to read from metrics file if orchestrator is running
     const metricsPath = path.join(process.cwd(), '.claude-flow', 'metrics.json');
@@ -209,7 +296,7 @@ async function getOrchestratorMetrics() {
 }
 
 // Check if orchestrator is running
-async function checkOrchestratorRunning() {
+async function checkOrchestratorRunning(): Promise<boolean> {
   try {
     const pidPath = path.join(process.cwd(), '.claude-flow', 'orchestrator.pid');
     const pidData = await fs.readFile(pidPath, 'utf8');
@@ -224,7 +311,7 @@ async function checkOrchestratorRunning() {
 }
 
 // Get performance metrics
-function getPerformanceMetrics() {
+function getPerformanceMetrics(): PerformanceMetrics {
   const memUsage = process.memoryUsage();
   const cpuUsage = process.cpuUsage();
   
@@ -241,7 +328,7 @@ function getPerformanceMetrics() {
 }
 
 // Get resource metrics
-async function getResourceMetrics() {
+async function getResourceMetrics(): Promise<ResourceMetrics> {
   try {
     // Count memory entries from memory database if available
     const memoryDbPath = path.join(process.cwd(), '.claude-flow', 'memory.db');
@@ -257,8 +344,8 @@ async function getResourceMetrics() {
       memory_entries: memoryExists ? 'Available' : 0,
       terminal_sessions: terminalSessions,
       mcp_connections: mcpConnections,
-      open_files: process._getActiveHandles ? process._getActiveHandles().length : 0,
-      open_requests: process._getActiveRequests ? process._getActiveRequests().length : 0
+      open_files: (process as any)._getActiveHandles ? (process as any)._getActiveHandles().length : 0,
+      open_requests: (process as any)._getActiveRequests ? (process as any)._getActiveRequests().length : 0
     };
   } catch (error) {
     return {
@@ -272,7 +359,7 @@ async function getResourceMetrics() {
 }
 
 // Count active terminal sessions
-async function countTerminalSessions() {
+async function countTerminalSessions(): Promise<number> {
   try {
     const sessionsPath = path.join(process.cwd(), '.claude-flow', 'sessions');
     const files = await fs.readdir(sessionsPath);
@@ -283,7 +370,7 @@ async function countTerminalSessions() {
 }
 
 // Count MCP connections
-async function countMCPConnections() {
+async function countMCPConnections(): Promise<number> {
   try {
     const mcpPath = path.join(process.cwd(), '.claude-flow', 'mcp-connections.json');
     const data = await fs.readFile(mcpPath, 'utf8');
@@ -294,7 +381,7 @@ async function countMCPConnections() {
   }
 }
 
-function displayMetrics(metrics) {
+function displayMetrics(metrics: SystemStatus): void {
   const timestamp = new Date(metrics.timestamp).toLocaleTimeString();
   
   console.log('📊 System Metrics');
@@ -347,7 +434,7 @@ function displayMetrics(metrics) {
   console.log(`\n⏰ Last Updated: ${timestamp}`);
 }
 
-function getStatusIcon(status) {
+function getStatusIcon(status: string): string {
   switch (status) {
     case 'running': return '🟢';
     case 'stopped': return '🔴';
@@ -357,7 +444,7 @@ function getStatusIcon(status) {
   }
 }
 
-function formatUptime(seconds) {
+function formatUptime(seconds: number): string {
   const days = Math.floor(seconds / 86400);
   const hours = Math.floor((seconds % 86400) / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
@@ -374,12 +461,12 @@ function formatUptime(seconds) {
   }
 }
 
-function getFlag(args, flagName) {
+function getFlag(args: string[], flagName: string): string | null {
   const index = args.indexOf(flagName);
   return index !== -1 && index + 1 < args.length ? args[index + 1] : null;
 }
 
-export function showMonitorHelp() {
+export function showMonitorHelp(): void {
   console.log('Monitor commands:');
   console.log('  monitor [options]                Show current system metrics');
   console.log('  monitor --watch                  Continuous monitoring mode');
