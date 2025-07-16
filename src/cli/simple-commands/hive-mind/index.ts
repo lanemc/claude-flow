@@ -4,11 +4,11 @@
  */
 
 // Re-export all types
-export * from './types';
-export * from '../hive-mind';
+export * from './types.js';
+export * from '../hive-mind.js';
 
 // Re-export implementation functions
-export * from '../hive-mind-implementation';
+export * from '../hive-mind-implementation.js';
 
 // Export the main command handler
-export { hiveMindCommand as default } from '../hive-mind';
+export { hiveMindCommand as default } from '../hive-mind.js';

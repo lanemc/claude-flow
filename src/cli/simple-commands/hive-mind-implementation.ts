@@ -23,7 +23,7 @@ import {
   VoteResult,
   HiveMindSession,
   AgentType
-} from './hive-mind';
+} from './hive-mind.js';
 import {
   SwarmRecord,
   AgentRecord,
@@ -38,7 +38,7 @@ import {
   AgentTypePerformance,
   WorkerGroups,
   DatabaseInstance
-} from './hive-mind/types';
+} from './hive-mind/types.js';
 
 // Import MCP tool wrappers and core modules
 import { MCPToolWrapper } from './hive-mind/mcp-wrapper.js';

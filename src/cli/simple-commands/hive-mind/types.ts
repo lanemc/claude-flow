@@ -7,7 +7,7 @@ import type { Ora } from 'ora';
 import type Database from 'better-sqlite3';
 
 // Re-export all interfaces from main file for convenience
-export * from '../hive-mind';
+export * from '../hive-mind.js';
 
 /**
  * Database schema types
