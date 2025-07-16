@@ -3,10 +3,10 @@
  * Tests stdio and HTTP transports, protocol compliance, and error handling
  */
 
-import { describe, it, beforeEach, afterEach  } from "../test.utils.ts";
+import { describe, it, beforeEach, afterEach  } from "../../test.utils.js";
 import { expect } from "@jest/globals";
 // FakeTime equivalent available in test.utils.ts
-import { spy, stub  } from "../test.utils.ts";
+import { spy, stub  } from "../../test.utils.js";
 
 import { MCPServer } from '../../../src/mcp/server.ts';
 import { MCPClient } from '../../../src/mcp/client.ts';
@@ -23,9 +23,9 @@ import {
   TestAssertions,
   MockFactory,
   FileSystemTestUtils
-} from '../../utils/test-utils.ts';
-import { generateMCPMessages, generateErrorScenarios } from '../../fixtures/generators.ts';
-import { setupTestEnv, cleanupTestEnv, TEST_CONFIG } from '../../test.config.ts';
+} from '../../test.utils.js';
+// import { generateMCPMessages, generateErrorScenarios } from '../../fixtures/generators.ts';
+// import { setupTestEnv, cleanupTestEnv, TEST_CONFIG } from '../../test.config.ts';
 
 describe('MCP Interface - Comprehensive Tests', () => {
   let tempDir: string;

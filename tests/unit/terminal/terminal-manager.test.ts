@@ -2,10 +2,10 @@
  * Comprehensive unit tests for Terminal Manager
  */
 
-import { describe, it, beforeEach, afterEach  } from "../test.utils.ts";
+import { describe, it, beforeEach, afterEach  } from "../../test.utils.js";
 import { expect } from "@jest/globals";
 // FakeTime equivalent available in test.utils.ts
-import { spy, stub  } from "../test.utils.ts";
+import { spy, stub  } from "../../test.utils.js";
 
 import { TerminalManager } from '../../../src/terminal/manager.ts';
 import { TerminalPool } from '../../../src/terminal/pool.ts';
@@ -16,9 +16,9 @@ import {
   PerformanceTestUtils,
   TestAssertions,
   MockFactory 
-} from '../../utils/test-utils.ts';
-import { generateTerminalSessions, generateEdgeCaseData } from '../../fixtures/generators.ts';
-import { setupTestEnv, cleanupTestEnv, TEST_CONFIG } from '../../test.config.ts';
+} from '../../test.utils.js';
+// import { generateTerminalSessions, generateEdgeCaseData } from '../../fixtures/generators.ts';
+// import { setupTestEnv, cleanupTestEnv, TEST_CONFIG } from '../../test.config.ts';
 
 describe('Terminal Manager - Comprehensive Tests', () => {
   let terminalManager: TerminalManager;
