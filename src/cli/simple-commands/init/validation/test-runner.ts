@@ -1,14 +1,38 @@
-// test-runner.js - Test runner for validation and rollback systems
+// test-runner.ts - Test runner for validation and rollback systems
 
 import { ValidationSystem } from './index.js';
 import { RollbackSystem } from '../rollback/index.js';
 import { printSuccess, printError, printWarning } from '../../../utils.js';
+import type { TestResult } from './types.js';
+
+interface TestCase {
+  name: string;
+  test: () => Promise<TestDetail>;
+}
+
+interface TestDetail {
+  success: boolean;
+  errors: string[];
+  details: Record<string, any>;
+}
+
+interface TestResultWithDetails {
+  name: string;
+  success: boolean;
+  details?: TestDetail;
+  error?: string;
+}
 
 /**
  * Test runner for validation and rollback systems
  */
 export class ValidationTestRunner {
-  constructor(workingDir) {
+  private workingDir: string;
+  private validationSystem: ValidationSystem;
+  private rollbackSystem: RollbackSystem;
+  private testResults: TestResultWithDetails[];
+
+  constructor(workingDir: string) {
     this.workingDir = workingDir;
     this.validationSystem = new ValidationSystem(workingDir);
     this.rollbackSystem = new RollbackSystem(workingDir);
@@ -18,10 +42,10 @@ export class ValidationTestRunner {
   /**
    * Run all validation and rollback tests
    */
-  async runAllTests() {
+  async runAllTests(): Promise<void> {
     console.log('🧪 Running validation and rollback system tests...');
     
-    const tests = [
+    const tests: TestCase[] = [
       { name: 'Pre-init Validation', test: () => this.testPreInitValidation() },
       { name: 'Post-init Validation', test: () => this.testPostInitValidation() },
       { name: 'Configuration Validation', test: () => this.testConfigValidation() },
@@ -58,9 +82,9 @@ export class ValidationTestRunner {
         this.testResults.push({
           name: testCase.name,
           success: false,
-          error: error.message
+          error: (error as Error).message
         });
-        printError(`❌ ${testCase.name} threw exception: ${error.message}`);
+        printError(`❌ ${testCase.name} threw exception: ${(error as Error).message}`);
       }
     }
 
@@ -70,8 +94,8 @@ export class ValidationTestRunner {
   /**
    * Test pre-initialization validation
    */
-  async testPreInitValidation() {
-    const result = { success: true, errors: [], details: {} };
+  async testPreInitValidation(): Promise<TestDetail> {
+    const result: TestDetail = { success: true, errors: [], details: {} };
 
     try {
       // Test with normal conditions
@@ -91,7 +115,7 @@ export class ValidationTestRunner {
 
     } catch (error) {
       result.success = false;
-      result.errors.push(`Pre-init validation test failed: ${error.message}`);
+      result.errors.push(`Pre-init validation test failed: ${(error as Error).message}`);
     }
 
     return result;
@@ -100,8 +124,8 @@ export class ValidationTestRunner {
   /**
    * Test post-initialization validation
    */
-  async testPostInitValidation() {
-    const result = { success: true, errors: [], details: {} };
+  async testPostInitValidation(): Promise<TestDetail> {
+    const result: TestDetail = { success: true, errors: [], details: {} };
 
     try {
       // Create minimal test files for validation
@@ -117,7 +141,7 @@ export class ValidationTestRunner {
 
     } catch (error) {
       result.success = false;
-      result.errors.push(`Post-init validation test failed: ${error.message}`);
+      result.errors.push(`Post-init validation test failed: ${(error as Error).message}`);
     }
 
     return result;
@@ -126,8 +150,8 @@ export class ValidationTestRunner {
   /**
    * Test configuration validation
    */
-  async testConfigValidation() {
-    const result = { success: true, errors: [], details: {} };
+  async testConfigValidation(): Promise<TestDetail> {
+    const result: TestDetail = { success: true, errors: [], details: {} };
 
     try {
       // Create test configuration files
@@ -143,7 +167,7 @@ export class ValidationTestRunner {
 
     } catch (error) {
       result.success = false;
-      result.errors.push(`Config validation test failed: ${error.message}`);
+      result.errors.push(`Config validation test failed: ${(error as Error).message}`);
     }
 
     return result;
@@ -152,8 +176,8 @@ export class ValidationTestRunner {
   /**
    * Test mode functionality
    */
-  async testModeFunctionality() {
-    const result = { success: true, errors: [], details: {} };
+  async testModeFunctionality(): Promise<TestDetail> {
+    const result: TestDetail = { success: true, errors: [], details: {} };
 
     try {
       // Create test SPARC configuration
@@ -169,7 +193,7 @@ export class ValidationTestRunner {
 
     } catch (error) {
       result.success = false;
-      result.errors.push(`Mode functionality test failed: ${error.message}`);
+      result.errors.push(`Mode functionality test failed: ${(error as Error).message}`);
     }
 
     return result;
@@ -178,8 +202,8 @@ export class ValidationTestRunner {
   /**
    * Test health checks
    */
-  async testHealthChecks() {
-    const result = { success: true, errors: [], details: {} };
+  async testHealthChecks(): Promise<TestDetail> {
+    const result: TestDetail = { success: true, errors: [], details: {} };
 
     try {
       const healthChecks = await this.validationSystem.runHealthChecks();
@@ -189,7 +213,7 @@ export class ValidationTestRunner {
 
     } catch (error) {
       result.success = false;
-      result.errors.push(`Health checks test failed: ${error.message}`);
+      result.errors.push(`Health checks test failed: ${(error as Error).message}`);
     }
 
     return result;
@@ -198,8 +222,8 @@ export class ValidationTestRunner {
   /**
    * Test backup system
    */
-  async testBackupSystem() {
-    const result = { success: true, errors: [], details: {} };
+  async testBackupSystem(): Promise<TestDetail> {
+    const result: TestDetail = { success: true, errors: [], details: {} };
 
     try {
       // Test backup creation
@@ -228,7 +252,7 @@ export class ValidationTestRunner {
 
     } catch (error) {
       result.success = false;
-      result.errors.push(`Backup system test failed: ${error.message}`);
+      result.errors.push(`Backup system test failed: ${(error as Error).message}`);
     }
 
     return result;
@@ -237,8 +261,8 @@ export class ValidationTestRunner {
   /**
    * Test rollback system
    */
-  async testRollbackSystem() {
-    const result = { success: true, errors: [], details: {} };
+  async testRollbackSystem(): Promise<TestDetail> {
+    const result: TestDetail = { success: true, errors: [], details: {} };
 
     try {
       // Test rollback system validation
@@ -258,7 +282,7 @@ export class ValidationTestRunner {
 
     } catch (error) {
       result.success = false;
-      result.errors.push(`Rollback system test failed: ${error.message}`);
+      result.errors.push(`Rollback system test failed: ${(error as Error).message}`);
     }
 
     return result;
@@ -267,8 +291,8 @@ export class ValidationTestRunner {
   /**
    * Test state tracking
    */
-  async testStateTracking() {
-    const result = { success: true, errors: [], details: {} };
+  async testStateTracking(): Promise<TestDetail> {
+    const result: TestDetail = { success: true, errors: [], details: {} };
 
     try {
       const stateTracker = this.rollbackSystem.stateTracker;
@@ -299,7 +323,7 @@ export class ValidationTestRunner {
 
     } catch (error) {
       result.success = false;
-      result.errors.push(`State tracking test failed: ${error.message}`);
+      result.errors.push(`State tracking test failed: ${(error as Error).message}`);
     }
 
     return result;
@@ -308,8 +332,8 @@ export class ValidationTestRunner {
   /**
    * Test recovery procedures
    */
-  async testRecoveryProcedures() {
-    const result = { success: true, errors: [], details: {} };
+  async testRecoveryProcedures(): Promise<TestDetail> {
+    const result: TestDetail = { success: true, errors: [], details: {} };
 
     try {
       const recoveryManager = this.rollbackSystem.recoveryManager;
@@ -328,7 +352,7 @@ export class ValidationTestRunner {
 
     } catch (error) {
       result.success = false;
-      result.errors.push(`Recovery procedures test failed: ${error.message}`);
+      result.errors.push(`Recovery procedures test failed: ${(error as Error).message}`);
     }
 
     return result;
@@ -337,8 +361,8 @@ export class ValidationTestRunner {
   /**
    * Test atomic operations
    */
-  async testAtomicOperations() {
-    const result = { success: true, errors: [], details: {} };
+  async testAtomicOperations(): Promise<TestDetail> {
+    const result: TestDetail = { success: true, errors: [], details: {} };
 
     try {
       const { createAtomicOperation } = await import('../rollback/index.js');
@@ -361,7 +385,7 @@ export class ValidationTestRunner {
 
     } catch (error) {
       result.success = false;
-      result.errors.push(`Atomic operations test failed: ${error.message}`);
+      result.errors.push(`Atomic operations test failed: ${(error as Error).message}`);
     }
 
     return result;
@@ -370,7 +394,7 @@ export class ValidationTestRunner {
   /**
    * Generate test report
    */
-  generateTestReport() {
+  generateTestReport(): void {
     console.log('\n' + '='.repeat(60));
     console.log('🧪 VALIDATION & ROLLBACK SYSTEM TEST REPORT');
     console.log('='.repeat(60));
@@ -416,7 +440,7 @@ export class ValidationTestRunner {
 
   // Helper methods for creating test files
 
-  async createTestFiles() {
+  private async createTestFiles(): Promise<void> {
     try {
       await Deno.mkdir(`${this.workingDir}/test-temp`, { recursive: true });
       await Deno.writeTextFile(`${this.workingDir}/test-temp/CLAUDE.md`, '# Test CLAUDE.md');
@@ -426,7 +450,7 @@ export class ValidationTestRunner {
     }
   }
 
-  async cleanupTestFiles() {
+  private async cleanupTestFiles(): Promise<void> {
     try {
       await Deno.remove(`${this.workingDir}/test-temp`, { recursive: true });
     } catch {
@@ -434,7 +458,7 @@ export class ValidationTestRunner {
     }
   }
 
-  async createTestConfigs() {
+  private async createTestConfigs(): Promise<void> {
     try {
       const testConfig = {
         version: "1.0",
@@ -454,7 +478,7 @@ export class ValidationTestRunner {
     }
   }
 
-  async cleanupTestConfigs() {
+  private async cleanupTestConfigs(): Promise<void> {
     try {
       await Deno.remove(`${this.workingDir}/test-roomodes`);
     } catch {
@@ -462,7 +486,7 @@ export class ValidationTestRunner {
     }
   }
 
-  async createTestSparcConfig() {
+  private async createTestSparcConfig(): Promise<void> {
     try {
       await this.createTestConfigs();
       await Deno.mkdir(`${this.workingDir}/test-roo`, { recursive: true });
@@ -471,7 +495,7 @@ export class ValidationTestRunner {
     }
   }
 
-  async cleanupTestSparcConfig() {
+  private async cleanupTestSparcConfig(): Promise<void> {
     try {
       await this.cleanupTestConfigs();
       await Deno.remove(`${this.workingDir}/test-roo`, { recursive: true });
@@ -484,7 +508,7 @@ export class ValidationTestRunner {
 /**
  * Run validation and rollback tests
  */
-export async function runValidationTests(workingDir) {
+export async function runValidationTests(workingDir: string): Promise<TestResultWithDetails[]> {
   const testRunner = new ValidationTestRunner(workingDir);
   await testRunner.runAllTests();
   return testRunner.testResults;

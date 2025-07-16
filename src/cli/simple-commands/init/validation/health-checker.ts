@@ -1,15 +1,28 @@
-// health-checker.js - System health checks for SPARC initialization
+// health-checker.ts - System health checks for SPARC initialization
+
+import type {
+  ModeAvailabilityResult,
+  TemplateIntegrityResult,
+  ConfigConsistencyResult,
+  SystemResourcesResult,
+  DiagnosticsResult,
+  ConsistencyCheck,
+  ResourceCheck,
+  HealthCheck
+} from './types.js';
 
 export class HealthChecker {
-  constructor(workingDir) {
+  private workingDir: string;
+
+  constructor(workingDir: string) {
     this.workingDir = workingDir;
   }
 
   /**
    * Check SPARC mode availability
    */
-  async checkModeAvailability() {
-    const result = {
+  async checkModeAvailability(): Promise<ModeAvailabilityResult> {
+    const result: ModeAvailabilityResult = {
       success: true,
       errors: [],
       warnings: [],
@@ -50,7 +63,7 @@ export class HealthChecker {
 
     } catch (error) {
       result.success = false;
-      result.errors.push(`Mode availability check failed: ${error.message}`);
+      result.errors.push(`Mode availability check failed: ${(error as Error).message}`);
     }
 
     return result;
@@ -59,8 +72,8 @@ export class HealthChecker {
   /**
    * Check template integrity
    */
-  async checkTemplateIntegrity() {
-    const result = {
+  async checkTemplateIntegrity(): Promise<TemplateIntegrityResult> {
+    const result: TemplateIntegrityResult = {
       success: true,
       errors: [],
       warnings: [],
@@ -128,7 +141,7 @@ export class HealthChecker {
 
     } catch (error) {
       result.success = false;
-      result.errors.push(`Template integrity check failed: ${error.message}`);
+      result.errors.push(`Template integrity check failed: ${(error as Error).message}`);
     }
 
     return result;
@@ -137,8 +150,8 @@ export class HealthChecker {
   /**
    * Check configuration consistency
    */
-  async checkConfigConsistency() {
-    const result = {
+  async checkConfigConsistency(): Promise<ConfigConsistencyResult> {
+    const result: ConfigConsistencyResult = {
       success: true,
       errors: [],
       warnings: [],
@@ -169,7 +182,7 @@ export class HealthChecker {
 
     } catch (error) {
       result.success = false;
-      result.errors.push(`Configuration consistency check failed: ${error.message}`);
+      result.errors.push(`Configuration consistency check failed: ${(error as Error).message}`);
     }
 
     return result;
@@ -178,8 +191,8 @@ export class HealthChecker {
   /**
    * Check system resources
    */
-  async checkSystemResources() {
-    const result = {
+  async checkSystemResources(): Promise<SystemResourcesResult> {
+    const result: SystemResourcesResult = {
       success: true,
       errors: [],
       warnings: [],
@@ -216,7 +229,7 @@ export class HealthChecker {
       }
 
     } catch (error) {
-      result.warnings.push(`System resource check failed: ${error.message}`);
+      result.warnings.push(`System resource check failed: ${(error as Error).message}`);
     }
 
     return result;
@@ -225,8 +238,8 @@ export class HealthChecker {
   /**
    * Run comprehensive health diagnostics
    */
-  async runDiagnostics() {
-    const result = {
+  async runDiagnostics(): Promise<DiagnosticsResult> {
+    const result: DiagnosticsResult = {
       success: true,
       errors: [],
       warnings: [],
@@ -240,33 +253,33 @@ export class HealthChecker {
       result.diagnostics.filesystem = fsHealth;
       if (!fsHealth.healthy) {
         result.success = false;
-        result.errors.push(...fsHealth.errors);
+        result.errors.push(...(fsHealth.errors || []));
       }
 
       // Process health
       const processHealth = await this.checkProcessHealth();
       result.diagnostics.processes = processHealth;
       if (!processHealth.healthy) {
-        result.warnings.push(...processHealth.warnings);
+        result.warnings.push(...(processHealth.warnings || []));
       }
 
       // Network health (for external dependencies)
       const networkHealth = await this.checkNetworkHealth();
       result.diagnostics.network = networkHealth;
       if (!networkHealth.healthy) {
-        result.warnings.push(...networkHealth.warnings);
+        result.warnings.push(...(networkHealth.warnings || []));
       }
 
       // Integration health
       const integrationHealth = await this.checkIntegrationHealth();
       result.diagnostics.integration = integrationHealth;
       if (!integrationHealth.healthy) {
-        result.warnings.push(...integrationHealth.warnings);
+        result.warnings.push(...(integrationHealth.warnings || []));
       }
 
     } catch (error) {
       result.success = false;
-      result.errors.push(`Health diagnostics failed: ${error.message}`);
+      result.errors.push(`Health diagnostics failed: ${(error as Error).message}`);
     }
 
     return result;
@@ -274,7 +287,7 @@ export class HealthChecker {
 
   // Helper methods
 
-  async checkSingleModeAvailability(mode) {
+  private async checkSingleModeAvailability(mode: string): Promise<boolean> {
     try {
       // Check if mode exists in .roomodes
       const roomodesPath = `${this.workingDir}/.roomodes`;
@@ -287,7 +300,11 @@ export class HealthChecker {
     }
   }
 
-  async checkTemplateDirectory(dirPath) {
+  private async checkTemplateDirectory(dirPath: string): Promise<{
+    found: string[];
+    missing: string[];
+    corrupted: string[];
+  }> {
     const result = {
       found: [],
       missing: [],
@@ -318,8 +335,8 @@ export class HealthChecker {
     return result;
   }
 
-  async checkRoomodesConsistency() {
-    const result = {
+  private async checkRoomodesConsistency(): Promise<ConsistencyCheck> {
+    const result: ConsistencyCheck = {
       consistent: true,
       issues: []
     };
@@ -334,7 +351,7 @@ export class HealthChecker {
         const commandsDir = `${this.workingDir}/.claude/commands`;
         
         try {
-          const commandFiles = [];
+          const commandFiles: string[] = [];
           for await (const entry of Deno.readDir(commandsDir)) {
             if (entry.isFile && entry.name.endsWith('.js')) {
               commandFiles.push(entry.name.replace('.js', ''));
@@ -362,8 +379,8 @@ export class HealthChecker {
     return result;
   }
 
-  async checkClaudeConfigConsistency() {
-    const result = {
+  private async checkClaudeConfigConsistency(): Promise<ConsistencyCheck> {
+    const result: ConsistencyCheck = {
       consistent: true,
       issues: []
     };
@@ -403,8 +420,8 @@ export class HealthChecker {
     return result;
   }
 
-  async checkMemoryConsistency() {
-    const result = {
+  private async checkMemoryConsistency(): Promise<ConsistencyCheck> {
+    const result: ConsistencyCheck = {
       consistent: true,
       issues: []
     };
@@ -439,8 +456,8 @@ export class HealthChecker {
     return result;
   }
 
-  async checkDiskSpace() {
-    const result = {
+  private async checkDiskSpace(): Promise<ResourceCheck> {
+    const result: ResourceCheck = {
       adequate: true,
       available: 0,
       used: 0
@@ -475,8 +492,8 @@ export class HealthChecker {
     return result;
   }
 
-  async checkMemoryUsage() {
-    const result = {
+  private async checkMemoryUsage(): Promise<ResourceCheck> {
+    const result: ResourceCheck = {
       adequate: true,
       available: 0,
       used: 0
@@ -515,8 +532,8 @@ export class HealthChecker {
     return result;
   }
 
-  async checkFileDescriptors() {
-    const result = {
+  private async checkFileDescriptors(): Promise<ResourceCheck> {
+    const result: ResourceCheck = {
       adequate: true,
       open: 0,
       limit: 0
@@ -544,8 +561,8 @@ export class HealthChecker {
     return result;
   }
 
-  async checkProcessLimits() {
-    const result = {
+  private async checkProcessLimits(): Promise<ResourceCheck> {
+    const result: ResourceCheck = {
       adequate: true,
       limits: {}
     };
@@ -571,7 +588,7 @@ export class HealthChecker {
     return result;
   }
 
-  async checkFileSystemHealth() {
+  private async checkFileSystemHealth(): Promise<HealthCheck> {
     return {
       healthy: true,
       errors: [],
@@ -580,7 +597,7 @@ export class HealthChecker {
     };
   }
 
-  async checkProcessHealth() {
+  private async checkProcessHealth(): Promise<HealthCheck> {
     return {
       healthy: true,
       warnings: [],
@@ -588,7 +605,7 @@ export class HealthChecker {
     };
   }
 
-  async checkNetworkHealth() {
+  private async checkNetworkHealth(): Promise<HealthCheck> {
     return {
       healthy: true,
       warnings: [],
@@ -596,7 +613,7 @@ export class HealthChecker {
     };
   }
 
-  async checkIntegrationHealth() {
+  private async checkIntegrationHealth(): Promise<HealthCheck> {
     return {
       healthy: true,
       warnings: [],

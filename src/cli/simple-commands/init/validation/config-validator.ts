@@ -1,15 +1,36 @@
-// config-validator.js - Configuration file validation
+// config-validator.ts - Configuration file validation
+
+import type { ValidationResult, ModeConfig } from './types.js';
+
+interface ConfigValidationResult extends ValidationResult {
+  config?: any;
+  content?: string | null;
+  data?: any;
+}
+
+interface StructureValidationResult {
+  valid: boolean;
+  errors: string[];
+  warnings: string[];
+}
+
+interface ModeValidationResult {
+  valid: boolean;
+  errors: string[];
+}
 
 export class ConfigValidator {
-  constructor(workingDir) {
+  private workingDir: string;
+
+  constructor(workingDir: string) {
     this.workingDir = workingDir;
   }
 
   /**
    * Validate .roomodes configuration file
    */
-  async validateRoomodes() {
-    const result = {
+  async validateRoomodes(): Promise<ConfigValidationResult> {
+    const result: ConfigValidationResult = {
       success: true,
       errors: [],
       warnings: [],
@@ -44,7 +65,7 @@ export class ConfigValidator {
 
       } catch (jsonError) {
         result.success = false;
-        result.errors.push(`Invalid JSON in .roomodes: ${jsonError.message}`);
+        result.errors.push(`Invalid JSON in .roomodes: ${(jsonError as Error).message}`);
       }
 
     } catch (error) {
@@ -52,7 +73,7 @@ export class ConfigValidator {
         result.warnings.push('.roomodes file not found - SPARC features may not be available');
       } else {
         result.success = false;
-        result.errors.push(`Could not read .roomodes: ${error.message}`);
+        result.errors.push(`Could not read .roomodes: ${(error as Error).message}`);
       }
     }
 
@@ -62,8 +83,8 @@ export class ConfigValidator {
   /**
    * Validate CLAUDE.md configuration
    */
-  async validateClaudeMd() {
-    const result = {
+  async validateClaudeMd(): Promise<ConfigValidationResult> {
+    const result: ConfigValidationResult = {
       success: true,
       errors: [],
       warnings: [],
@@ -110,7 +131,7 @@ export class ConfigValidator {
 
     } catch (error) {
       result.success = false;
-      result.errors.push(`Could not read CLAUDE.md: ${error.message}`);
+      result.errors.push(`Could not read CLAUDE.md: ${(error as Error).message}`);
     }
 
     return result;
@@ -119,8 +140,8 @@ export class ConfigValidator {
   /**
    * Validate memory configuration
    */
-  async validateMemoryConfig() {
-    const result = {
+  async validateMemoryConfig(): Promise<ConfigValidationResult> {
+    const result: ConfigValidationResult = {
       success: true,
       errors: [],
       warnings: [],
@@ -146,12 +167,12 @@ export class ConfigValidator {
 
       } catch (jsonError) {
         result.success = false;
-        result.errors.push(`Invalid JSON in memory data: ${jsonError.message}`);
+        result.errors.push(`Invalid JSON in memory data: ${(jsonError as Error).message}`);
       }
 
     } catch (error) {
       result.success = false;
-      result.errors.push(`Could not read memory data: ${error.message}`);
+      result.errors.push(`Could not read memory data: ${(error as Error).message}`);
     }
 
     return result;
@@ -160,8 +181,8 @@ export class ConfigValidator {
   /**
    * Validate coordination configuration
    */
-  async validateCoordinationConfig() {
-    const result = {
+  async validateCoordinationConfig(): Promise<ConfigValidationResult> {
+    const result: ConfigValidationResult = {
       success: true,
       errors: [],
       warnings: [],
@@ -194,7 +215,7 @@ export class ConfigValidator {
 
     } catch (error) {
       result.success = false;
-      result.errors.push(`Could not read coordination.md: ${error.message}`);
+      result.errors.push(`Could not read coordination.md: ${(error as Error).message}`);
     }
 
     return result;
@@ -203,8 +224,8 @@ export class ConfigValidator {
   /**
    * Validate executable configuration
    */
-  async validateExecutable() {
-    const result = {
+  async validateExecutable(): Promise<ValidationResult> {
+    const result: ValidationResult = {
       success: true,
       errors: [],
       warnings: []
@@ -223,7 +244,7 @@ export class ConfigValidator {
 
       // Check if executable (on Unix systems)
       if (Deno.build.os !== 'windows') {
-        const isExecutable = (stat.mode & 0o111) !== 0;
+        const isExecutable = (stat.mode! & 0o111) !== 0;
         if (!isExecutable) {
           result.warnings.push('claude-flow file is not executable');
         }
@@ -244,7 +265,7 @@ export class ConfigValidator {
 
     } catch (error) {
       result.success = false;
-      result.errors.push(`Could not validate executable: ${error.message}`);
+      result.errors.push(`Could not validate executable: ${(error as Error).message}`);
     }
 
     return result;
@@ -252,8 +273,8 @@ export class ConfigValidator {
 
   // Helper methods
 
-  validateRoomodesStructure(config) {
-    const result = {
+  private validateRoomodesStructure(config: any): StructureValidationResult {
+    const result: StructureValidationResult = {
       valid: true,
       errors: [],
       warnings: []
@@ -293,8 +314,8 @@ export class ConfigValidator {
     return result;
   }
 
-  validateModeConfig(modeName, modeConfig) {
-    const result = {
+  private validateModeConfig(modeName: string, modeConfig: any): ModeValidationResult {
+    const result: ModeValidationResult = {
       valid: true,
       errors: []
     };
@@ -325,8 +346,8 @@ export class ConfigValidator {
     return result;
   }
 
-  validateMemoryDataStructure(data) {
-    const result = {
+  private validateMemoryDataStructure(data: any): StructureValidationResult {
+    const result: StructureValidationResult = {
       valid: true,
       errors: [],
       warnings: []

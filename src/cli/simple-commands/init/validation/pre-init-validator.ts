@@ -1,17 +1,55 @@
-// pre-init-validator.js - Pre-initialization validation checks
+// pre-init-validator.ts - Pre-initialization validation checks
 
 import { printWarning } from '../../../utils.js';
+import type { ValidationResult } from './types.js';
+
+interface ConflictResult extends ValidationResult {
+  conflicts: string[];
+}
+
+interface DependencyInfo {
+  available: boolean;
+  version?: string;
+  error?: string;
+}
+
+interface DependencyResult extends ValidationResult {
+  dependencies: Record<string, DependencyInfo>;
+}
+
+interface EnvironmentResult extends ValidationResult {
+  environment: Record<string, string | boolean>;
+}
+
+interface PreInitCheckOptions {
+  force?: boolean;
+}
+
+interface AllChecksResult {
+  success: boolean;
+  results: {
+    permissions: ValidationResult;
+    diskSpace: ValidationResult;
+    conflicts: ConflictResult;
+    dependencies: DependencyResult;
+    environment: EnvironmentResult;
+  };
+  errors: string[];
+  warnings: string[];
+}
 
 export class PreInitValidator {
-  constructor(workingDir) {
+  private workingDir: string;
+
+  constructor(workingDir: string) {
     this.workingDir = workingDir;
   }
 
   /**
    * Check file system permissions
    */
-  async checkPermissions() {
-    const result = {
+  async checkPermissions(): Promise<ValidationResult> {
+    const result: ValidationResult = {
       success: true,
       errors: [],
       warnings: []
@@ -30,7 +68,7 @@ export class PreInitValidator {
 
     } catch (error) {
       result.success = false;
-      result.errors.push(`Insufficient permissions in ${this.workingDir}: ${error.message}`);
+      result.errors.push(`Insufficient permissions in ${this.workingDir}: ${(error as Error).message}`);
     }
 
     return result;
@@ -39,8 +77,8 @@ export class PreInitValidator {
   /**
    * Check available disk space
    */
-  async checkDiskSpace() {
-    const result = {
+  async checkDiskSpace(): Promise<ValidationResult> {
+    const result: ValidationResult = {
       success: true,
       errors: [],
       warnings: []
@@ -80,7 +118,7 @@ export class PreInitValidator {
       }
     } catch (error) {
       // Non-critical - just warn if we can't check disk space
-      result.warnings.push(`Could not check disk space: ${error.message}`);
+      result.warnings.push(`Could not check disk space: ${(error as Error).message}`);
     }
 
     return result;
@@ -89,8 +127,8 @@ export class PreInitValidator {
   /**
    * Check for existing files and conflicts
    */
-  async checkConflicts(force = false) {
-    const result = {
+  async checkConflicts(force: boolean = false): Promise<ConflictResult> {
+    const result: ConflictResult = {
       success: true,
       errors: [],
       warnings: [],
@@ -136,7 +174,7 @@ export class PreInitValidator {
         const stat = await Deno.stat(`${this.workingDir}/${dir}`);
         if (stat.isDirectory) {
           // Check if directory has important content
-          const entries = [];
+          const entries: string[] = [];
           for await (const entry of Deno.readDir(`${this.workingDir}/${dir}`)) {
             entries.push(entry.name);
           }
@@ -159,8 +197,8 @@ export class PreInitValidator {
   /**
    * Check for required dependencies
    */
-  async checkDependencies() {
-    const result = {
+  async checkDependencies(): Promise<DependencyResult> {
+    const result: DependencyResult = {
       success: true,
       errors: [],
       warnings: [],
@@ -196,7 +234,7 @@ export class PreInitValidator {
       } catch (error) {
         result.dependencies[dep.name] = {
           available: false,
-          error: error.message
+          error: (error as Error).message
         };
 
         if (dep.required) {
@@ -214,8 +252,8 @@ export class PreInitValidator {
   /**
    * Check environment variables and configuration
    */
-  async checkEnvironment() {
-    const result = {
+  async checkEnvironment(): Promise<EnvironmentResult> {
+    const result: EnvironmentResult = {
       success: true,
       errors: [],
       warnings: [],
@@ -271,7 +309,7 @@ export class PreInitValidator {
   /**
    * Run all pre-initialization checks
    */
-  async runAllChecks(options = {}) {
+  async runAllChecks(options: PreInitCheckOptions = {}): Promise<AllChecksResult> {
     const results = {
       permissions: await this.checkPermissions(),
       diskSpace: await this.checkDiskSpace(),

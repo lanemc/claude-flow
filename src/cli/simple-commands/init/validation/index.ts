@@ -1,16 +1,61 @@
-// validation/index.js - Comprehensive validation system for SPARC initialization
+// validation/index.ts - Comprehensive validation system for SPARC initialization
 
 import { PreInitValidator } from './pre-init-validator.js';
 import { PostInitValidator } from './post-init-validator.js';
 import { ConfigValidator } from './config-validator.js';
 import { ModeValidator } from './mode-validator.js';
 import { HealthChecker } from './health-checker.js';
+import type { ValidationResult } from './types.js';
+
+interface ValidationOptions {
+  force?: boolean;
+  skipPreInit?: boolean;
+  postInit?: boolean;
+  skipConfig?: boolean;
+  skipModeTest?: boolean;
+}
+
+interface ValidatedPhase<T extends ValidationResult> {
+  success: boolean;
+  checks: Record<string, T>;
+  errors: string[];
+  warnings: string[];
+}
+
+interface FullValidationResult {
+  success: boolean;
+  errors: string[];
+  warnings: string[];
+  preInit?: ValidatedPhase<ValidationResult>;
+  postInit?: ValidatedPhase<ValidationResult>;
+  configuration?: ValidatedPhase<ValidationResult>;
+  modeFunctionality?: {
+    success: boolean;
+    modes: Record<string, any>;
+    errors: string[];
+    warnings: string[];
+  };
+  health?: {
+    success: boolean;
+    health: Record<string, any>;
+    errors: string[];
+    warnings: string[];
+  };
+  report?: string;
+}
 
 /**
  * Main validation orchestrator
  */
 export class ValidationSystem {
-  constructor(workingDir) {
+  private workingDir: string;
+  private preInitValidator: PreInitValidator;
+  private postInitValidator: PostInitValidator;
+  private configValidator: ConfigValidator;
+  private modeValidator: ModeValidator;
+  private healthChecker: HealthChecker;
+
+  constructor(workingDir: string) {
     this.workingDir = workingDir;
     this.preInitValidator = new PreInitValidator(workingDir);
     this.postInitValidator = new PostInitValidator(workingDir);
@@ -21,10 +66,10 @@ export class ValidationSystem {
 
   /**
    * Run all pre-initialization checks
-   * @returns {Object} Validation result with status and details
+   * @returns {ValidatedPhase<ValidationResult>} Validation result with status and details
    */
-  async validatePreInit(options = {}) {
-    const results = {
+  async validatePreInit(options: ValidationOptions = {}): Promise<ValidatedPhase<ValidationResult>> {
+    const results: ValidatedPhase<ValidationResult> = {
       success: true,
       checks: {},
       errors: [],
@@ -74,7 +119,7 @@ export class ValidationSystem {
 
     } catch (error) {
       results.success = false;
-      results.errors.push(`Pre-initialization validation failed: ${error.message}`);
+      results.errors.push(`Pre-initialization validation failed: ${(error as Error).message}`);
     }
 
     return results;
@@ -82,10 +127,10 @@ export class ValidationSystem {
 
   /**
    * Run all post-initialization verification checks
-   * @returns {Object} Verification result with status and details
+   * @returns {ValidatedPhase<ValidationResult>} Verification result with status and details
    */
-  async validatePostInit() {
-    const results = {
+  async validatePostInit(): Promise<ValidatedPhase<ValidationResult>> {
+    const results: ValidatedPhase<ValidationResult> = {
       success: true,
       checks: {},
       errors: [],
@@ -126,7 +171,7 @@ export class ValidationSystem {
 
     } catch (error) {
       results.success = false;
-      results.errors.push(`Post-initialization validation failed: ${error.message}`);
+      results.errors.push(`Post-initialization validation failed: ${(error as Error).message}`);
     }
 
     return results;
@@ -134,10 +179,10 @@ export class ValidationSystem {
 
   /**
    * Validate configuration files
-   * @returns {Object} Configuration validation result
+   * @returns {ValidatedPhase<ValidationResult>} Configuration validation result
    */
-  async validateConfiguration() {
-    const results = {
+  async validateConfiguration(): Promise<ValidatedPhase<ValidationResult>> {
+    const results: ValidatedPhase<ValidationResult> = {
       success: true,
       checks: {},
       errors: [],
@@ -176,7 +221,7 @@ export class ValidationSystem {
 
     } catch (error) {
       results.success = false;
-      results.errors.push(`Configuration validation failed: ${error.message}`);
+      results.errors.push(`Configuration validation failed: ${(error as Error).message}`);
     }
 
     return results;
@@ -186,12 +231,17 @@ export class ValidationSystem {
    * Test SPARC mode functionality
    * @returns {Object} Mode functionality test results
    */
-  async testModeFunctionality() {
+  async testModeFunctionality(): Promise<{
+    success: boolean;
+    modes: Record<string, any>;
+    errors: string[];
+    warnings: string[];
+  }> {
     const results = {
       success: true,
       modes: {},
-      errors: [],
-      warnings: []
+      errors: [] as string[],
+      warnings: [] as string[]
     };
 
     try {
@@ -210,7 +260,7 @@ export class ValidationSystem {
 
     } catch (error) {
       results.success = false;
-      results.errors.push(`Mode functionality testing failed: ${error.message}`);
+      results.errors.push(`Mode functionality testing failed: ${(error as Error).message}`);
     }
 
     return results;
@@ -220,12 +270,17 @@ export class ValidationSystem {
    * Run comprehensive health checks
    * @returns {Object} Health check results
    */
-  async runHealthChecks() {
+  async runHealthChecks(): Promise<{
+    success: boolean;
+    health: Record<string, any>;
+    errors: string[];
+    warnings: string[];
+  }> {
     const results = {
       success: true,
-      health: {},
-      errors: [],
-      warnings: []
+      health: {} as Record<string, any>,
+      errors: [] as string[],
+      warnings: [] as string[]
     };
 
     try {
@@ -260,7 +315,7 @@ export class ValidationSystem {
 
     } catch (error) {
       results.success = false;
-      results.errors.push(`Health check failed: ${error.message}`);
+      results.errors.push(`Health check failed: ${(error as Error).message}`);
     }
 
     return results;
@@ -269,14 +324,15 @@ export class ValidationSystem {
   /**
    * Generate validation report
    */
-  generateReport(validationResults) {
-    const report = [];
+  generateReport(validationResults: FullValidationResult): string {
+    const report: string[] = [];
     report.push('=== SPARC Initialization Validation Report ===\n');
     
     // Summary
     const totalChecks = Object.keys(validationResults).reduce((acc, key) => {
-      if (typeof validationResults[key] === 'object' && validationResults[key].checks) {
-        return acc + Object.keys(validationResults[key].checks).length;
+      const value = validationResults[key as keyof FullValidationResult];
+      if (typeof value === 'object' && value !== null && 'checks' in value) {
+        return acc + Object.keys(value.checks).length;
       }
       return acc;
     }, 0);
@@ -291,11 +347,11 @@ export class ValidationSystem {
     
     // Detailed results
     for (const [phase, results] of Object.entries(validationResults)) {
-      if (typeof results === 'object' && results.checks) {
+      if (typeof results === 'object' && results !== null && 'checks' in results) {
         report.push(`\n${phase.toUpperCase()} Phase:`);
         for (const [check, result] of Object.entries(results.checks)) {
-          const status = result.success ? '✓' : '✗';
-          report.push(`  ${status} ${check}: ${result.message || 'Completed'}`);
+          const status = (result as ValidationResult).success ? '✓' : '✗';
+          report.push(`  ${status} ${check}: ${(result as any).message || 'Completed'}`);
         }
       }
     }
@@ -324,9 +380,9 @@ export class ValidationSystem {
 /**
  * Run full validation suite
  */
-export async function runFullValidation(workingDir, options = {}) {
+export async function runFullValidation(workingDir: string, options: ValidationOptions = {}): Promise<FullValidationResult> {
   const validator = new ValidationSystem(workingDir);
-  const results = {
+  const results: FullValidationResult = {
     success: true,
     errors: [],
     warnings: []
