@@ -4,6 +4,12 @@ import { getErrorMessage } from '../utils/error-handler.js';
  * Export all MCP components for easy integration
  */
 
+// Core type definitions and utilities
+export * from './types.js';
+export * from './type-guards.js';
+export * from './serialization.js';
+export * from './generics.js';
+
 // Core MCP Server
 export { MCPServer, type IMCPServer } from './server.js';
 
