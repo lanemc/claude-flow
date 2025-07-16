@@ -7,20 +7,162 @@
 import { printSuccess, printError, printWarning, printInfo } from '../utils.js';
 import { compat } from '../runtime-detector.js';
 import SwarmWebUIIntegration from './swarm-webui-integration.js';
-import MCPIntegrationLayer from './mcp-integration-layer.ts';
+import MCPIntegrationLayer from './mcp-integration-layer.js';
 import ToolExecutionFramework from './tool-execution-framework.js';
-import { EnhancedUIViews, ENHANCED_VIEWS } from './enhanced-ui-views.js';
+import { EnhancedUIViews, ENHANCED_VIEWS, EnhancedViewType } from './enhanced-ui-views.js';
 import RealtimeUpdateSystem from './realtime-update-system.js';
+import type { UIProcess, UISystemStats } from '../ui/compatible-ui.js';
 
 // Enhanced view modes with all tool categories
 const ALL_VIEWS = {
   ...ENHANCED_VIEWS,
   // Add any additional views if needed
-};
+} as const;
 
-export class EnhancedWebUIComplete {
+export type AllViewType = typeof ALL_VIEWS[keyof typeof ALL_VIEWS];
+
+// Enhanced UI interfaces
+export interface EnhancedWebUICompleteInterface {
+  processes: Map<string, UIProcess>;
+  running: boolean;
+  selectedIndex: number;
+  currentView: AllViewType;
+  agents: Agent[];
+  tasks: Task[];
+  memoryStats: MemoryStats;
+  logs: LogEntry[];
+  systemStats: SystemStats;
+}
+
+export interface Agent {
+  id: string;
+  name: string;
+  type: string;
+  status: 'working' | 'idle' | 'error';
+  tasks: number;
+  capabilities?: string[];
+}
+
+export interface Task {
+  id: string;
+  name: string;
+  status: 'pending' | 'running' | 'completed' | 'failed';
+  assignedTo?: string;
+  progress: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface MemoryStats {
+  totalEntries: number;
+  totalSize: string;
+  namespaces: MemoryNamespace[];
+}
+
+export interface MemoryNamespace {
+  name: string;
+  entries: number;
+  size: string;
+}
+
+export interface LogEntry {
+  time: Date;
+  level: 'success' | 'error' | 'warning' | 'info';
+  message: string;
+}
+
+export interface SystemStats {
+  uptime: number;
+  totalTasks: number;
+  completedTasks: number;
+  activeAgents: number;
+  memoryUsage: number;
+  cpuUsage: number;
+}
+
+export interface SwarmMetrics {
+  swarmId: string;
+  agents: {
+    active: number;
+    total: number;
+  };
+  tasks: {
+    inProgress: number;
+    completed: number;
+  };
+  efficiency: number;
+}
+
+export interface MCPStatus {
+  mcpAvailable: boolean;
+  totalTools: number;
+  activeExecutions: number;
+  cacheSize: number;
+}
+
+export interface ToolStatus {
+  currentExecutions: number;
+  queuedExecutions: number;
+  maxConcurrent: number;
+  availableTools: number;
+  availableWorkflows: number;
+}
+
+export interface ColorUtilities {
+  cyan: (text: string) => string;
+  gray: (text: string) => string;
+  white: (text: string) => string;
+  yellow: (text: string) => string;
+  green: (text: string) => string;
+  red: (text: string) => string;
+  blue: (text: string) => string;
+  magenta: (text: string) => string;
+  bold: (text: string) => string;
+  dim: (text: string) => string;
+}
+
+export interface BatchToolRequest {
+  toolName: string;
+  parameters?: Record<string, any>;
+}
+
+export interface BatchExecutionResult {
+  summary: {
+    total: number;
+    successful: number;
+    failed: number;
+  };
+  results: any[];
+}
+
+export class EnhancedWebUIComplete implements EnhancedWebUICompleteInterface {
+  public processes: Map<string, UIProcess>;
+  public running: boolean;
+  public selectedIndex: number;
+  public currentView: AllViewType;
+  public agents: Agent[];
+  public tasks: Task[];
+  public memoryStats: MemoryStats;
+  public logs: LogEntry[];
+  public systemStats: SystemStats;
+  
+  // Enhanced components
+  public mcpIntegration: MCPIntegrationLayer | null;
+  public toolFramework: ToolExecutionFramework | null;
+  public enhancedViews: EnhancedUIViews | null;
+  public realtimeUpdates: RealtimeUpdateSystem | null;
+  public swarmIntegration: SwarmWebUIIntegration | null;
+  
+  // Input handling
+  private inputBuffer: string;
+  private commandHistory: string[];
+  private historyIndex: number;
+  
+  // Colors for consistent styling
+  public colors: ColorUtilities;
+
   constructor() {
-    this.processes = new Map();
+    this.processes = new Map<string, UIProcess>();
     this.running = true;
     this.selectedIndex = 0;
     this.currentView = ALL_VIEWS.PROCESSES;
@@ -28,7 +170,7 @@ export class EnhancedWebUIComplete {
     this.tasks = [];
     this.memoryStats = {
       totalEntries: 0,
-      totalSize: 0,
+      totalSize: '0 MB',
       namespaces: []
     };
     this.logs = [];
@@ -46,6 +188,7 @@ export class EnhancedWebUIComplete {
     this.toolFramework = null;
     this.enhancedViews = null;
     this.realtimeUpdates = null;
+    this.swarmIntegration = null;
     
     // Input handling
     this.inputBuffer = '';
@@ -54,16 +197,16 @@ export class EnhancedWebUIComplete {
     
     // Colors for consistent styling
     this.colors = {
-      cyan: (text) => `\x1b[36m${text}\x1b[0m`,
-      gray: (text) => `\x1b[90m${text}\x1b[0m`,
-      white: (text) => `\x1b[37m${text}\x1b[0m`,
-      yellow: (text) => `\x1b[33m${text}\x1b[0m`,
-      green: (text) => `\x1b[32m${text}\x1b[0m`,
-      red: (text) => `\x1b[31m${text}\x1b[0m`,
-      blue: (text) => `\x1b[34m${text}\x1b[0m`,
-      magenta: (text) => `\x1b[35m${text}\x1b[0m`,
-      bold: (text) => `\x1b[1m${text}\x1b[0m`,
-      dim: (text) => `\x1b[2m${text}\x1b[0m`
+      cyan: (text: string) => `\x1b[36m${text}\x1b[0m`,
+      gray: (text: string) => `\x1b[90m${text}\x1b[0m`,
+      white: (text: string) => `\x1b[37m${text}\x1b[0m`,
+      yellow: (text: string) => `\x1b[33m${text}\x1b[0m`,
+      green: (text: string) => `\x1b[32m${text}\x1b[0m`,
+      red: (text: string) => `\x1b[31m${text}\x1b[0m`,
+      blue: (text: string) => `\x1b[34m${text}\x1b[0m`,
+      magenta: (text: string) => `\x1b[35m${text}\x1b[0m`,
+      bold: (text: string) => `\x1b[1m${text}\x1b[0m`,
+      dim: (text: string) => `\x1b[2m${text}\x1b[0m`
     };
     
     this.initializeEnhancedUI();
@@ -72,10 +215,10 @@ export class EnhancedWebUIComplete {
   /**
    * Initialize all enhanced UI components
    */
-  async initializeEnhancedUI() {
+  private async initializeEnhancedUI(): Promise<void> {
     try {
       // Initialize original swarm integration
-      this.swarmIntegration = new SwarmWebUIIntegration(this);
+      this.swarmIntegration = new SwarmWebUIIntegration(this as any);
       
       // Initialize MCP integration layer
       this.mcpIntegration = new MCPIntegrationLayer(this);
@@ -101,7 +244,7 @@ export class EnhancedWebUIComplete {
       this.addLog('success', '🚀 Enhanced Web UI fully initialized with all 87 MCP tools');
       
     } catch (error) {
-      this.addLog('error', `Failed to initialize enhanced UI: ${error.message}`);
+      this.addLog('error', `Failed to initialize enhanced UI: ${error instanceof Error ? error.message : String(error)}`);
       throw error;
     }
   }
@@ -109,7 +252,7 @@ export class EnhancedWebUIComplete {
   /**
    * Initialize system processes
    */
-  initializeProcesses() {
+  private initializeProcesses(): void {
     const PROCESSES = [
       { id: 'event-bus', name: 'Event Bus', description: 'Central event distribution system' },
       { id: 'orchestrator', name: 'Orchestrator', description: 'Main coordination engine' },
@@ -128,10 +271,14 @@ export class EnhancedWebUIComplete {
       this.processes.set(p.id, {
         ...p,
         status: 'running', // Start most services as running
+        type: 'service',
         pid: Math.floor(Math.random() * 50000) + 1000,
-        uptime: Math.floor(Math.random() * 86400), // Random uptime up to 24h
-        cpu: Math.random() * 5,
-        memory: Math.random() * 100
+        startTime: Date.now() - Math.floor(Math.random() * 86400000), // Random uptime up to 24h
+        metrics: {
+          cpu: Math.random() * 5,
+          memory: Math.random() * 100,
+          restarts: 0
+        }
       });
     });
   }
@@ -139,9 +286,11 @@ export class EnhancedWebUIComplete {
   /**
    * Initialize system data
    */
-  async initializeSystemData() {
+  private async initializeSystemData(): Promise<void> {
     // Initialize swarm
-    await this.swarmIntegration.initializeSwarm('hierarchical', 8);
+    if (this.swarmIntegration) {
+      await this.swarmIntegration.initializeSwarm('hierarchical', 8);
+    }
     
     // Initialize memory stats
     this.memoryStats = {
@@ -174,8 +323,9 @@ export class EnhancedWebUIComplete {
       this.systemStats.uptime++;
       // Update process uptimes
       this.processes.forEach(process => {
-        if (process.status === 'running') {
-          process.uptime++;
+        if (process.status === 'running' && process.startTime) {
+          // Update uptime based on start time
+          const currentUptime = Math.floor((Date.now() - process.startTime) / 1000);
         }
       });
     }, 1000);
@@ -184,7 +334,7 @@ export class EnhancedWebUIComplete {
   /**
    * Start system monitoring
    */
-  startSystemMonitoring() {
+  private startSystemMonitoring(): void {
     setInterval(() => {
       // Update system stats
       this.systemStats.cpuUsage = Math.max(0, this.systemStats.cpuUsage + (Math.random() - 0.5) * 2);
@@ -192,9 +342,9 @@ export class EnhancedWebUIComplete {
       
       // Update process stats
       this.processes.forEach(process => {
-        if (process.status === 'running') {
-          process.cpu = Math.max(0, process.cpu + (Math.random() - 0.5) * 1);
-          process.memory = Math.max(0, process.memory + (Math.random() - 0.5) * 5);
+        if (process.status === 'running' && process.metrics) {
+          process.metrics.cpu = Math.max(0, (process.metrics.cpu || 0) + (Math.random() - 0.5) * 1);
+          process.metrics.memory = Math.max(0, (process.metrics.memory || 0) + (Math.random() - 0.5) * 5);
         }
       });
       
@@ -212,7 +362,7 @@ export class EnhancedWebUIComplete {
   /**
    * Start the enhanced UI
    */
-  async start() {
+  public async start(): Promise<void> {
     // Clear screen
     console.clear();
     
@@ -243,7 +393,7 @@ export class EnhancedWebUIComplete {
   /**
    * Show tool categories summary at startup
    */
-  showToolCategoriesSummary() {
+  private showToolCategoriesSummary(): void {
     const categories = [
       { name: 'Swarm Coordination', count: 12, icon: '🐝' },
       { name: 'Neural Networks', count: 15, icon: '🧠' },
@@ -257,7 +407,7 @@ export class EnhancedWebUIComplete {
     
     console.log(this.colors.cyan('📂 Available Tool Categories:'));
     categories.forEach(cat => {
-      console.log(`  ${cat.icon} ${this.colors.white(cat.name)}: ${this.colors.yellow(cat.count)} tools`);
+      console.log(`  ${cat.icon} ${this.colors.white(cat.name)}: ${this.colors.yellow(String(cat.count))} tools`);
     });
     console.log();
     console.log(this.colors.green(`Total: ${this.colors.bold('87')} MCP tools ready for use`));
@@ -267,7 +417,7 @@ export class EnhancedWebUIComplete {
   /**
    * Setup input handling for enhanced features
    */
-  setupInputHandling() {
+  private setupInputHandling(): void {
     // Enable raw input mode for better key handling
     if (process.stdin.setRawMode) {
       process.stdin.setRawMode(true);
@@ -278,7 +428,7 @@ export class EnhancedWebUIComplete {
   /**
    * Enhanced render method
    */
-  render() {
+  public render(): void {
     // Clear screen and move cursor to top
     console.log('\x1b[2J\x1b[H');
     
@@ -303,25 +453,25 @@ export class EnhancedWebUIComplete {
         this.renderLogsView();
         break;
       case ALL_VIEWS.NEURAL:
-        this.enhancedViews.renderNeuralView();
+        this.enhancedViews?.renderNeuralView();
         break;
       case ALL_VIEWS.ANALYSIS:
-        this.enhancedViews.renderAnalysisView();
+        this.enhancedViews?.renderAnalysisView();
         break;
       case ALL_VIEWS.WORKFLOW:
-        this.enhancedViews.renderWorkflowView();
+        this.enhancedViews?.renderWorkflowView();
         break;
       case ALL_VIEWS.GITHUB:
-        this.enhancedViews.renderGitHubView();
+        this.enhancedViews?.renderGitHubView();
         break;
       case ALL_VIEWS.DAA:
-        this.enhancedViews.renderDAAView();
+        this.enhancedViews?.renderDAAView();
         break;
       case ALL_VIEWS.SYSTEM:
-        this.enhancedViews.renderSystemView();
+        this.enhancedViews?.renderSystemView();
         break;
       case ALL_VIEWS.TOOLS:
-        this.enhancedViews.renderToolsView();
+        this.enhancedViews?.renderToolsView();
         break;
       case ALL_VIEWS.HELP:
         this.renderEnhancedHelpView();
@@ -335,7 +485,7 @@ export class EnhancedWebUIComplete {
   /**
    * Render enhanced header with all navigation options
    */
-  renderEnhancedHeader() {
+  private renderEnhancedHeader(): void {
     console.log(this.colors.cyan(this.colors.bold('🧠 Claude-Flow Enhanced Web UI v2.0.0')));
     console.log(this.colors.gray('─'.repeat(80)));
     
@@ -397,7 +547,7 @@ export class EnhancedWebUIComplete {
   /**
    * Render enhanced help view
    */
-  renderEnhancedHelpView() {
+  private renderEnhancedHelpView(): void {
     console.log(this.colors.white(this.colors.bold('❓ Enhanced Web UI Help')));
     console.log();
     
@@ -442,7 +592,7 @@ export class EnhancedWebUIComplete {
   /**
    * Render enhanced footer
    */
-  renderEnhancedFooter() {
+  private renderEnhancedFooter(): void {
     console.log();
     console.log(this.colors.gray('─'.repeat(80)));
     
@@ -452,9 +602,9 @@ export class EnhancedWebUIComplete {
     
     let statusLine = `🧠 Claude-Flow Enhanced UI | `;
     statusLine += `MCP: ${mcpStatus?.mcpAvailable ? this.colors.green('✓') : this.colors.red('✗')} | `;
-    statusLine += `Tools: ${this.colors.yellow(mcpStatus?.totalTools || 87)} | `;
-    statusLine += `Active: ${this.colors.blue(toolStatus?.currentExecutions || 0)} | `;
-    statusLine += `Queued: ${this.colors.cyan(toolStatus?.queuedExecutions || 0)} | `;
+    statusLine += `Tools: ${this.colors.yellow(String(mcpStatus?.totalTools || 87))} | `;
+    statusLine += `Active: ${this.colors.blue(String(toolStatus?.currentExecutions || 0))} | `;
+    statusLine += `Queued: ${this.colors.cyan(String(toolStatus?.queuedExecutions || 0))} | `;
     statusLine += `Uptime: ${this.colors.white(this.formatUptime(this.systemStats.uptime))}`;
     
     console.log(statusLine);
@@ -474,9 +624,9 @@ export class EnhancedWebUIComplete {
   /**
    * Enhanced input handling
    */
-  async handleInput() {
+  private async handleInput(): Promise<void> {
     return new Promise((resolve) => {
-      const onData = async (chunk) => {
+      const onData = async (chunk: Buffer) => {
         const key = chunk.toString();
         
         // Remove listener
@@ -505,7 +655,7 @@ export class EnhancedWebUIComplete {
           await this.handleOriginalInput(key);
           
         } catch (error) {
-          this.addLog('error', `Input handling error: ${error.message}`);
+          this.addLog('error', `Input handling error: ${error instanceof Error ? error.message : String(error)}`);
         }
         
         resolve();
@@ -518,8 +668,8 @@ export class EnhancedWebUIComplete {
   /**
    * Handle navigation input
    */
-  async handleNavigationInput(key) {
-    const navigationMap = {
+  private async handleNavigationInput(key: string): Promise<boolean> {
+    const navigationMap: Record<string, AllViewType> = {
       '1': ALL_VIEWS.PROCESSES,
       '2': ALL_VIEWS.STATUS,
       '3': ALL_VIEWS.ORCHESTRATION,
@@ -548,9 +698,9 @@ export class EnhancedWebUIComplete {
   /**
    * Handle enhanced view input
    */
-  async handleEnhancedViewInput(key) {
+  private async handleEnhancedViewInput(key: string): Promise<boolean> {
     if (this.enhancedViews) {
-      return await this.enhancedViews.handleEnhancedInput(key, this.currentView);
+      return await this.enhancedViews.handleEnhancedInput(key, this.currentView as EnhancedViewType);
     }
     return false;
   }
@@ -558,7 +708,7 @@ export class EnhancedWebUIComplete {
   /**
    * Handle global commands
    */
-  async handleGlobalCommands(key) {
+  private async handleGlobalCommands(key: string): Promise<boolean> {
     switch (key) {
       case 'r':
         await this.promptRunTool();
@@ -584,58 +734,64 @@ export class EnhancedWebUIComplete {
   /**
    * Prompt for tool execution
    */
-  async promptRunTool() {
+  private async promptRunTool(): Promise<void> {
     // In a real implementation, this would show an interactive prompt
     // For now, execute a sample tool
     this.addLog('info', 'Tool execution prompt (demo)');
     
     try {
-      const result = await this.toolFramework.executeTool('features_detect');
-      this.addLog('success', 'Tool executed successfully');
-      this.enhancedViews.displayToolResult(result);
+      if (this.toolFramework) {
+        const result = await this.toolFramework.executeTool('features_detect');
+        this.addLog('success', 'Tool executed successfully');
+        this.enhancedViews?.displayToolResult(result);
+      }
     } catch (error) {
-      this.addLog('error', `Tool execution failed: ${error.message}`);
+      this.addLog('error', `Tool execution failed: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
   /**
    * Prompt for workflow execution
    */
-  async promptRunWorkflow() {
+  private async promptRunWorkflow(): Promise<void> {
     this.addLog('info', 'Executing sample workflow...');
     
     try {
-      const result = await this.toolFramework.executePredefinedWorkflow('performance_analysis');
-      this.addLog('success', 'Workflow completed successfully');
+      if (this.toolFramework) {
+        const result = await this.toolFramework.executePredefinedWorkflow('performance_analysis');
+        this.addLog('success', 'Workflow completed successfully');
+      }
     } catch (error) {
-      this.addLog('error', `Workflow failed: ${error.message}`);
+      this.addLog('error', `Workflow failed: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
   /**
    * Prompt for batch execution
    */
-  async promptBatchExecution() {
+  private async promptBatchExecution(): Promise<void> {
     this.addLog('info', 'Executing sample batch...');
     
-    const batchTools = [
+    const batchTools: BatchToolRequest[] = [
       { toolName: 'swarm_status' },
       { toolName: 'neural_status' },
       { toolName: 'memory_usage', parameters: { action: 'list' } }
     ];
     
     try {
-      const result = await this.toolFramework.executeToolsBatch(batchTools, { parallel: true });
-      this.addLog('success', `Batch completed: ${result.summary.successful}/${result.summary.total} successful`);
+      if (this.toolFramework) {
+        const result = await this.toolFramework.executeToolsBatch(batchTools, { parallel: true });
+        this.addLog('success', `Batch completed: ${result.summary.successful}/${result.summary.total} successful`);
+      }
     } catch (error) {
-      this.addLog('error', `Batch execution failed: ${error.message}`);
+      this.addLog('error', `Batch execution failed: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
   /**
    * Handle original input for backward compatibility
    */
-  async handleOriginalInput(key) {
+  private async handleOriginalInput(key: string): Promise<void> {
     // Handle original process view navigation
     if (this.currentView === ALL_VIEWS.PROCESSES) {
       switch (key) {
@@ -656,14 +812,14 @@ export class EnhancedWebUIComplete {
   /**
    * Toggle selected process status
    */
-  async toggleSelectedProcess() {
+  private async toggleSelectedProcess(): Promise<void> {
     const processes = Array.from(this.processes.values());
     const selected = processes[this.selectedIndex];
     
     if (selected) {
       if (selected.status === 'running') {
         selected.status = 'stopped';
-        selected.pid = null;
+        selected.pid = undefined;
         this.addLog('warning', `Stopped ${selected.name}`);
       } else {
         selected.status = 'running';
@@ -676,8 +832,8 @@ export class EnhancedWebUIComplete {
   /**
    * Add log entry with enhanced formatting
    */
-  addLog(level, message) {
-    const logEntry = {
+  public addLog(level: LogEntry['level'], message: string): void {
+    const logEntry: LogEntry = {
       time: new Date(),
       level,
       message
@@ -699,22 +855,24 @@ export class EnhancedWebUIComplete {
   /**
    * Render process view (original)
    */
-  renderProcessView() {
+  private renderProcessView(): void {
     console.log(this.colors.white(this.colors.bold('Process Management')));
     console.log();
     
     let index = 0;
-    for (const [id, process] of this.processes) {
+    const processEntries = Array.from(this.processes.entries());
+    for (const [id, process] of processEntries) {
       const selected = index === this.selectedIndex;
       const prefix = selected ? this.colors.yellow('▶ ') : '  ';
       const status = this.getStatusIcon(process.status);
       const name = selected ? this.colors.yellow(process.name) : this.colors.white(process.name);
       
       console.log(`${prefix}${status} ${name}`);
-      console.log(`     ${this.colors.gray(process.description)}`);
+      console.log(`     ${this.colors.gray((process as any).description || 'No description')}`);
       
       if (process.status === 'running') {
-        const stats = this.colors.dim(`PID: ${process.pid} | Uptime: ${this.formatUptime(process.uptime)} | CPU: ${process.cpu.toFixed(1)}% | Mem: ${process.memory.toFixed(0)}MB`);
+        const uptime = process.startTime ? Math.floor((Date.now() - process.startTime) / 1000) : 0;
+        const stats = this.colors.dim(`PID: ${process.pid || 'N/A'} | Uptime: ${this.formatUptime(uptime)} | CPU: ${process.metrics?.cpu?.toFixed(1) || '0'}% | Mem: ${process.metrics?.memory?.toFixed(0) || '0'}MB`);
         console.log(`     ${stats}`);
       }
       console.log();
@@ -725,14 +883,14 @@ export class EnhancedWebUIComplete {
     // Enhanced stats
     const running = Array.from(this.processes.values()).filter(p => p.status === 'running').length;
     console.log(this.colors.gray('─'.repeat(80)));
-    console.log(this.colors.white(`Total: ${this.processes.size} | Running: ${this.colors.green(running)} | Stopped: ${this.colors.gray(this.processes.size - running)}`));
+    console.log(this.colors.white(`Total: ${String(this.processes.size)} | Running: ${this.colors.green(String(running))} | Stopped: ${this.colors.gray(String(this.processes.size - running))}`));
     console.log(this.colors.cyan(`Enhanced: ${this.colors.yellow('87 MCP tools')} available across ${this.colors.yellow('8 categories')}`));
   }
 
   /**
    * Render status view with enhanced metrics
    */
-  renderStatusView() {
+  private renderStatusView(): void {
     console.log(this.colors.white(this.colors.bold('Enhanced System Status')));
     console.log();
     
@@ -752,8 +910,8 @@ export class EnhancedWebUIComplete {
     
     // Enhanced activity metrics
     console.log(this.colors.cyan('📈 Enhanced Activity Metrics'));
-    console.log(`  Active Agents: ${this.colors.yellow(this.agents.filter(a => a.status === 'working').length)}/${this.agents.length}`);
-    console.log(`  Total Tasks: ${this.tasks.length}`);
+    console.log(`  Active Agents: ${this.colors.yellow(String(this.agents.filter(a => a.status === 'working').length))}/${String(this.agents.length)}`);
+    console.log(`  Total Tasks: ${String(this.tasks.length)}`);
     console.log(`  Tool Executions: ${this.colors.green('Running')}`);
     console.log(`  Real-time Updates: ${this.colors.green('Active')}`);
     console.log();
@@ -763,8 +921,8 @@ export class EnhancedWebUIComplete {
     if (mcpStatus) {
       console.log(this.colors.cyan('🔧 Tool System Status'));
       console.log(`  MCP Connection: ${mcpStatus.mcpAvailable ? this.colors.green('Connected') : this.colors.red('Mock Mode')}`);
-      console.log(`  Active Executions: ${this.colors.yellow(mcpStatus.activeExecutions || 0)}`);
-      console.log(`  Cache Size: ${this.colors.blue(mcpStatus.cacheSize || 0)} entries`);
+      console.log(`  Active Executions: ${this.colors.yellow(String(mcpStatus.activeExecutions || 0))}`);
+      console.log(`  Cache Size: ${this.colors.blue(String(mcpStatus.cacheSize || 0))} entries`);
       console.log();
     }
     
@@ -783,19 +941,19 @@ export class EnhancedWebUIComplete {
   /**
    * Render orchestration view (enhanced)
    */
-  renderOrchestrationView() {
+  private renderOrchestrationView(): void {
     console.log(this.colors.white(this.colors.bold('Enhanced Swarm Orchestration')));
     console.log();
     
     // Enhanced swarm metrics
-    const metrics = this.swarmIntegration.getSwarmMetrics();
+    const metrics = this.swarmIntegration?.getSwarmMetrics();
     if (metrics) {
       console.log(this.colors.cyan('🐝 Swarm Status'));
       console.log(`  Swarm ID: ${this.colors.yellow(metrics.swarmId)}`);
       console.log(`  Topology: ${this.colors.blue('hierarchical')} (optimized)`);
-      console.log(`  Agents: ${this.colors.green(metrics.agents.active)}/${metrics.agents.total} active`);
-      console.log(`  Tasks: ${this.colors.yellow(metrics.tasks.inProgress)} in progress, ${this.colors.green(metrics.tasks.completed)} completed`);
-      console.log(`  Efficiency: ${this.colors.green(metrics.efficiency + '%')}`);
+      console.log(`  Agents: ${this.colors.green(String(metrics.agents.active))}/${String(metrics.agents.total)} active`);
+      console.log(`  Tasks: ${this.colors.yellow(String(metrics.tasks.inProgress))} in progress, ${this.colors.green(String(metrics.tasks.completed))} completed`);
+      console.log(`  Efficiency: ${this.colors.green(String(metrics.efficiency) + '%')}`);
       console.log(`  Coordination Tools: ${this.colors.cyan('12')} available`);
       console.log();
     }
@@ -810,7 +968,7 @@ export class EnhancedWebUIComplete {
       const name = selected ? this.colors.yellow(agent.name) : this.colors.white(agent.name);
       
       console.log(`${prefix}${statusIcon} ${name} (${agent.type})`);
-      console.log(`     ID: ${agent.id} | Tasks: ${agent.tasks} | Status: ${agent.status}`);
+      console.log(`     ID: ${agent.id} | Tasks: ${String(agent.tasks)} | Status: ${agent.status}`);
       if (agent.capabilities && agent.capabilities.length > 0) {
         console.log(`     Capabilities: ${this.colors.dim(agent.capabilities.join(', '))}`);
       }
@@ -824,15 +982,15 @@ export class EnhancedWebUIComplete {
   /**
    * Render memory view (enhanced)
    */
-  renderMemoryView() {
+  private renderMemoryView(): void {
     console.log(this.colors.white(this.colors.bold('Enhanced Memory Management')));
     console.log();
     
     // Enhanced memory overview
     console.log(this.colors.cyan('💾 Memory Overview'));
-    console.log(`  Total Entries: ${this.colors.yellow(this.memoryStats.totalEntries)}`);
+    console.log(`  Total Entries: ${this.colors.yellow(String(this.memoryStats.totalEntries))}`);
     console.log(`  Total Size: ${this.colors.blue(this.memoryStats.totalSize)}`);
-    console.log(`  Namespaces: ${this.colors.green(this.memoryStats.namespaces.length)}`);
+    console.log(`  Namespaces: ${this.colors.green(String(this.memoryStats.namespaces.length))}`);
     console.log(`  Persistence Tools: ${this.colors.cyan('12')} available`);
     console.log();
     
@@ -840,7 +998,7 @@ export class EnhancedWebUIComplete {
     console.log(this.colors.cyan('📂 Namespace Details'));
     this.memoryStats.namespaces.forEach(ns => {
       const usageBar = this.getUsageBar(ns.entries, 100);
-      console.log(`  ${this.colors.white(ns.name.padEnd(12))} ${usageBar} ${this.colors.yellow(ns.entries)} entries (${this.colors.blue(ns.size)})`);
+      console.log(`  ${this.colors.white(ns.name.padEnd(12))} ${usageBar} ${this.colors.yellow(String(ns.entries))} entries (${this.colors.blue(ns.size)})`);
     });
     
     console.log();
@@ -854,11 +1012,11 @@ export class EnhancedWebUIComplete {
   /**
    * Render logs view (enhanced)
    */
-  renderLogsView() {
+  private renderLogsView(): void {
     console.log(this.colors.white(this.colors.bold('Enhanced System Logs')));
     console.log();
     
-    console.log(this.colors.cyan(`📋 Recent Activity (${this.logs.length} total entries)`));
+    console.log(this.colors.cyan(`📋 Recent Activity (${String(this.logs.length)} total entries)`));
     console.log();
     
     this.logs.slice(0, 15).forEach(log => {
@@ -878,25 +1036,25 @@ export class EnhancedWebUIComplete {
   /**
    * Utility methods
    */
-  getStatusIcon(status) {
+  private getStatusIcon(status: UIProcess['status']): string {
     return status === 'running' ? this.colors.green('●') : this.colors.gray('○');
   }
 
-  formatUptime(seconds) {
+  private formatUptime(seconds: number): string {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
     const secs = seconds % 60;
     return `${hours}h ${minutes}m ${secs}s`;
   }
 
-  getHealthBar() {
+  private getHealthBar(): string {
     const running = Array.from(this.processes.values()).filter(p => p.status === 'running').length;
     const total = this.processes.size;
     const percentage = (running / total) * 100;
     return this.getUsageBar(percentage, 100);
   }
 
-  getUsageBar(value, max, width = 20) {
+  private getUsageBar(value: number, max: number, width: number = 20): string {
     const percentage = Math.min((value / max) * 100, 100);
     const filled = Math.round((percentage / 100) * width);
     const empty = width - filled;
@@ -908,7 +1066,7 @@ export class EnhancedWebUIComplete {
   /**
    * Shutdown the enhanced UI
    */
-  async shutdown() {
+  public async shutdown(): Promise<void> {
     console.log();
     this.addLog('info', 'Shutting down Enhanced Web UI...');
     

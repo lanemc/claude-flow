@@ -6,6 +6,9 @@
 export * from '../swarm/types.js';
 // export * from '../workflows/types.js'; // File not found
 
+// Re-export MCP Integration types
+export * from '../cli/simple-commands/mcp-integration-layer.js';
+
 // Memory-specific types that may be referenced
 export interface MemoryEntry {
   id: string;
