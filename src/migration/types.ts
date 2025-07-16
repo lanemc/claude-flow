@@ -115,3 +115,150 @@ export interface MigrationProgress {
   errors: number;
   warnings: number;
 }
+
+// Rollback type definitions
+export type RollbackPhase = 
+  | 'sparc-init' 
+  | 'claude-commands' 
+  | 'memory-setup' 
+  | 'coordination-setup' 
+  | 'executable-creation'
+  | string; // Allow custom phases
+
+export interface RollbackResult {
+  success: boolean;
+  phase: RollbackPhase;
+  actions: RollbackAction[];
+  errors: string[];
+  warnings: string[];
+  timestamp: Date;
+  rollbackId: string;
+}
+
+export interface RollbackAction {
+  type: 'file_removed' | 'directory_removed' | 'file_restored' | 'permission_restored';
+  path: string;
+  description: string;
+  timestamp: Date;
+  success: boolean;
+  error?: string;
+}
+
+export interface RollbackCheckpoint {
+  id: string;
+  phase: RollbackPhase;
+  timestamp: Date;
+  data: {
+    actions?: any[];
+    state?: Record<string, any>;
+    metadata?: Record<string, any>;
+  };
+}
+
+export interface RollbackStrategy {
+  type: 'full' | 'partial' | 'selective';
+  phases: RollbackPhase[];
+  preserveUserData: boolean;
+  createBackup: boolean;
+}
+
+// Validation type definitions for schemas and rules
+export interface ValidationSchema<T = any> {
+  name: string;
+  version: string;
+  rules: ValidationRule<T>[];
+  metadata?: Record<string, any>;
+}
+
+export interface ValidationRule<T = any> {
+  name: string;
+  type: 'required' | 'format' | 'range' | 'custom';
+  field: keyof T | string;
+  validator: ValidationValidator<T>;
+  message: string;
+  severity: 'error' | 'warning' | 'info';
+}
+
+export interface ValidationValidator<T = any> {
+  validate: (value: any, context?: T) => ValidationRuleResult;
+}
+
+export interface ValidationRuleResult {
+  valid: boolean;
+  message?: string;
+  details?: any;
+}
+
+export interface TypedValidationResult<T = any> {
+  valid: boolean;
+  data?: T;
+  checks: ValidationCheck[];
+  errors: ValidationError[];
+  warnings: ValidationWarning[];
+  metadata: {
+    timestamp: Date;
+    schema: string;
+    version: string;
+  };
+}
+
+export interface ValidationError {
+  field: string;
+  message: string;
+  value?: any;
+  rule: string;
+  severity: 'error';
+}
+
+export interface ValidationWarning {
+  field: string;
+  message: string;
+  value?: any;
+  rule: string;
+  severity: 'warning' | 'info';
+}
+
+// Health check interfaces
+export interface HealthCheck {
+  name: string;
+  status: 'healthy' | 'warning' | 'critical' | 'unknown';
+  message?: string;
+  timestamp: Date;
+  metadata?: Record<string, any>;
+}
+
+export interface SystemHealthStatus {
+  overall: 'healthy' | 'warning' | 'critical';
+  checks: HealthCheck[];
+  summary: {
+    total: number;
+    healthy: number;
+    warning: number;
+    critical: number;
+    unknown: number;
+  };
+  timestamp: Date;
+}
+
+// State management types for validation and rollback
+export interface ValidationState {
+  schemas: Record<string, ValidationSchema>;
+  activeValidations: Record<string, TypedValidationResult>;
+  cache: Record<string, any>;
+  config: {
+    strictMode: boolean;
+    validateOnSave: boolean;
+    autoCorrect: boolean;
+  };
+}
+
+export interface RollbackState {
+  availableBackups: MigrationBackup[];
+  activeRollbacks: Record<string, RollbackResult>;
+  checkpoints: Record<string, RollbackCheckpoint>;
+  config: {
+    autoBackup: boolean;
+    maxBackups: number;
+    retentionDays: number;
+  };
+}

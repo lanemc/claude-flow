@@ -179,7 +179,7 @@ async function main() {
   }
 
   const command = args[0];
-  const { flags, args: parsedArgs } = parseFlags(args.slice(1));
+  const { flags, args: parsedArgs }: { flags: Record<string, any>, args: string[] } = parseFlags(args.slice(1));
 
   // Handle special commands first
   switch (command) {
@@ -1193,7 +1193,7 @@ async function main() {
           }
           
           // Parse flags
-          const flags = {};
+          const flags: Record<string, any> = {};
           for (let i = taskEndIndex; i < subArgs.length; i++) {
             const arg = subArgs[i];
             if (arg === '--tools' || arg === '-t') {

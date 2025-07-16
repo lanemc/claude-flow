@@ -1,15 +1,40 @@
-// rollback-executor.js - Execute rollback operations
+// rollback-executor.ts - Execute rollback operations with TypeScript type safety
+
+import { MigrationBackup, ValidationResult, RollbackResult, RollbackPhase, RollbackAction, RollbackCheckpoint } from '../../../../migration/types.js';
+import { logger } from '../../../../migration/logger.js';
+import { promises as fs } from 'fs';
+import * as path from 'path';
+
+interface RollbackExecutionResult {
+  success: boolean;
+  errors: string[];
+  warnings: string[];
+  actions: string[];
+}
+
+interface ActionReversal {
+  success: boolean;
+  description: string;
+}
+
+interface RollbackActionData {
+  type: 'file_created' | 'directory_created' | 'file_modified';
+  path: string;
+  backup?: string;
+}
 
 export class RollbackExecutor {
-  constructor(workingDir) {
+  private workingDir: string;
+
+  constructor(workingDir: string) {
     this.workingDir = workingDir;
   }
 
   /**
    * Execute full rollback to pre-initialization state
    */
-  async executeFullRollback(backupId) {
-    const result = {
+  async executeFullRollback(backupId: string): Promise<RollbackExecutionResult> {
+    const result: RollbackExecutionResult = {
       success: true,
       errors: [],
       warnings: [],
@@ -46,7 +71,7 @@ export class RollbackExecutor {
 
     } catch (error) {
       result.success = false;
-      result.errors.push(`Full rollback execution failed: ${error.message}`);
+      result.errors.push(`Full rollback execution failed: ${error instanceof Error ? error.message : String(error)}`);
     }
 
     return result;
@@ -55,8 +80,8 @@ export class RollbackExecutor {
   /**
    * Execute partial rollback for specific component
    */
-  async executePartialRollback(phase, checkpoint) {
-    const result = {
+  async executePartialRollback(phase: RollbackPhase, checkpoint?: RollbackCheckpoint): Promise<RollbackExecutionResult> {
+    const result: RollbackExecutionResult = {
       success: true,
       errors: [],
       warnings: [],
@@ -67,7 +92,7 @@ export class RollbackExecutor {
       console.log(`🔄 Executing partial rollback for phase: ${phase}`);
 
       // Determine rollback strategy based on phase
-      let rollbackResult;
+      let rollbackResult: RollbackExecutionResult;
       
       switch (phase) {
         case 'sparc-init':
@@ -101,7 +126,7 @@ export class RollbackExecutor {
 
     } catch (error) {
       result.success = false;
-      result.errors.push(`Partial rollback execution failed: ${error.message}`);
+      result.errors.push(`Partial rollback execution failed: ${error instanceof Error ? error.message : String(error)}`);
     }
 
     return result;
@@ -110,8 +135,8 @@ export class RollbackExecutor {
   /**
    * Rollback SPARC initialization
    */
-  async rollbackSparcInitialization() {
-    const result = {
+  private async rollbackSparcInitialization(): Promise<RollbackExecutionResult> {
+    const result: RollbackExecutionResult = {
       success: true,
       errors: [],
       warnings: [],
@@ -119,23 +144,23 @@ export class RollbackExecutor {
     };
 
     try {
-      const itemsToRemove = [
+      const itemsToRemove: string[] = [
         '.roomodes',
         '.roo',
         '.claude/commands/sparc'
       ];
 
       for (const item of itemsToRemove) {
-        const itemPath = `${this.workingDir}/${item}`;
+        const itemPath = path.join(this.workingDir, item);
         
         try {
-          const stat = await Deno.stat(itemPath);
+          const stat = await fs.stat(itemPath);
           
-          if (stat.isFile) {
-            await Deno.remove(itemPath);
+          if (stat.isFile()) {
+            await fs.unlink(itemPath);
             result.actions.push(`Removed file: ${item}`);
-          } else if (stat.isDirectory) {
-            await Deno.remove(itemPath, { recursive: true });
+          } else if (stat.isDirectory()) {
+            await fs.rmdir(itemPath, { recursive: true });
             result.actions.push(`Removed directory: ${item}`);
           }
         } catch {
@@ -150,7 +175,7 @@ export class RollbackExecutor {
 
     } catch (error) {
       result.success = false;
-      result.errors.push(`SPARC rollback failed: ${error.message}`);
+      result.errors.push(`SPARC rollback failed: ${error instanceof Error ? error.message : String(error)}`);
     }
 
     return result;
@@ -159,8 +184,8 @@ export class RollbackExecutor {
   /**
    * Rollback Claude commands
    */
-  async rollbackClaudeCommands() {
-    const result = {
+  private async rollbackClaudeCommands(): Promise<RollbackExecutionResult> {
+    const result: RollbackExecutionResult = {
       success: true,
       errors: [],
       warnings: [],
@@ -168,16 +193,17 @@ export class RollbackExecutor {
     };
 
     try {
-      const commandsDir = `${this.workingDir}/.claude/commands`;
+      const commandsDir = path.join(this.workingDir, '.claude/commands');
       
       try {
         // Remove all command files
-        for await (const entry of Deno.readDir(commandsDir)) {
-          if (entry.isFile && entry.name.endsWith('.js')) {
-            await Deno.remove(`${commandsDir}/${entry.name}`);
+        const entries = await fs.readdir(commandsDir, { withFileTypes: true });
+        for (const entry of entries) {
+          if (entry.isFile() && entry.name.endsWith('.js')) {
+            await fs.unlink(path.join(commandsDir, entry.name));
             result.actions.push(`Removed command: ${entry.name}`);
-          } else if (entry.isDirectory) {
-            await Deno.remove(`${commandsDir}/${entry.name}`, { recursive: true });
+          } else if (entry.isDirectory()) {
+            await fs.rmdir(path.join(commandsDir, entry.name), { recursive: true });
             result.actions.push(`Removed command directory: ${entry.name}`);
           }
         }
@@ -187,7 +213,7 @@ export class RollbackExecutor {
 
     } catch (error) {
       result.success = false;
-      result.errors.push(`Claude commands rollback failed: ${error.message}`);
+      result.errors.push(`Claude commands rollback failed: ${error instanceof Error ? error.message : String(error)}`);
     }
 
     return result;
@@ -196,8 +222,8 @@ export class RollbackExecutor {
   /**
    * Rollback memory setup
    */
-  async rollbackMemorySetup() {
-    const result = {
+  private async rollbackMemorySetup(): Promise<RollbackExecutionResult> {
+    const result: RollbackExecutionResult = {
       success: true,
       errors: [],
       warnings: [],
@@ -205,23 +231,23 @@ export class RollbackExecutor {
     };
 
     try {
-      const memoryItems = [
+      const memoryItems: string[] = [
         'memory/claude-flow-data.json',
         'memory/agents',
         'memory/sessions'
       ];
 
       for (const item of memoryItems) {
-        const itemPath = `${this.workingDir}/${item}`;
+        const itemPath = path.join(this.workingDir, item);
         
         try {
-          const stat = await Deno.stat(itemPath);
+          const stat = await fs.stat(itemPath);
           
-          if (stat.isFile) {
-            await Deno.remove(itemPath);
+          if (stat.isFile()) {
+            await fs.unlink(itemPath);
             result.actions.push(`Removed memory file: ${item}`);
-          } else if (stat.isDirectory) {
-            await Deno.remove(itemPath, { recursive: true });
+          } else if (stat.isDirectory()) {
+            await fs.rmdir(itemPath, { recursive: true });
             result.actions.push(`Removed memory directory: ${item}`);
           }
         } catch {
@@ -231,7 +257,7 @@ export class RollbackExecutor {
 
       // Keep memory directory but clean it
       try {
-        await Deno.mkdir(`${this.workingDir}/memory`, { recursive: true });
+        await fs.mkdir(path.join(this.workingDir, 'memory'), { recursive: true });
         result.actions.push('Recreated clean memory directory');
       } catch {
         result.warnings.push('Could not recreate memory directory');
@@ -239,7 +265,7 @@ export class RollbackExecutor {
 
     } catch (error) {
       result.success = false;
-      result.errors.push(`Memory setup rollback failed: ${error.message}`);
+      result.errors.push(`Memory setup rollback failed: ${error instanceof Error ? error.message : String(error)}`);
     }
 
     return result;
@@ -248,8 +274,8 @@ export class RollbackExecutor {
   /**
    * Rollback coordination setup
    */
-  async rollbackCoordinationSetup() {
-    const result = {
+  private async rollbackCoordinationSetup(): Promise<RollbackExecutionResult> {
+    const result: RollbackExecutionResult = {
       success: true,
       errors: [],
       warnings: [],
@@ -257,10 +283,10 @@ export class RollbackExecutor {
     };
 
     try {
-      const coordinationDir = `${this.workingDir}/coordination`;
+      const coordinationDir = path.join(this.workingDir, 'coordination');
       
       try {
-        await Deno.remove(coordinationDir, { recursive: true });
+        await fs.rmdir(coordinationDir, { recursive: true });
         result.actions.push('Removed coordination directory');
       } catch {
         result.actions.push('Coordination directory was already clean');
@@ -268,7 +294,7 @@ export class RollbackExecutor {
 
       // Remove coordination.md
       try {
-        await Deno.remove(`${this.workingDir}/coordination.md`);
+        await fs.unlink(path.join(this.workingDir, 'coordination.md'));
         result.actions.push('Removed coordination.md');
       } catch {
         result.actions.push('coordination.md was already clean');
@@ -276,7 +302,7 @@ export class RollbackExecutor {
 
     } catch (error) {
       result.success = false;
-      result.errors.push(`Coordination setup rollback failed: ${error.message}`);
+      result.errors.push(`Coordination setup rollback failed: ${error instanceof Error ? error.message : String(error)}`);
     }
 
     return result;
@@ -285,8 +311,8 @@ export class RollbackExecutor {
   /**
    * Rollback executable creation
    */
-  async rollbackExecutableCreation() {
-    const result = {
+  private async rollbackExecutableCreation(): Promise<RollbackExecutionResult> {
+    const result: RollbackExecutionResult = {
       success: true,
       errors: [],
       warnings: [],
@@ -294,10 +320,10 @@ export class RollbackExecutor {
     };
 
     try {
-      const executablePath = `${this.workingDir}/claude-flow`;
+      const executablePath = path.join(this.workingDir, 'claude-flow');
       
       try {
-        await Deno.remove(executablePath);
+        await fs.unlink(executablePath);
         result.actions.push('Removed claude-flow executable');
       } catch {
         result.actions.push('claude-flow executable was already clean');
@@ -305,7 +331,7 @@ export class RollbackExecutor {
 
     } catch (error) {
       result.success = false;
-      result.errors.push(`Executable rollback failed: ${error.message}`);
+      result.errors.push(`Executable rollback failed: ${error instanceof Error ? error.message : String(error)}`);
     }
 
     return result;
@@ -314,8 +340,8 @@ export class RollbackExecutor {
   /**
    * Generic phase rollback
    */
-  async rollbackGenericPhase(phase, checkpoint) {
-    const result = {
+  private async rollbackGenericPhase(phase: RollbackPhase, checkpoint?: RollbackCheckpoint): Promise<RollbackExecutionResult> {
+    const result: RollbackExecutionResult = {
       success: true,
       errors: [],
       warnings: [],
@@ -324,8 +350,8 @@ export class RollbackExecutor {
 
     try {
       // Use checkpoint data to determine what to rollback
-      if (checkpoint && checkpoint.data) {
-        const actions = checkpoint.data.actions || [];
+      if (checkpoint?.data) {
+        const actions = (checkpoint.data.actions as RollbackActionData[]) || [];
         
         // Reverse the actions
         for (const action of actions.reverse()) {
@@ -340,7 +366,7 @@ export class RollbackExecutor {
 
     } catch (error) {
       result.success = false;
-      result.errors.push(`Generic phase rollback failed: ${error.message}`);
+      result.errors.push(`Generic phase rollback failed: ${error instanceof Error ? error.message : String(error)}`);
     }
 
     return result;
@@ -349,15 +375,16 @@ export class RollbackExecutor {
   /**
    * Clean up all initialization artifacts
    */
-  async cleanupInitializationArtifacts() {
-    const result = {
+  private async cleanupInitializationArtifacts(): Promise<RollbackExecutionResult> {
+    const result: RollbackExecutionResult = {
       success: true,
       errors: [],
+      warnings: [],
       actions: []
     };
 
     try {
-      const artifactsToRemove = [
+      const artifactsToRemove: string[] = [
         'CLAUDE.md',
         'memory-bank.md',
         'coordination.md',
@@ -370,16 +397,16 @@ export class RollbackExecutor {
       ];
 
       for (const artifact of artifactsToRemove) {
-        const artifactPath = `${this.workingDir}/${artifact}`;
+        const artifactPath = path.join(this.workingDir, artifact);
         
         try {
-          const stat = await Deno.stat(artifactPath);
+          const stat = await fs.stat(artifactPath);
           
-          if (stat.isFile) {
-            await Deno.remove(artifactPath);
+          if (stat.isFile()) {
+            await fs.unlink(artifactPath);
             result.actions.push(`Removed file: ${artifact}`);
-          } else if (stat.isDirectory) {
-            await Deno.remove(artifactPath, { recursive: true });
+          } else if (stat.isDirectory()) {
+            await fs.rmdir(artifactPath, { recursive: true });
             result.actions.push(`Removed directory: ${artifact}`);
           }
         } catch {
@@ -390,7 +417,7 @@ export class RollbackExecutor {
 
     } catch (error) {
       result.success = false;
-      result.errors.push(`Cleanup failed: ${error.message}`);
+      result.errors.push(`Cleanup failed: ${error instanceof Error ? error.message : String(error)}`);
     }
 
     return result;
@@ -399,10 +426,11 @@ export class RollbackExecutor {
   /**
    * Restore from backup
    */
-  async restoreFromBackup(backupId) {
-    const result = {
+  private async restoreFromBackup(backupId: string): Promise<RollbackExecutionResult> {
+    const result: RollbackExecutionResult = {
       success: true,
       errors: [],
+      warnings: [],
       actions: []
     };
 
@@ -419,7 +447,7 @@ export class RollbackExecutor {
 
     } catch (error) {
       result.success = false;
-      result.errors.push(`Restore from backup failed: ${error.message}`);
+      result.errors.push(`Restore from backup failed: ${error instanceof Error ? error.message : String(error)}`);
     }
 
     return result;
@@ -428,15 +456,16 @@ export class RollbackExecutor {
   /**
    * Verify rollback completed successfully
    */
-  async verifyRollback() {
-    const result = {
+  private async verifyRollback(): Promise<RollbackExecutionResult> {
+    const result: RollbackExecutionResult = {
       success: true,
       errors: [],
+      warnings: [],
       actions: []
     };
 
     try {
-      const expectedCleanItems = [
+      const expectedCleanItems: string[] = [
         'CLAUDE.md',
         'memory-bank.md',
         'coordination.md',
@@ -448,7 +477,7 @@ export class RollbackExecutor {
       let foundArtifacts = 0;
       for (const item of expectedCleanItems) {
         try {
-          await Deno.stat(`${this.workingDir}/${item}`);
+          await fs.stat(path.join(this.workingDir, item));
           foundArtifacts++;
         } catch {
           // Item doesn't exist - good
@@ -464,7 +493,7 @@ export class RollbackExecutor {
 
     } catch (error) {
       result.success = false;
-      result.errors.push(`Rollback verification failed: ${error.message}`);
+      result.errors.push(`Rollback verification failed: ${error instanceof Error ? error.message : String(error)}`);
     }
 
     return result;
@@ -473,12 +502,12 @@ export class RollbackExecutor {
   /**
    * Remove SPARC content from CLAUDE.md
    */
-  async removeSPARCContentFromClaudeMd() {
+  private async removeSPARCContentFromClaudeMd(): Promise<void> {
     try {
-      const claudePath = `${this.workingDir}/CLAUDE.md`;
+      const claudePath = path.join(this.workingDir, 'CLAUDE.md');
       
       try {
-        const content = await Deno.readTextFile(claudePath);
+        const content = await fs.readFile(claudePath, 'utf-8');
         
         // Remove SPARC-specific sections
         const cleanedContent = content
@@ -487,7 +516,7 @@ export class RollbackExecutor {
           .replace(/\n{3,}/g, '\n\n') // Clean up multiple newlines
           .trim();
 
-        await Deno.writeTextFile(claudePath, cleanedContent);
+        await fs.writeFile(claudePath, cleanedContent);
       } catch {
         // File doesn't exist or can't be modified
       }
@@ -499,8 +528,8 @@ export class RollbackExecutor {
   /**
    * Reverse a specific action
    */
-  async reverseAction(action) {
-    const result = {
+  private async reverseAction(action: RollbackActionData): Promise<ActionReversal> {
+    const result: ActionReversal = {
       success: true,
       description: ''
     };
@@ -508,18 +537,18 @@ export class RollbackExecutor {
     try {
       switch (action.type) {
         case 'file_created':
-          await Deno.remove(action.path);
+          await fs.unlink(action.path);
           result.description = `Removed created file: ${action.path}`;
           break;
           
         case 'directory_created':
-          await Deno.remove(action.path, { recursive: true });
+          await fs.rmdir(action.path, { recursive: true });
           result.description = `Removed created directory: ${action.path}`;
           break;
           
         case 'file_modified':
           if (action.backup) {
-            await Deno.writeTextFile(action.path, action.backup);
+            await fs.writeFile(action.path, action.backup);
             result.description = `Restored modified file: ${action.path}`;
           }
           break;
@@ -531,7 +560,7 @@ export class RollbackExecutor {
       }
     } catch (error) {
       result.success = false;
-      result.description = `Failed to reverse action: ${error.message}`;
+      result.description = `Failed to reverse action: ${error instanceof Error ? error.message : String(error)}`;
     }
 
     return result;
