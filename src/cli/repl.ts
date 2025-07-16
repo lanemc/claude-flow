@@ -7,6 +7,25 @@ import { promises as fs } from 'node:fs';
 import inquirer from 'inquirer';
 import chalk from 'chalk';
 import Table from 'cli-table3';
+
+// Create helper functions for prompts
+const prompt = async (options: any) => {
+  const answers = await inquirer.prompt([{
+    type: 'input',
+    name: 'value',
+    ...options
+  }]);
+  return answers.value;
+};
+
+const confirm = async (options: any) => {
+  const answers = await inquirer.prompt([{
+    type: 'confirm',
+    name: 'value',
+    ...options
+  }]);
+  return answers.value;
+};
 import type { AgentProfile, Task } from '../utils/types.js';
 import { generateId } from '../utils/helpers.js';
 import { formatStatusIndicator, formatDuration, formatProgressBar } from './formatter.js';
@@ -60,7 +79,7 @@ class CommandHistory {
   private async loadHistory(): Promise<void> {
     try {
       const content = await fs.readFile(this.historyFile);
-      this.history = content.split('\n').filter((line: string) => line.trim());
+      this.history = content.toString().split('\n').filter((line: string) => line.trim());
     } catch {
       // History file doesn't exist yet
     }
@@ -380,10 +399,8 @@ export async function startREPL(options: any = {}): Promise<void> {
   while (true) {
     try {
       const prompt = createPrompt(context);
-      const input = await prompt.prompt({
-        message: prompt,
-        suggestions: (input: string) => completer.complete(input),
-      });
+      const promptString = createPrompt(context);
+      const input = await prompt({ message: 'claude-flow> ' });
 
       if (!input.trim()) {
         continue;
@@ -495,9 +512,8 @@ function showHelp(commands: REPLCommand[]): void {
   console.log(chalk.white.bold('Available Commands:'));
   console.log();
   
-  const table = new Table()
-    .header(['Command', 'Aliases', 'Description'])
-    .border(false);
+  const table = new Table();
+  table.push(['Command', 'Aliases', 'Description']); // Header row
 
   for (const cmd of commands) {
     table.push([
@@ -643,9 +659,7 @@ async function showAgentList(): Promise<void> {
   console.log(chalk.cyan.bold(`Active Agents (${agents.length})`));
   console.log('─'.repeat(50));
   
-  const table = new Table()
-    .header(['ID', 'Name', 'Type', 'Status', 'Tasks'])
-    .border(true);
+  const table = new Table({ head: ['ID', 'Name', 'Type', 'Status', 'Tasks'] });
 
   for (const agent of agents) {
     const statusIcon = formatStatusIndicator(agent.status);
@@ -670,10 +684,7 @@ async function handleAgentSpawn(args: string[]): Promise<void> {
   }
 
   const type = args[0];
-  const name = args[1] || await prompt.prompt({
-    message: 'Agent name:',
-    default: `${type}-agent`,
-  });
+  const name = args[1] || `${type}-agent`; // TODO: Replace with proper inquirer prompt
 
   console.log(chalk.yellow('Spawning agent...'));
   
@@ -688,7 +699,7 @@ async function handleAgentSpawn(args: string[]): Promise<void> {
 }
 
 async function handleAgentTerminate(agentId: string): Promise<void> {
-  const confirmed = await confirm.prompt({
+  const confirmed = await confirm({
     message: `Terminate agent ${agentId}?`,
     default: false,
   });
@@ -765,9 +776,7 @@ async function showTaskList(): Promise<void> {
   console.log(chalk.cyan.bold(`Tasks (${tasks.length})`));
   console.log('─'.repeat(60));
   
-  const table = new Table()
-    .header(['ID', 'Type', 'Description', 'Status', 'Agent'])
-    .border(true);
+  const table = new Table({ head: ['ID', 'Type', 'Description', 'Status', 'Agent'] });
 
   for (const task of tasks) {
     const statusIcon = formatStatusIndicator(task.status);
@@ -815,7 +824,7 @@ async function showTaskStatus(taskId: string): Promise<void> {
 }
 
 async function handleTaskCancel(taskId: string): Promise<void> {
-  const confirmed = await confirm.prompt({
+  const confirmed = await confirm({
     message: `Cancel task ${taskId}?`,
     default: false,
   });
@@ -902,12 +911,10 @@ async function showSessionList(): Promise<void> {
   console.log(chalk.cyan.bold(`Saved Sessions (${sessions.length})`));
   console.log('─'.repeat(50));
   
-  const table = new Table()
-    .header(['ID', 'Name', 'Date', 'Agents', 'Tasks'])
-    .border(true);
+  const sessionTable = new Table({ head: ['ID', 'Name', 'Date', 'Agents', 'Tasks'] });
 
   for (const session of sessions) {
-    table.push([
+    sessionTable.push([
       chalk.gray(session.id),
       chalk.white(session.name),
       session.date,
@@ -916,14 +923,11 @@ async function showSessionList(): Promise<void> {
     ]);
   }
   
-  console.log(table.toString());
+  console.log(sessionTable.toString());
 }
 
 async function handleSessionSave(args: string[]): Promise<void> {
-  const name = args.length > 0 ? args.join(' ') : await prompt.prompt({
-    message: 'Session name:',
-    default: `session-${new Date().toISOString().split('T')[0]}`,
-  });
+  const name = args.length > 0 ? args.join(' ') : `session-${new Date().toISOString().split('T')[0]}`; // TODO: Replace with proper inquirer prompt
   
   console.log(chalk.yellow('Saving session...'));
   await new Promise(resolve => setTimeout(resolve, 1000));
@@ -935,7 +939,7 @@ async function handleSessionSave(args: string[]): Promise<void> {
 }
 
 async function handleSessionRestore(sessionId: string): Promise<void> {
-  const confirmed = await confirm.prompt({
+  const confirmed = await confirm({
     message: `Restore session ${sessionId}?`,
     default: false,
   });
@@ -995,15 +999,13 @@ async function showWorkflowList(): Promise<void> {
   console.log(chalk.cyan.bold(`Workflows (${workflows.length})`));
   console.log('─'.repeat(50));
   
-  const table = new Table()
-    .header(['ID', 'Name', 'Status', 'Progress'])
-    .border(true);
+  const workflowTable = new Table({ head: ['ID', 'Name', 'Status', 'Progress'] });
 
   for (const workflow of workflows) {
     const statusIcon = formatStatusIndicator(workflow.status);
     const progressBar = formatProgressBar(workflow.progress, 100, 15);
     
-    table.push([
+    workflowTable.push([
       chalk.gray(workflow.id),
       chalk.white(workflow.name),
       `${statusIcon} ${workflow.status}`,
@@ -1011,7 +1013,7 @@ async function showWorkflowList(): Promise<void> {
     ]);
   }
   
-  console.log(table.toString());
+  console.log(workflowTable.toString());
 }
 
 async function handleWorkflowRun(filename: string): Promise<void> {

@@ -1,7 +1,7 @@
 // init/index.ts - Initialize Claude Code integration files
 import { printSuccess, printError, printWarning } from '../../utils.js';
 import { Deno, cwd, exit, existsSync } from '../../node-compat.js';
-import process from 'process';
+import * as process from 'process';
 import { createLocalExecutable } from './executable-wrapper.js';
 import { createSparcStructureManually } from './sparc-structure.js';
 import { createClaudeSlashCommands } from './claude-commands/slash-commands.js';
@@ -13,17 +13,17 @@ import {
   createFullClaudeMd, 
   createMinimalClaudeMd,
   createOptimizedSparcClaudeMd 
-} from './templates/claude-md.ts';
+} from './templates/claude-md.js';
 import { 
   createFullMemoryBankMd, 
   createMinimalMemoryBankMd,
   createOptimizedMemoryBankMd 
-} from './templates/memory-bank-md.ts';
+} from './templates/memory-bank-md.js';
 import { 
   createFullCoordinationMd, 
   createMinimalCoordinationMd,
   createOptimizedCoordinationMd 
-} from './templates/coordination-md.ts';
+} from './templates/coordination-md.js';
 import { 
   createAgentsReadme, 
   createSessionsReadme 
@@ -48,7 +48,7 @@ import {
   createCommandDoc,
   createHelperScript,
   COMMAND_STRUCTURE
-} from './templates/enhanced-templates.ts';
+} from './templates/enhanced-templates.js';
 import { getIsolatedNpxEnv } from '../../../utils/npx-isolated-cache.js';
 import { updateGitignore, needsGitignoreUpdate } from './gitignore-updater.js';
 import {
@@ -546,7 +546,7 @@ async function handleBatchInit(subArgs: string[], flags: InitFlags): Promise<voi
       sparc: flags.sparc || flags.s,
       minimal: flags.minimal || flags.m,
       force: flags.force || flags.f,
-      maxConcurrency: flags['max-concurrent'] || INIT_CONSTANTS.DEFAULT_MAX_CONCURRENCY,
+      maxConcurrency: typeof flags['max-concurrent'] === 'string' ? parseInt(flags['max-concurrent']) : Number(flags['max-concurrent']) || INIT_CONSTANTS.DEFAULT_MAX_CONCURRENCY,
       progressTracking: true,
       template: flags.template,
       environments: flags.environments ? flags.environments.split(',').map(env => env.trim()) : INIT_CONSTANTS.DEFAULT_ENVIRONMENTS
@@ -639,15 +639,15 @@ async function enhancedInitCommand(subArgs: string[], flags: InitFlags): Promise
       console.log('\n🔍 Phase 1: Pre-initialization validation...');
       const preValidation = await validationSystem.validatePreInit(initOptions);
       
-      if (!preValidation.success) {
+      if (!(preValidation as any).success) {
         printError('Pre-initialization validation failed:');
-        preValidation.errors.forEach(error => console.error(`  ❌ ${error}`));
+        (preValidation as any).errors.forEach((error: any) => console.error(`  ❌ ${error}`));
         return;
       }
       
-      if (preValidation.warnings.length > 0) {
+      if ((preValidation as any).warnings && (preValidation as any).warnings.length > 0) {
         printWarning('Pre-initialization warnings:');
-        preValidation.warnings.forEach(warning => console.warn(`  ⚠️  ${warning}`));
+        (preValidation as any).warnings.forEach((warning: any) => console.warn(`  ⚠️  ${warning}`));
       }
       
       printSuccess('Pre-initialization validation passed');

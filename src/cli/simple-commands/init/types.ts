@@ -40,6 +40,38 @@ export interface InitOptions {
 }
 
 /**
+ * Command-line initialization flags (extends InitOptions with CLI-specific properties)
+ */
+export interface InitFlags extends InitOptions {
+  /** Short help flag */
+  h?: boolean;
+  /** Short force flag */
+  f?: boolean;
+  /** Short minimal flag */
+  m?: boolean;
+  /** Short sparc flag */
+  s?: boolean;
+  /** Short dry-run flag */
+  d?: boolean;
+  /** String modes (CLI compatibility) */
+  modes?: string | string[];
+  /** Config file path */
+  config?: string;
+  /** Parallel processing flag */
+  parallel?: boolean;
+  /** Environments as string */
+  environments?: string;
+  /** Batch initialization flag */
+  'batch-init'?: boolean;
+  /** Disable parallel processing flag */
+  'no-parallel'?: boolean;
+  /** Maximum concurrent operations */
+  'max-concurrent'?: string | number;
+  /** Template to use */
+  template?: string;
+}
+
+/**
  * Enhanced initialization flags for Claude Flow v2.0.0
  */
 export interface EnhancedInitFlags extends InitOptions {
@@ -77,6 +109,12 @@ export interface BatchInitOptions {
   'batch-init'?: string;
   /** Configuration file */
   config?: string;
+  /** Enable SPARC development environment */
+  sparc?: boolean;
+  /** Create minimal configuration */
+  minimal?: boolean;
+  /** Force overwrite existing files */
+  force?: boolean;
 }
 
 // ============================================================================
@@ -601,6 +639,8 @@ export interface BatchResult {
 export interface BatchProgress {
   /** Total projects */
   totalProjects: number;
+  /** Total projects (alias for totalProjects) */
+  total: number;
   /** Completed projects */
   completed: number;
   /** Failed projects */
@@ -609,12 +649,110 @@ export interface BatchProgress {
   inProgress: number;
   /** Start time */
   startTime: number;
+  /** Progress percentage */
+  progressPercent: number;
   /** Elapsed time */
   elapsedTime: number;
   /** Estimated completion time */
   estimatedCompletion?: number;
-  /** Progress percentage */
-  progressPercent: number;
+  /** Success rate percentage */
+  successRate: number;
+}
+
+/**
+ * Batch progress report (alias for BatchProgress)
+ */
+export type BatchProgressReport = BatchProgress;
+
+// ============================================================================
+// MCP Server and Configuration Interfaces
+// ============================================================================
+
+/**
+ * MCP server definition
+ */
+export interface McpServer {
+  /** Server name */
+  name: string;
+  /** Server command */
+  command: string;
+  /** Server description */
+  description: string;
+  /** Server type */
+  type?: string;
+  /** Server arguments */
+  args?: string[];
+}
+
+/**
+ * MCP configuration
+ */
+export interface McpConfig {
+  /** MCP servers configuration */
+  mcpServers: Record<string, {
+    command: string;
+    args: string[];
+    type: string;
+  }>;
+}
+
+/**
+ * Claude Flow configuration
+ */
+export interface ClaudeFlowConfig {
+  /** Feature flags */
+  features: {
+    autoTopologySelection: boolean;
+    parallelExecution: boolean;
+    neuralTraining: boolean;
+    bottleneckAnalysis: boolean;
+    smartAutoSpawning: boolean;
+    selfHealingWorkflows: boolean;
+    crossSessionMemory: boolean;
+    githubIntegration: boolean;
+  };
+  /** Performance settings */
+  performance: {
+    maxAgents: number;
+    defaultTopology: string;
+    executionStrategy: string;
+    tokenOptimization: boolean;
+    cacheEnabled: boolean;
+    telemetryLevel: string;
+  };
+}
+
+/**
+ * Settings local configuration
+ */
+export interface SettingsLocal {
+  /** Permission settings */
+  permissions: {
+    allow: string[];
+    deny: string[];
+  };
+}
+
+/**
+ * Gitignore update result
+ */
+export interface GitignoreUpdateResult {
+  /** Whether the update was successful */
+  success: boolean;
+  /** Result message */
+  message: string;
+  /** Additional details */
+  details?: string[];
+}
+
+/**
+ * Initialization phase
+ */
+export interface InitPhase {
+  /** Phase name */
+  name: string;
+  /** Phase action function */
+  action: () => Promise<void>;
 }
 
 // ============================================================================
@@ -653,6 +791,34 @@ export interface BackupInfo {
   files: string[];
   /** Backup metadata */
   metadata?: Record<string, any>;
+}
+
+/**
+ * Rollback result
+ */
+export interface RollbackResult {
+  /** Rollback success status */
+  success: boolean;
+  /** Rollback actions performed */
+  actions: string[];
+  /** Rollback errors */
+  errors: string[];
+  /** Rollback warnings */
+  warnings: string[];
+  /** Time taken for rollback */
+  rollbackTime: number;
+  /** Recovered files */
+  recoveredFiles?: string[];
+}
+
+/**
+ * Collection of rollback points
+ */
+export interface RollbackPoints {
+  /** Available rollback points */
+  rollbackPoints: RollbackPoint[];
+  /** Available checkpoints */
+  checkpoints: Checkpoint[];
 }
 
 /**
@@ -991,6 +1157,113 @@ export interface ValidationSchema {
     default?: any;
   }>;
 }
+
+// ============================================================================
+// Project Initialization Result Interface
+// ============================================================================
+
+/**
+ * Project initialization result
+ */
+export interface ProjectInitResult {
+  /** Whether the initialization was successful */
+  success: boolean;
+  /** Project path that was initialized */
+  projectPath: string;
+  /** Error message if failed */
+  error?: string;
+  /** Execution time in milliseconds */
+  executionTime?: number;
+  /** Created files */
+  createdFiles?: string[];
+  /** Modified files */
+  modifiedFiles?: string[];
+  /** Result details */
+  details?: Record<string, any>;
+}
+
+// ============================================================================
+// Template Variables Interface
+// ============================================================================
+
+/**
+ * Template variables for project initialization
+ */
+export interface TemplateVariables {
+  /** Project name */
+  projectName?: string;
+  /** Project description */
+  description?: string;
+  /** Author name */
+  author?: string;
+  /** License type */
+  license?: string;
+  /** Version */
+  version?: string;
+  /** Additional template-specific variables */
+  [key: string]: string | undefined;
+}
+
+// ============================================================================
+// Constants
+// ============================================================================
+
+/**
+ * Initialization constants
+ */
+export const INIT_CONSTANTS = {
+  /** Default maximum concurrency for batch operations */
+  DEFAULT_MAX_CONCURRENCY: 4,
+  /** Default environments */
+  DEFAULT_ENVIRONMENTS: ['dev', 'staging', 'production'],
+  /** Unix executable permissions */
+  UNIX_EXECUTABLE_PERMISSIONS: 0o755,
+  /** Default timeout for operations in milliseconds */
+  DEFAULT_TIMEOUT: 30000,
+  /** Maximum backup files to keep */
+  MAX_BACKUP_FILES: 10
+} as const;
+
+/**
+ * File paths constants
+ */
+export const FILE_PATHS = {
+  /** CLAUDE.md file path */
+  CLAUDE_MD: 'CLAUDE.md',
+  /** Memory bank markdown file */
+  MEMORY_BANK_MD: 'memory-bank.md',
+  /** Coordination markdown file */
+  COORDINATION_MD: 'coordination.md',
+  /** Claude settings file */
+  CLAUDE_SETTINGS: '.claude/settings.json',
+  /** MCP configuration file */
+  MCP_CONFIG: '.mcp.json',
+  /** Claude Flow configuration file */
+  CLAUDE_FLOW_CONFIG: 'claude-flow.config.json',
+  /** Unix wrapper script */
+  UNIX_WRAPPER: 'claude-flow',
+  /** Windows wrapper script */
+  WINDOWS_WRAPPER: 'claude-flow.bat',
+  /** PowerShell wrapper script */
+  POWERSHELL_WRAPPER: 'claude-flow.ps1'
+} as const;
+
+/**
+ * Directory structure constants
+ */
+export const DIRECTORY_STRUCTURE = [
+  'memory',
+  'memory/agents',
+  'memory/sessions',
+  'coordination',
+  'coordination/memory_bank',
+  'coordination/subtasks',
+  'coordination/orchestration',
+  '.claude',
+  '.claude/commands',
+  '.claude/logs',
+  '.swarm'
+] as const;
 
 // ============================================================================
 // Export Configuration

@@ -30,7 +30,7 @@ export const handleValidationErrors = (
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     const formattedErrors: ValidationErrorResponse = {
-      errors: errors.array().map(error => ({
+      errors: errors.array().map((error: any) => ({
         field: error.type === 'field' ? error.path : 'unknown',
         message: error.msg,
         value: error.type === 'field' ? error.value : undefined

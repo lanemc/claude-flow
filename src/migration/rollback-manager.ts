@@ -160,7 +160,7 @@ export class RollbackManager {
 
     // Confirm rollback
     if (interactive) {
-      const confirm = await inquirer.prompt([{
+      const confirm = await inquirer.default.prompt([{
         type: 'confirm',
         name: 'proceed',
         message: `Are you sure you want to rollback? This will overwrite current files.`,
@@ -210,7 +210,7 @@ export class RollbackManager {
       short: backup.metadata.backupId
     }));
 
-    const answer = await inquirer.prompt([{
+    const answer = await inquirer.default.prompt([{
       type: 'list',
       name: 'backup',
       message: 'Select backup to rollback to:',

@@ -130,9 +130,10 @@ async function main() {
   }
 }
 
-if (import.meta.main) {
+// Check if this is the main module (Deno equivalent of import.meta.main)
+if (Deno?.args !== undefined && import.meta.url === Deno.mainModule) {
   main().catch((error) => {
     printError(`Error: ${(error instanceof Error ? error.message : String(error))}`);
-    process.exit(1);
+    Deno.exit(1);
   });
 }

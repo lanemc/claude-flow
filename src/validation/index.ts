@@ -3,6 +3,32 @@
  * Comprehensive type-safe validation and rollback functionality
  */
 
+// Import classes for use in factory functions
+import {
+  ValidationEngine,
+  ValidationSchemaBuilder,
+  BuiltInValidators,
+  CommonSchemas,
+  defaultValidationEngine
+} from './validation-engine.js';
+import {
+  ValidationStateManager,
+  RollbackStateManager,
+  CombinedStateManager
+} from './state-manager.js';
+import {
+  TypedValidationMiddleware
+} from './express-validation.js';
+import {
+  createDefaultHealthCheckManager
+} from './health-check.js';
+import {
+  RollbackManager
+} from '../migration/rollback-manager.js';
+import {
+  RollbackExecutor
+} from '../cli/simple-commands/init/rollback/rollback-executor.js';
+
 // Core validation engine
 export {
   ValidationEngine,
@@ -57,6 +83,11 @@ export {
 export {
   RollbackExecutor
 } from '../cli/simple-commands/init/rollback/rollback-executor.js';
+
+// Rollback manager
+export {
+  RollbackManager
+} from '../migration/rollback-manager.js';
 
 // Re-export types from migration system
 export type {

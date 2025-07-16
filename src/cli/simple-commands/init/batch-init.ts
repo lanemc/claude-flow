@@ -1,7 +1,7 @@
 // batch-init.ts - Batch initialization features with parallel processing
 import { printSuccess, printError, printWarning, printInfo } from '../../utils.js';
 import { Deno, cwd, exit, existsSync } from '../../node-compat.js';
-import process from 'process';
+import * as process from 'process';
 import { 
   PerformanceMonitor, 
   ResourceThresholdMonitor, 
@@ -14,15 +14,15 @@ import {
   createSparcClaudeMd, 
   createFullClaudeMd, 
   createMinimalClaudeMd 
-} from './templates/claude-md.ts';
+} from './templates/claude-md.js';
 import { 
   createFullMemoryBankMd, 
   createMinimalMemoryBankMd 
-} from './templates/memory-bank-md.ts';
+} from './templates/memory-bank-md.js';
 import { 
   createFullCoordinationMd, 
   createMinimalCoordinationMd 
-} from './templates/coordination-md.ts';
+} from './templates/coordination-md.js';
 import { 
   createAgentsReadme, 
   createSessionsReadme 
@@ -97,11 +97,15 @@ class BatchProgressTracker {
   getReport(): BatchProgressReport {
     const elapsed = Math.floor((Date.now() - this.startTime) / 1000);
     return {
+      totalProjects: this.totalProjects,
       total: this.totalProjects,
       completed: this.completed,
       failed: this.failed,
+      inProgress: 0,
+      startTime: this.startTime,
+      progressPercent: this.totalProjects > 0 ? (this.completed / this.totalProjects * 100) : 0,
       elapsedTime: elapsed,
-      successRate: this.totalProjects > 0 ? (this.completed / this.totalProjects * 100).toFixed(1) : '0'
+      successRate: this.totalProjects > 0 ? +(this.completed / this.totalProjects * 100).toFixed(1) : 0
     };
   }
 }
@@ -450,7 +454,7 @@ async function initializeProject(projectPath: string, options: ProjectOptions = 
           };
           
           for (const [key, value] of Object.entries(templateVars)) {
-            fileContent = fileContent.replace(new RegExp(`{{${key}}}`, 'g'), value);
+            fileContent = fileContent.replace(new RegExp(`{{${key}}}`, 'g'), String(value));
           }
           
           fileCreationTasks.push(Deno.writeTextFile(filePath, fileContent));

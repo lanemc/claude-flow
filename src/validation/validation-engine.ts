@@ -56,7 +56,7 @@ export class BuiltInValidators {
     };
   }
 
-  static length(min: number, max: number): ValidationValidator<any> {
+  static stringLength(min: number, max: number): ValidationValidator<any> {
     return {
       validate: (value: any): ValidationRuleResult => {
         if (!value) return { valid: true }; // Optional field
@@ -163,7 +163,7 @@ export class ValidationSchemaBuilder<T> {
     return this.addRule(
       field,
       'format',
-      BuiltInValidators.length(min, max),
+      BuiltInValidators.stringLength(min, max),
       message || `${String(field)} length must be between ${min} and ${max}`
     );
   }
@@ -240,7 +240,7 @@ export class ValidationEngine {
 
     // Run all validation rules
     for (const rule of schema.rules) {
-      const fieldValue = this.getFieldValue(data, rule.field);
+      const fieldValue = this.getFieldValue(data, String(rule.field));
       const ruleResult = rule.validator.validate(fieldValue, data);
 
       // Add to checks
@@ -282,8 +282,8 @@ export class ValidationEngine {
     );
   }
 
-  private getFieldValue(data: any, field: string | symbol): any {
-    if (typeof field === 'string' && field.includes('.')) {
+  private getFieldValue(data: any, field: string): any {
+    if (field.includes('.')) {
       // Support nested field access (e.g., 'user.email')
       return field.split('.').reduce((obj, key) => obj?.[key], data);
     }

@@ -2047,7 +2047,7 @@ async function startRepl() {
   };
   
   // REPL command handlers
-  const replCommands = {
+  const replCommands: { [key: string]: (...args: string[]) => void | Promise<void> } = {
     help: () => {
       console.log(`
 📚 Available REPL Commands:
@@ -2112,7 +2112,7 @@ Shortcuts:
     
     config: async (key: string) => {
       try {
-        const config = JSON.parse(await fs.readFile('claude-flow.config.json'));
+        const config = JSON.parse(await fs.readFile('claude-flow.config.json', 'utf8'));
         if (key) {
           const keys = key.split('.');
           let value = config;
@@ -2135,7 +2135,7 @@ Shortcuts:
     if (!trimmed) return true;
     
     // Add to history
-    replState.history.push(trimmed);
+    (replState.history as string[]).push(trimmed);
     replState.historyIndex = replState.history.length;
     
     // Handle special commands
@@ -2169,7 +2169,7 @@ Shortcuts:
     // Handle search
     if (trimmed.startsWith('/')) {
       const search = trimmed.substring(1);
-      const matches = replState.history.filter(cmd => cmd.includes(search));
+      const matches = (replState.history as string[]).filter(cmd => cmd.includes(search));
       if (matches.length > 0) {
         console.log('🔍 Search results:');
         matches.forEach(cmd => console.log(`  ${cmd}`));
@@ -2185,7 +2185,7 @@ Shortcuts:
     const args = parts.slice(1);
     
     // Handle built-in REPL commands
-    if (replCommands[command]) {
+    if (command in replCommands) {
       await replCommands[command](...args);
       return true;
     }
@@ -3229,6 +3229,9 @@ For more information about SPARC methodology, see: https://github.com/ruvnet/cla
 `;
 }
 
-if (import.meta.main) {
+// Check if this is the main module (Node.js equivalent of import.meta.main)
+const isMainModule = process.argv[1] === import.meta.url.replace('file://', '') || 
+                     process.argv[1].includes('simple-cli');
+if (isMainModule) {
   await main();
 }
