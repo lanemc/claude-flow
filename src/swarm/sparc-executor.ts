@@ -5,22 +5,10 @@ import { getErrorMessage } from '../utils/error-handler.js';
  */
 
 import type { TaskDefinition, AgentState, TaskResult } from './types.js';
+import type { SparcPhase, SparcExecutorConfig } from '../types/hive-mind.types.js';
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
 import { Logger } from '../core/logger.js';
-
-export interface SparcPhase {
-  name: string;
-  description: string;
-  outputs: string[];
-}
-
-export interface SparcExecutorConfig {
-  logger?: Logger;
-  enableTDD?: boolean;
-  qualityThreshold?: number;
-  enableMemory?: boolean;
-}
 
 export class SparcTaskExecutor {
   private logger: Logger;

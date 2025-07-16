@@ -6,6 +6,9 @@
 export * from '../swarm/types.js';
 // export * from '../workflows/types.js'; // File not found
 
+// Export hive-mind shared types
+export * from './hive-mind.types.js';
+
 // Memory-specific types that may be referenced
 export interface MemoryEntry {
   id: string;

@@ -1,0 +1,10 @@
+{
+  "default": [
+    {
+      "key": "hive-mind-interfaces",
+      "value": "{\"communication\": \"AgentMessage, AgentCommunicationProtocol\", \"swarm\": \"SwarmConfig, SwarmStatus\", \"agents\": \"Agent, WorkerAgent, QueenAgent\", \"tasks\": \"Task, TaskDistributionStrategy\", \"performance\": \"PerformanceMetrics, SwarmOptimization\", \"memory\": \"MemoryEntry, CollectiveMemoryStore\", \"consensus\": \"ConsensusDecision, VoteResult, ConsensusEngine\"}",
+      "namespace": "default",
+      "timestamp": 1752627114279
+    }
+  ]
+}

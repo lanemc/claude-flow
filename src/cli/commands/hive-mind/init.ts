@@ -10,7 +10,7 @@ import { Command } from 'commander';
 import chalk from 'chalk';
 import ora from 'ora';
 import { HiveMind } from '../../../hive-mind/core/HiveMind.js';
-import { HiveMindConfig, SwarmTopology } from '../../../hive-mind/types.js';
+import { HiveMindConfig, SwarmTopology } from '../../../types/hive-mind.types.js';
 import { DatabaseManager } from '../../../hive-mind/core/DatabaseManager.js';
 import { formatSuccess, formatError, formatInfo } from '../../formatter.js';
 

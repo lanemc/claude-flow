@@ -2079,12 +2079,23 @@ ${flags.mode === 'full' || !flags.mode ? `Full-stack development covering all as
       }
       break;
       
+    case 'hive':
+      // Load and execute hive command
+      try {
+        const { hiveCommand } = await import('./simple-commands/hive.js');
+        await hiveCommand(args, flags);
+      } catch (error) {
+        printError('Failed to load hive command');
+        console.log('Error:', error.message);
+      }
+      break;
+      
     default:
       printError(`Unknown command: ${command}`);
       console.log('Run "claude-flow help" for available commands');
       
       // Suggest similar commands
-      const commonCommands = ['agent', 'task', 'spawn', 'init', 'start', 'status', 'memory', 'sparc', 'help'];
+      const commonCommands = ['agent', 'task', 'spawn', 'init', 'start', 'status', 'memory', 'sparc', 'hive', 'help'];
       const suggestions = commonCommands.filter(cmd => 
         cmd.startsWith(command.toLowerCase()) || 
         cmd.includes(command.toLowerCase())
