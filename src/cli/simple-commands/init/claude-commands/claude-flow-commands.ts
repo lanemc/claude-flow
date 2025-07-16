@@ -1,9 +1,17 @@
-// claude-flow-commands.js - Claude-Flow specific slash commands
+// claude-flow-commands.ts - Claude-Flow specific slash commands
 
-// Create Claude-Flow specific commands
-export async function createClaudeFlowCommands(workingDir) {
-  // Help command
-  const helpCommand = `---
+import { writeFile } from 'fs/promises';
+import { CommandOptions, CommandGenerationError, CommandError } from './types.js';
+
+/**
+ * Create Claude-Flow specific commands with TypeScript support
+ * @param workingDir - The working directory path
+ * @returns Promise<void>
+ */
+export async function createClaudeFlowCommands(workingDir: string): Promise<void> {
+  try {
+    // Help command
+    const helpCommand = `---
 name: claude-flow-help
 description: Show Claude-Flow commands and usage
 ---
@@ -108,11 +116,11 @@ npx -y claude-flow@latest init --sparc
 - Issues: https://github.com/ruvnet/claude-code-flow/issues
 `;
   
-  await Deno.writeTextFile(`${workingDir}/.claude/commands/claude-flow-help.md`, helpCommand);
-  console.log('  ✓ Created slash command: /claude-flow-help');
+    await writeFile(`${workingDir}/.claude/commands/claude-flow-help.md`, helpCommand, 'utf8');
+    console.log('  ✓ Created slash command: /claude-flow-help');
   
-  // Memory command
-  const memoryCommand = `---
+    // Memory command
+    const memoryCommand = `---
 name: claude-flow-memory
 description: Interact with Claude-Flow memory system
 ---
@@ -221,11 +229,11 @@ The memory system provides persistent storage for cross-session and cross-agent 
 \`\`\`
 `;
   
-  await Deno.writeTextFile(`${workingDir}/.claude/commands/claude-flow-memory.md`, memoryCommand);
-  console.log('  ✓ Created slash command: /claude-flow-memory');
+    await writeFile(`${workingDir}/.claude/commands/claude-flow-memory.md`, memoryCommand, 'utf8');
+    console.log('  ✓ Created slash command: /claude-flow-memory');
   
-  // Swarm command
-  const swarmCommand = `---
+    // Swarm command
+    const swarmCommand = `---
 name: claude-flow-swarm
 description: Coordinate multi-agent swarms for complex tasks
 ---
@@ -432,6 +440,36 @@ Swarms automatically use distributed memory for collaboration:
 For detailed documentation, see: https://github.com/ruvnet/claude-code-flow/docs/swarm-system.md
 `;
   
-  await Deno.writeTextFile(`${workingDir}/.claude/commands/claude-flow-swarm.md`, swarmCommand);
-  console.log('  ✓ Created slash command: /claude-flow-swarm');
+    await writeFile(`${workingDir}/.claude/commands/claude-flow-swarm.md`, swarmCommand, 'utf8');
+    console.log('  ✓ Created slash command: /claude-flow-swarm');
+  } catch (error) {
+    console.error('❌ Error creating Claude-Flow commands:', error);
+    throw error;
+  }
+}
+
+/**
+ * Validate command file creation
+ * @param workingDir - The working directory to validate
+ * @returns Promise<boolean> - True if all files exist
+ */
+export async function validateCommandFiles(workingDir: string): Promise<boolean> {
+  const files = [
+    'claude-flow-help.md',
+    'claude-flow-memory.md',
+    'claude-flow-swarm.md'
+  ];
+  
+  try {
+    const { access } = await import('fs/promises');
+    for (const file of files) {
+      const path = `${workingDir}/.claude/commands/${file}`;
+      // Check if file exists (basic validation)
+      await access(path);
+    }
+    return true;
+  } catch (error) {
+    console.error('❌ Command file validation failed:', error);
+    return false;
+  }
 }

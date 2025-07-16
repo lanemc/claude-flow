@@ -1,26 +1,30 @@
-// optimized-slash-commands.js - Create batchtools-optimized Claude Code slash commands
+// optimized-slash-commands.ts - Create batchtools-optimized Claude Code slash commands
 
 import { createOptimizedSparcSlashCommand, createOptimizedMainSparcCommand } from './optimized-sparc-commands.js';
 import { createOptimizedClaudeFlowCommands } from './optimized-claude-flow-commands.js';
+import type { RoomodesConfig, SparcMode } from './types.js';
 
 // Create batchtools-optimized Claude Code slash commands for SPARC modes
-export async function createOptimizedClaudeSlashCommands(workingDir, selectedModes = null) {
+export async function createOptimizedClaudeSlashCommands(
+  workingDir: string, 
+  selectedModes: string[] | null = null
+): Promise<void> {
   try {
     console.log('\n🚀 Creating batchtools-optimized Claude Code slash commands...');
     
     // Parse .roomodes to get all SPARC modes
     const roomodesContent = await Deno.readTextFile(`${workingDir}/.roomodes`);
-    const roomodes = JSON.parse(roomodesContent);
+    const roomodes: RoomodesConfig = JSON.parse(roomodesContent);
     
     // Filter modes if selective initialization is requested
     const modesToCreate = selectedModes 
-      ? roomodes.customModes.filter(mode => selectedModes.includes(mode.slug))
+      ? roomodes.customModes.filter((mode: SparcMode) => selectedModes.includes(mode.slug))
       : roomodes.customModes;
     
     console.log(`  📝 Creating optimized commands for ${modesToCreate.length} modes...`);
     
     // Create slash commands for each SPARC mode with batchtools optimization
-    const commandPromises = modesToCreate.map(async (mode) => {
+    const commandPromises = modesToCreate.map(async (mode: SparcMode) => {
       const commandPath = `${workingDir}/.claude/commands/sparc/${mode.slug}.md`;
       const commandContent = createOptimizedSparcSlashCommand(mode);
       
@@ -51,7 +55,7 @@ export async function createOptimizedClaudeSlashCommands(workingDir, selectedMod
 }
 
 // Create batchtools-specific commands
-async function createBatchtoolsCommands(workingDir) {
+async function createBatchtoolsCommands(workingDir: string): Promise<void> {
   // Batchtools help command
   const batchtoolsCommand = `---
 name: batchtools
