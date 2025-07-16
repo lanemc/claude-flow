@@ -142,33 +142,74 @@ const PROJECT_TEMPLATES = {
         version: '1.0.0',
         type: 'module',
         scripts: {
-          start: 'node src/index.js',
-          dev: 'nodemon src/index.js',
+          start: 'tsx src/index.ts',
+          dev: 'tsx --watch src/index.ts',
+          build: 'tsc',
           test: 'jest'
         },
         dependencies: {
           express: '^4.18.0',
           cors: '^2.8.5',
           dotenv: '^16.0.0'
+        },
+        devDependencies: {
+          '@types/express': '^4.17.21',
+          '@types/cors': '^2.8.17',
+          '@types/node': '^20.0.0',
+          tsx: '^4.0.0',
+          typescript: '^5.0.0'
         }
       },
-      'src/index.js': `import express from 'express';
-import cors from 'cors';
+      'src/index.ts': `import * as express from 'express';
+import { Request, Response } from 'express';
+import * as cors from 'cors';
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT: number = Number(process.env.PORT) || 3000;
 
+// Middleware
 app.use(cors());
 app.use(express.json());
 
-app.get('/', (req, res) => {
+// Basic route
+app.get('/', (req: Request, res: Response) => {
   res.json({ message: 'Welcome to {{PROJECT_NAME}} API' });
 });
 
+// Health check endpoint
+app.get('/health', (req: Request, res: Response) => {
+  res.json({ 
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    version: process.env.npm_package_version || '1.0.0'
+  });
+});
+
+// Start server
 app.listen(PORT, () => {
   console.log(\`Server running on port \${PORT}\`);
 });
-`
+
+export default app;
+`,
+      'tsconfig.json': {
+        compilerOptions: {
+          target: 'ES2022',
+          module: 'NodeNext',
+          moduleResolution: 'NodeNext',
+          esModuleInterop: true,
+          allowSyntheticDefaultImports: true,
+          strict: true,
+          skipLibCheck: true,
+          forceConsistentCasingInFileNames: true,
+          outDir: './dist',
+          rootDir: './src',
+          declaration: true,
+          sourceMap: true
+        },
+        include: ['src/**/*'],
+        exclude: ['node_modules', 'dist']
+      }
     }
   },
   'react-app': {
@@ -218,7 +259,7 @@ COPY package*.json ./
 RUN npm ci --only=production
 COPY . .
 EXPOSE 8080
-CMD ["node", "src/index.js"]
+CMD ["node", "dist/index.js"]
 `,
       'docker-compose.yml': `version: '3.8'
 services:

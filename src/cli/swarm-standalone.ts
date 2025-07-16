@@ -3,27 +3,66 @@
  * This handles swarm execution when installed via npm
  */
 
-import { spawn } from 'node:child_process';
+import { spawn, ChildProcess } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { existsSync } from 'node:fs';
 import { Deno, cwd, exit } from './node-compat.js';
+import { SwarmStrategy, SwarmMode } from '../swarm/types.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+// Define types for CLI flags
+interface SwarmFlags {
+  strategy?: SwarmStrategy;
+  mode?: SwarmMode;
+  'max-agents'?: number;
+  'max-tasks'?: number;
+  timeout?: number;
+  parallel?: boolean;
+  distributed?: boolean;
+  monitor?: boolean;
+  review?: boolean;
+  testing?: boolean;
+  'memory-namespace'?: string;
+  persistence?: boolean;
+  encryption?: boolean;
+  'quality-threshold'?: number;
+  'agent-selection'?: string;
+  'task-scheduling'?: string;
+  'load-balancing'?: string;
+  'fault-tolerance'?: string;
+  communication?: string;
+  'dry-run'?: boolean;
+  help?: boolean;
+  auto?: boolean;
+  'dangerously-skip-permissions'?: boolean;
+  [key: string]: any;
+}
+
 // Parse arguments
-const args = [];
-const flags = {};
+const args: string[] = [];
+const flags: SwarmFlags = {};
 
 for (let i = 0; i < Deno.args.length; i++) {
   const arg = Deno.args[i];
   if (arg.startsWith('--')) {
-    const flagName = arg.substring(2);
+    const flagName = arg.substring(2) as keyof SwarmFlags;
     const nextArg = Deno.args[i + 1];
     
     if (nextArg && !nextArg.startsWith('--')) {
-      flags[flagName] = nextArg;
+      // Handle numeric flags
+      if (flagName === 'max-agents' || flagName === 'max-tasks' || flagName === 'timeout' || flagName === 'quality-threshold') {
+        flags[flagName] = parseInt(nextArg, 10);
+      } else if (flagName === 'parallel' || flagName === 'distributed' || flagName === 'monitor' || 
+                 flagName === 'review' || flagName === 'testing' || flagName === 'persistence' || 
+                 flagName === 'encryption' || flagName === 'dry-run' || flagName === 'help' || 
+                 flagName === 'auto' || flagName === 'dangerously-skip-permissions') {
+        flags[flagName] = nextArg.toLowerCase() === 'true';
+      } else {
+        flags[flagName] = nextArg;
+      }
       i++; // Skip the next argument
     } else {
       flags[flagName] = true;
@@ -61,7 +100,7 @@ const possiblePaths = [
   join(__dirname, '../../../swarm-demo.ts'),
 ];
 
-let swarmPath = null;
+let swarmPath: string | null = null;
 for (const path of possiblePaths) {
   if (existsSync(path)) {
     swarmPath = path;
@@ -166,7 +205,7 @@ Use all available tools including file operations, web search, and code executio
     // Execute Claude non-interactively by piping the prompt
     const { spawn } = await import('child_process');
     
-    const claudeArgs = [];
+    const claudeArgs: string[] = [];
     
     // Add auto-permission flag if requested
     if (flags.auto || flags['dangerously-skip-permissions']) {
@@ -174,17 +213,19 @@ Use all available tools including file operations, web search, and code executio
     }
     
     // Spawn claude process
-    const claudeProcess = spawn('claude', claudeArgs, {
+    const claudeProcess: ChildProcess = spawn('claude', claudeArgs, {
       stdio: ['pipe', 'inherit', 'inherit'],
       shell: false
     });
     
     // Write the prompt to stdin and close it
-    claudeProcess.stdin.write(swarmPrompt);
-    claudeProcess.stdin.end();
+    if (claudeProcess.stdin) {
+      claudeProcess.stdin.write(swarmPrompt);
+      claudeProcess.stdin.end();
+    }
     
     // Wait for the process to complete
-    await new Promise((resolve, reject) => {
+    await new Promise<void>((resolve, reject) => {
       claudeProcess.on('close', (code) => {
         if (code === 0) {
           resolve();
@@ -215,7 +256,7 @@ Use all available tools including file operations, web search, and code executio
   Deno.exit(0);
 } else {
   // Run the swarm demo directly
-  const swarmArgs = [objective];
+  const swarmArgs: string[] = [objective];
   for (const [key, value] of Object.entries(flags)) {
     swarmArgs.push(`--${key}`);
     if (value !== true) {
