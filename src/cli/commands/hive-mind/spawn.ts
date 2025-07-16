@@ -10,8 +10,8 @@ import { Command } from 'commander';
 import chalk from 'chalk';
 import ora from 'ora';
 import inquirer from 'inquirer';
-import { HiveMind } from '../../../hive-mind/core/HiveMind';
-import { AgentType, AgentCapability } from '../../../hive-mind/types';
+import { HiveMind } from '../../../hive-mind/core/HiveMind.js';
+import { AgentType, AgentCapability } from '../../../hive-mind/types.js';
 import { formatSuccess, formatError, formatInfo, formatWarning } from '../../formatter.js';
 
 const AGENT_TYPES: AgentType[] = [
@@ -153,7 +153,7 @@ export const spawnCommand = new Command('spawn')
   });
 
 async function getActiveSwarmId(): Promise<string | null> {
-  const { DatabaseManager } = await import('../../../hive-mind/core/DatabaseManager');
+  const { DatabaseManager } = await import('../../../hive-mind/core/DatabaseManager.js');
   const db = await DatabaseManager.getInstance();
   return db.getActiveSwarmId();
 }

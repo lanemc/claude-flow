@@ -9,9 +9,9 @@
 import { Command } from 'commander';
 import chalk from 'chalk';
 import Table from 'cli-table3';
-import { HiveMind } from '../../../hive-mind/core/HiveMind';
+import { HiveMind } from '../../../hive-mind/core/HiveMind.js';
 import { formatSuccess, formatError, formatInfo, formatWarning } from '../../formatter.js';
-import { DatabaseManager } from '../../../hive-mind/core/DatabaseManager';
+import { DatabaseManager } from '../../../hive-mind/core/DatabaseManager.js';
 
 export const statusCommand = new Command('status')
   .description('Display Hive Mind swarm status and metrics')

@@ -332,54 +332,6 @@ export interface SparcModeSystem {
 }
 
 // ============================================================================
-// EXPORT ALL TYPES
+// NOTE: All types are already exported with their individual declarations above
+// No need for duplicate exports when using 'export interface' and 'export type'
 // ============================================================================
-
-export {
-  OrchestrationFunction,
-  SparcModeOrchestrations,
-  ArchitectMode,
-  CodeMode,
-  TddMode,
-  DebugMode,
-  SecurityReviewMode,
-  DocsWriterMode,
-  IntegrationMode,
-  MonitoringMode,
-  OptimizationMode,
-  SupabaseAdminMode,
-  SpecPseudocodeMode,
-  McpMode,
-  DevOpsMode,
-  AskMode,
-  TutorialMode,
-  SparcOrchestratorMode,
-  GenericMode,
-  SwarmMode,
-  SparcPromptParams,
-  SparcPromptResult,
-  SparcExecutionContext,
-  SparcMemoryOperations,
-  SparcBatchExecution,
-  SparcBatchPhase,
-  SparcBatchCommand,
-  SparcBoomerangPattern,
-  SparcOrchestrationStep,
-  SparcOrchestrationPlan,
-  SparcDirectoryRules,
-  SparcProjectStructure,
-  SparcQualityStandards,
-  SparcSecurityRules,
-  SparcCodeStandards,
-  SparcClaudeFlowIntegration,
-  SparcTaskOrchestration,
-  SparcParallelExecution,
-  SparcProgressReport,
-  SparcAgentStatus,
-  SparcBatchResult,
-  SparcBoomerangResult,
-  ArchitectOrchestrationPlan,
-  CodeOrchestrationPlan,
-  TddOrchestrationPlan,
-  SparcModeSystem,
-};

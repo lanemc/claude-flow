@@ -6,9 +6,9 @@
 
 import { Command } from 'commander';
 import { CollectiveMemory, MemoryOptimizer } from '../../simple-commands/hive-mind/memory.js';
-import { MemoryMonitor } from '../../../hive-mind/core/MemoryMonitor';
-import { Memory } from '../../../hive-mind/core/Memory';
-import { DatabaseManager } from '../../../hive-mind/core/DatabaseManager';
+import { MemoryMonitor } from '../../../hive-mind/core/MemoryMonitor.js';
+import { Memory } from '../../../hive-mind/core/Memory.js';
+import { DatabaseManager } from '../../../hive-mind/core/DatabaseManager.js';
 import chalk from 'chalk';
 
 export function createOptimizeMemoryCommand(): Command {
