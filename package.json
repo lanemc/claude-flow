@@ -138,7 +138,7 @@
     "@types/gradient-string": "^1.1.6",
     "@types/inquirer": "^9.0.7",
     "@types/jest": "^29.5.14",
-    "@types/node": "^20.19.7",
+    "@types/node": "^20.19.8",
     "@types/uuid": "^10.0.0",
     "@types/ws": "^8.5.10",
     "@typescript-eslint/eslint-plugin": "^6.15.0",

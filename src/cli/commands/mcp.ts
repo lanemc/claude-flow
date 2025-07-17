@@ -3,7 +3,7 @@ import { getErrorMessage } from '../../utils/error-handler.js';
  * MCP command for Claude-Flow
  */
 
-import { Command } from '@cliffy/command';
+import { Command } from 'commander';
 import chalk from 'chalk';
 import { logger } from '../../core/logger.js';
 import { configManager } from '../../core/config.js';

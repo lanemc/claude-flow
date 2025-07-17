@@ -5,7 +5,7 @@ import { getErrorMessage } from '../utils/error-handler.js';
  */
 
 import chalk from "chalk";
-import fs from "fs-extra";
+import * as fs from "fs-extra";
 import path from "path";
 
 export const VERSION = "1.0.45";
@@ -214,7 +214,7 @@ class CLI {
 
   private getAllOptions(): Option[] {
     const options: Option[] = [];
-    for (const cmd of this.commands.values()) {
+    for (const cmd of Array.from(this.commands.values())) {
       if (cmd.options) {
         options.push(...cmd.options);
       }

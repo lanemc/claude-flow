@@ -795,20 +795,16 @@ export async function swarmAction(ctx: CommandContext) {
       const projectRoot = scriptPath.substring(0, scriptPath.indexOf('/src/'));
       const bgScriptPath = `${projectRoot}/bin/claude-flow-swarm-background`;
       
-      const bgCommand = new Deno.Command(bgScriptPath, {
-        args: [objective, ...buildBackgroundArgs(options)],
-        stdout: 'piped',
-        stderr: 'piped',
-        stdin: 'null'
+      const bgProcess = spawn(bgScriptPath, [objective, ...buildBackgroundArgs(options)], {
+        detached: true,
+        stdio: 'ignore'
       });
-      
-      const bgProcess = bgCommand.spawn();
       
       // Just confirm launch and exit
       success('Swarm launched in background successfully!');
       
       // Don't wait for the background process
-      bgProcess.unref?.();
+      bgProcess.unref();
     }
     
   } catch (err) {
@@ -1338,8 +1334,9 @@ async function showSwarmResults(
       if (depth > 3) return; // Limit recursion depth
       
       try {
-        for await (const entry of Deno.readDir(dir)) {
-          if (entry.isFile && !entry.name.startsWith('.') && 
+        const entries = await fs.readdir(dir, { withFileTypes: true });
+        for (const entry of entries) {
+          if (entry.isFile() && !entry.name.startsWith('.') && 
               !dir.includes('swarm-runs') && !dir.includes('node_modules')) {
             const fullPath = `${dir}/${entry.name}`;
             const stat = await fs.stat(fullPath);
@@ -1348,7 +1345,7 @@ async function showSwarmResults(
             if (stat.mtime && stat.mtime.getTime() > executionStartTime) {
               createdFiles.push(fullPath);
             }
-          } else if (entry.isDirectory && !entry.name.startsWith('.') && 
+          } else if (entry.isDirectory() && !entry.name.startsWith('.') && 
                      !entry.name.includes('node_modules') && !entry.name.includes('swarm-runs')) {
             await checkDir(`${dir}/${entry.name}`, depth + 1);
           }
@@ -1388,15 +1385,15 @@ async function launchSwarmUI(objective: string, options: any): Promise<void> {
       return;
     }
     
-    const command = new Deno.Command('node', {
-      args: [uiScriptPath, objective, ...buildUIArgs(options)],
-      stdin: 'inherit',
-      stdout: 'inherit',
-      stderr: 'inherit',
+    const childProcess = spawn('node', [uiScriptPath, objective, ...buildUIArgs(options)], {
+      stdio: 'inherit'
     });
     
-    const process = command.spawn();
-    const { code } = await process.status;
+    const code = await new Promise<number>((resolve) => {
+      childProcess.on('exit', (code) => {
+        resolve(code || 0);
+      });
+    });
     
     if (code !== 0) {
       error(`Swarm UI exited with code ${code}`);
