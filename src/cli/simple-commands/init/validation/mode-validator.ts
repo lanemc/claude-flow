@@ -1,15 +1,60 @@
-// mode-validator.js - SPARC mode functionality testing
+// mode-validator.ts - SPARC mode functionality testing
+
+import type { TestResult } from './types.js';
+
+interface ModeTestResult {
+  success: boolean;
+  error: string | null;
+  checks: {
+    accessible: boolean;
+    configValid: boolean;
+    executable: boolean;
+  };
+}
+
+interface ModeTestingResult {
+  success: boolean;
+  errors: string[];
+  warnings: string[];
+  modes: Record<string, ModeTestResult>;
+}
+
+interface SparcInitStatus {
+  initialized: boolean;
+  hasRoomodes: boolean;
+  hasExecutable: boolean;
+  error: string | null;
+}
+
+interface CommandResult {
+  success: boolean;
+  error: string | null;
+}
+
+interface WorkflowTest {
+  success: boolean;
+  error: string | null;
+}
+
+interface WorkflowTestingResult {
+  success: boolean;
+  errors: string[];
+  warnings: string[];
+  workflows: Record<string, WorkflowTest>;
+}
 
 export class ModeValidator {
-  constructor(workingDir) {
+  private workingDir: string;
+
+  constructor(workingDir: string) {
     this.workingDir = workingDir;
   }
 
   /**
    * Test all SPARC modes for basic functionality
    */
-  async testAllModes() {
-    const result = {
+  async testAllModes(): Promise<ModeTestingResult> {
+    const result: ModeTestingResult = {
       success: true,
       errors: [],
       warnings: [],
@@ -44,7 +89,7 @@ export class ModeValidator {
 
     } catch (error) {
       result.success = false;
-      result.errors.push(`Mode testing failed: ${error.message}`);
+      result.errors.push(`Mode testing failed: ${(error as Error).message}`);
     }
 
     return result;
@@ -53,8 +98,8 @@ export class ModeValidator {
   /**
    * Test a specific SPARC mode
    */
-  async testMode(modeName) {
-    const result = {
+  async testMode(modeName: string): Promise<ModeTestResult> {
+    const result: ModeTestResult = {
       success: true,
       error: null,
       checks: {
@@ -94,7 +139,7 @@ export class ModeValidator {
 
     } catch (error) {
       result.success = false;
-      result.error = error.message;
+      result.error = (error as Error).message;
     }
 
     return result;
@@ -103,8 +148,8 @@ export class ModeValidator {
   /**
    * Check if SPARC is properly initialized
    */
-  async checkSparcInitialization() {
-    const result = {
+  async checkSparcInitialization(): Promise<SparcInitStatus> {
+    const result: SparcInitStatus = {
       initialized: false,
       hasRoomodes: false,
       hasExecutable: false,
@@ -131,7 +176,7 @@ export class ModeValidator {
       result.initialized = result.hasRoomodes && result.hasExecutable;
 
     } catch (error) {
-      result.error = error.message;
+      result.error = (error as Error).message;
     }
 
     return result;
@@ -140,8 +185,8 @@ export class ModeValidator {
   /**
    * Get list of available SPARC modes
    */
-  async getAvailableModes() {
-    const modes = [];
+  async getAvailableModes(): Promise<string[]> {
+    const modes: string[] = [];
 
     try {
       // Try to get modes from .roomodes
@@ -172,8 +217,8 @@ export class ModeValidator {
   /**
    * Test if a mode is accessible via CLI
    */
-  async testModeAccess(modeName) {
-    const result = {
+  async testModeAccess(modeName: string): Promise<CommandResult> {
+    const result: CommandResult = {
       success: false,
       error: null
     };
@@ -197,7 +242,7 @@ export class ModeValidator {
       }
 
     } catch (error) {
-      result.error = `Failed to test mode access: ${error.message}`;
+      result.error = `Failed to test mode access: ${(error as Error).message}`;
     }
 
     return result;
@@ -206,8 +251,8 @@ export class ModeValidator {
   /**
    * Test mode configuration validity
    */
-  async testModeConfig(modeName) {
-    const result = {
+  async testModeConfig(modeName: string): Promise<CommandResult> {
+    const result: CommandResult = {
       success: false,
       error: null
     };
@@ -243,7 +288,7 @@ export class ModeValidator {
       result.success = true;
 
     } catch (error) {
-      result.error = `Configuration validation failed: ${error.message}`;
+      result.error = `Configuration validation failed: ${(error as Error).message}`;
     }
 
     return result;
@@ -252,8 +297,8 @@ export class ModeValidator {
   /**
    * Test mode execution with a safe dry run
    */
-  async testModeExecution(modeName) {
-    const result = {
+  async testModeExecution(modeName: string): Promise<CommandResult> {
+    const result: CommandResult = {
       success: false,
       error: null
     };
@@ -299,7 +344,7 @@ export class ModeValidator {
       }
 
     } catch (error) {
-      result.error = `Execution test failed: ${error.message}`;
+      result.error = `Execution test failed: ${(error as Error).message}`;
     }
 
     return result;
@@ -308,8 +353,8 @@ export class ModeValidator {
   /**
    * Test SPARC workflow functionality
    */
-  async testWorkflowFunctionality() {
-    const result = {
+  async testWorkflowFunctionality(): Promise<WorkflowTestingResult> {
+    const result: WorkflowTestingResult = {
       success: true,
       errors: [],
       warnings: [],
@@ -321,7 +366,7 @@ export class ModeValidator {
       const workflowDir = `${this.workingDir}/.roo/workflows`;
       
       try {
-        const entries = [];
+        const entries: string[] = [];
         for await (const entry of Deno.readDir(workflowDir)) {
           if (entry.isFile && entry.name.endsWith('.json')) {
             entries.push(entry.name);
@@ -347,7 +392,7 @@ export class ModeValidator {
       }
 
     } catch (error) {
-      result.errors.push(`Workflow testing failed: ${error.message}`);
+      result.errors.push(`Workflow testing failed: ${(error as Error).message}`);
     }
 
     return result;
@@ -356,8 +401,8 @@ export class ModeValidator {
   /**
    * Test a specific workflow file
    */
-  async testWorkflowFile(filename) {
-    const result = {
+  async testWorkflowFile(filename: string): Promise<WorkflowTest> {
+    const result: WorkflowTest = {
       success: true,
       error: null
     };
@@ -388,7 +433,7 @@ export class ModeValidator {
 
     } catch (error) {
       result.success = false;
-      result.error = `Workflow validation failed: ${error.message}`;
+      result.error = `Workflow validation failed: ${(error as Error).message}`;
     }
 
     return result;

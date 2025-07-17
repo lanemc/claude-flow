@@ -1,22 +1,80 @@
-// post-init-validator.js - Post-initialization verification checks
+// post-init-validator.ts - Post-initialization verification checks
+
+import type { ValidationResult } from './types.js';
+
+interface FileCheck {
+  path: string;
+  minSize: number;
+  executable?: boolean;
+}
+
+interface FileStatus {
+  status: 'ok' | 'missing' | 'not_file' | 'too_small' | 'not_executable' | 'unreadable';
+  size?: number;
+}
+
+interface FileIntegrityResult extends ValidationResult {
+  files: Record<string, FileStatus>;
+}
+
+interface CompletenessResult extends ValidationResult {
+  missing: string[];
+}
+
+interface StructureValidation {
+  valid: boolean;
+  dirs: string[];
+  files?: string[];
+  hasCommands?: boolean;
+  commandCount?: number;
+  hasRoomodes?: boolean;
+  hasRooDir?: boolean;
+}
+
+interface StructureResult extends ValidationResult {
+  structure: {
+    memory?: StructureValidation;
+    coordination?: StructureValidation;
+    claude?: StructureValidation;
+    sparc?: StructureValidation;
+  };
+}
+
+interface PermissionInfo {
+  actual: string;
+  expected: string;
+  correct: boolean;
+}
+
+interface PermissionsResult extends ValidationResult {
+  permissions: Record<string, PermissionInfo>;
+}
+
+interface PermissionCheck {
+  path: string;
+  type: 'file' | 'dir';
+  requiredMode: number;
+}
 
 export class PostInitValidator {
-  constructor(workingDir) {
+  private workingDir: string;
+
+  constructor(workingDir: string) {
     this.workingDir = workingDir;
   }
 
   /**
    * Check file integrity (existence, size, readability)
    */
-  async checkFileIntegrity() {
-    const result = {
+  async checkFileIntegrity(): Promise<FileIntegrityResult> {
+    const result: FileIntegrityResult = {
       success: true,
       errors: [],
       warnings: [],
       files: {}
     };
 
-    const expectedFiles = [
+    const expectedFiles: FileCheck[] = [
       { path: 'CLAUDE.md', minSize: 100 },
       { path: 'memory-bank.md', minSize: 50 },
       { path: 'coordination.md', minSize: 50 },
@@ -50,7 +108,7 @@ export class PostInitValidator {
 
         // Check if executable (if required)
         if (file.executable && Deno.build.os !== 'windows') {
-          const isExecutable = (stat.mode & 0o111) !== 0;
+          const isExecutable = (stat.mode! & 0o111) !== 0;
           if (!isExecutable) {
             result.warnings.push(`File not executable: ${file.path}`);
             result.files[file.path] = { status: 'not_executable', size: stat.size };
@@ -64,7 +122,7 @@ export class PostInitValidator {
           result.files[file.path] = { status: 'ok', size: stat.size };
         } catch (readError) {
           result.success = false;
-          result.errors.push(`Cannot read file: ${file.path} - ${readError.message}`);
+          result.errors.push(`Cannot read file: ${file.path} - ${(readError as Error).message}`);
           result.files[file.path] = { status: 'unreadable', size: stat.size };
         }
 
@@ -81,8 +139,8 @@ export class PostInitValidator {
   /**
    * Check completeness of initialization
    */
-  async checkCompleteness() {
-    const result = {
+  async checkCompleteness(): Promise<CompletenessResult> {
+    const result: CompletenessResult = {
       success: true,
       errors: [],
       warnings: [],
@@ -148,8 +206,8 @@ export class PostInitValidator {
   /**
    * Validate directory structure and organization
    */
-  async validateStructure() {
-    const result = {
+  async validateStructure(): Promise<StructureResult> {
+    const result: StructureResult = {
       success: true,
       errors: [],
       warnings: [],
@@ -190,7 +248,7 @@ export class PostInitValidator {
 
     } catch (error) {
       result.success = false;
-      result.errors.push(`Structure validation failed: ${error.message}`);
+      result.errors.push(`Structure validation failed: ${(error as Error).message}`);
     }
 
     return result;
@@ -199,15 +257,15 @@ export class PostInitValidator {
   /**
    * Check permissions on created files and directories
    */
-  async checkPermissions() {
-    const result = {
+  async checkPermissions(): Promise<PermissionsResult> {
+    const result: PermissionsResult = {
       success: true,
       errors: [],
       warnings: [],
       permissions: {}
     };
 
-    const itemsToCheck = [
+    const itemsToCheck: PermissionCheck[] = [
       { path: 'CLAUDE.md', type: 'file', requiredMode: 0o644 },
       { path: 'memory-bank.md', type: 'file', requiredMode: 0o644 },
       { path: 'coordination.md', type: 'file', requiredMode: 0o644 },
@@ -228,7 +286,7 @@ export class PostInitValidator {
       
       try {
         const stat = await Deno.stat(itemPath);
-        const actualMode = stat.mode & 0o777;
+        const actualMode = stat.mode! & 0o777;
         const expectedMode = item.requiredMode;
         
         result.permissions[item.path] = {
@@ -245,7 +303,7 @@ export class PostInitValidator {
         }
 
       } catch (error) {
-        result.warnings.push(`Could not check permissions for ${item.path}: ${error.message}`);
+        result.warnings.push(`Could not check permissions for ${item.path}: ${(error as Error).message}`);
       }
     }
 
@@ -254,8 +312,8 @@ export class PostInitValidator {
 
   // Helper methods
 
-  async validateMemoryStructure() {
-    const structure = {
+  private async validateMemoryStructure(): Promise<StructureValidation> {
+    const structure: StructureValidation = {
       valid: true,
       dirs: [],
       files: []
@@ -276,7 +334,7 @@ export class PostInitValidator {
     for (const file of expectedFiles) {
       try {
         await Deno.stat(`${this.workingDir}/memory/${file}`);
-        structure.files.push(file);
+        structure.files!.push(file);
       } catch {
         structure.valid = false;
       }
@@ -285,8 +343,8 @@ export class PostInitValidator {
     return structure;
   }
 
-  async validateCoordinationStructure() {
-    const structure = {
+  private async validateCoordinationStructure(): Promise<StructureValidation> {
+    const structure: StructureValidation = {
       valid: true,
       dirs: []
     };
@@ -305,8 +363,8 @@ export class PostInitValidator {
     return structure;
   }
 
-  async validateClaudeStructure() {
-    const structure = {
+  private async validateClaudeStructure(): Promise<StructureValidation> {
+    const structure: StructureValidation = {
       valid: true,
       dirs: [],
       hasCommands: false
@@ -325,7 +383,7 @@ export class PostInitValidator {
 
     // Check if there are any command files
     try {
-      const entries = [];
+      const entries: string[] = [];
       for await (const entry of Deno.readDir(`${this.workingDir}/.claude/commands`)) {
         if (entry.isFile && entry.name.endsWith('.js')) {
           entries.push(entry.name);
@@ -340,7 +398,7 @@ export class PostInitValidator {
     return structure;
   }
 
-  async checkSparcExists() {
+  private async checkSparcExists(): Promise<boolean> {
     try {
       await Deno.stat(`${this.workingDir}/.roomodes`);
       return true;
@@ -349,8 +407,8 @@ export class PostInitValidator {
     }
   }
 
-  async validateSparcStructure() {
-    const structure = {
+  private async validateSparcStructure(): Promise<StructureValidation> {
+    const structure: StructureValidation = {
       valid: true,
       hasRoomodes: false,
       hasRooDir: false,
