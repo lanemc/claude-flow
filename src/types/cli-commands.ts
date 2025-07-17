@@ -1,6 +1,6 @@
 /**
  * TypeScript type definitions for CLI command files
- * Generated for conversion from JavaScript to TypeScript
+ * Merged version combining both type definition sets
  */
 
 // ============================================================================
@@ -9,6 +9,16 @@
 
 export interface CommandFlags {
   [key: string]: string | boolean | number | undefined;
+  // Common flags
+  help?: boolean;
+  h?: boolean;
+  verbose?: boolean;
+  v?: boolean;
+  dryRun?: boolean;
+  'dry-run'?: boolean;
+  d?: boolean;
+  config?: string;
+  c?: string;
 }
 
 export interface CommandArgs extends Array<string> {}
@@ -19,6 +29,13 @@ export interface CommandContext {
   command: string;
 }
 
+export interface CommandResult {
+  success: boolean;
+  message?: string;
+  data?: any;
+  error?: Error | string;
+}
+
 // ============================================================================
 // SWARM COMMAND TYPES
 // ============================================================================
@@ -27,8 +44,10 @@ export interface SwarmFlags extends CommandFlags {
   strategy?: 'auto' | 'research' | 'development' | 'analysis' | 'testing' | 'optimization' | 'maintenance';
   mode?: 'centralized' | 'distributed' | 'hierarchical' | 'mesh' | 'hybrid';
   'max-agents'?: number;
+  maxAgents?: number;
   timeout?: number;
   'task-timeout-minutes'?: number;
+  taskTimeoutMinutes?: number;
   parallel?: boolean;
   distributed?: boolean;
   monitor?: boolean;
@@ -39,21 +58,34 @@ export interface SwarmFlags extends CommandFlags {
   encryption?: boolean;
   verbose?: boolean;
   'dry-run'?: boolean;
+  dryRun?: boolean;
   executor?: boolean;
   'output-format'?: 'json' | 'text';
+  outputFormat?: 'json' | 'text';
   'output-file'?: string;
+  outputFile?: string;
   'no-interactive'?: boolean;
+  noInteractive?: boolean;
   'no-auto-permissions'?: boolean;
+  noAutoPermissions?: boolean;
   analysis?: boolean;
   'read-only'?: boolean;
+  readOnly?: boolean;
   'quality-threshold'?: number;
+  qualityThreshold?: number;
   'memory-namespace'?: string;
+  memoryNamespace?: string;
   'agent-selection'?: string;
+  agentSelection?: string;
   'task-scheduling'?: string;
+  taskScheduling?: string;
   'load-balancing'?: string;
+  loadBalancing?: string;
   'fault-tolerance'?: string;
+  faultTolerance?: string;
   sparc?: boolean;
   'dangerously-skip-permissions'?: boolean;
+  dangerouslySkipPermissions?: boolean;
 }
 
 export interface SwarmConfig {
@@ -96,47 +128,18 @@ export interface SwarmTask {
   endTime?: number;
 }
 
-export interface SwarmCoordinatorInterface {
-  config: SwarmConfig;
-  id: string;
-  agents: SwarmAgent[];
-  tasks: SwarmTask[];
-  status: 'initializing' | 'active' | 'completed' | 'error';
-  startTime: number;
-  
-  initialize(): Promise<SwarmCoordinatorInterface>;
-  addAgent(type: string, name?: string): Promise<SwarmAgent>;
-  executeTask(task: string): Promise<SwarmTask>;
-  getStatus(): Promise<SwarmStatus>;
-  complete(): Promise<SwarmSummary>;
-}
-
-export interface SwarmStatus {
-  id: string;
-  status: string;
-  agents: number;
-  tasks: {
-    total: number;
-    completed: number;
-    in_progress: number;
+export interface SwarmCommandResult extends CommandResult {
+  swarmId?: string;
+  objective?: string;
+  strategy?: string;
+  agents?: SwarmAgent[];
+  tasks?: SwarmTask[];
+  summary?: {
+    totalAgents: number;
+    completedTasks: number;
+    failedTasks: number;
+    executionTime: number;
   };
-  runtime: number;
-}
-
-export interface SwarmSummary {
-  id: string;
-  status: string;
-  agents: number;
-  tasks: {
-    completed: number;
-  };
-  runtime: number;
-}
-
-export interface SwarmExecutionResult {
-  success: boolean;
-  summary?: SwarmSummary;
-  error?: string;
 }
 
 // ============================================================================
@@ -144,113 +147,62 @@ export interface SwarmExecutionResult {
 // ============================================================================
 
 export interface ConfigFlags extends CommandFlags {
-  format?: 'json' | 'pretty';
-  force?: boolean;
+  global?: boolean;
+  g?: boolean;
+  local?: boolean;
+  l?: boolean;
+  set?: string;
+  get?: string;
+  unset?: string;
+  list?: boolean;
+  init?: boolean;
+  validate?: boolean;
+  reset?: boolean;
+  export?: boolean;
+  import?: string;
 }
 
-export interface DefaultConfig {
+export interface ConfigData {
   version: string;
-  terminal: {
-    poolSize: number;
-    recycleAfter: number;
-    healthCheckInterval: number;
-    type: string;
-  };
-  orchestrator: {
-    maxConcurrentTasks: number;
-    taskTimeout: number;
-    defaultPriority: number;
-  };
-  memory: {
-    backend: string;
-    path: string;
-    cacheSize: number;
-    indexing: boolean;
-  };
-  agents: {
-    maxAgents: number;
-    defaultCapabilities: string[];
-    resourceLimits: {
-      memory: string;
-      cpu: string;
-    };
-  };
-  mcp: {
-    port: number;
-    host: string;
-    timeout: number;
-  };
-  logging: {
-    level: string;
-    file: string;
-    maxSize: string;
-    maxFiles: number;
+  created: string;
+  modified: string;
+  settings: {
+    [key: string]: any;
   };
 }
 
-export type ConfigKey = string;
-export type ConfigValue = string | number | boolean | object;
+export interface ConfigCommandResult extends CommandResult {
+  config?: ConfigData;
+  key?: string;
+  value?: any;
+  validated?: boolean;
+}
 
 // ============================================================================
-// SPARC COMMAND TYPES
+// SPARC COMMAND TYPES  
 // ============================================================================
 
 export interface SparcFlags extends CommandFlags {
-  help?: boolean;
-  h?: boolean;
-  'non-interactive'?: boolean;
-  n?: boolean;
-  'dry-run'?: boolean;
-  d?: boolean;
-  verbose?: boolean;
-  v?: boolean;
-  'no-permissions'?: boolean;
-  'enable-permissions'?: boolean;
-  namespace?: string;
-  config?: string;
+  mode?: 'architect' | 'code' | 'review' | 'plan' | 'specify';
   interactive?: boolean;
   i?: boolean;
+  force?: boolean;
+  f?: boolean;
+  template?: string;
+  t?: string;
+  output?: string;
+  o?: string;
 }
 
-export interface SparcMode {
-  name: string;
-  slug: string;
-  roleDefinition: string;
-  customInstructions: string;
-  groups: string[];
-  source: string;
-}
-
-export interface SparcConfig {
-  customModes: SparcMode[];
-}
-
-export interface SparcPromptOptions {
-  mode: SparcMode;
-  taskDescription: string;
-  memoryNamespace: string;
-}
-
-export interface SparcTddPhase {
-  name: string;
-  description: string;
-  mode: string;
-}
-
-// ============================================================================
-// SWARM EXECUTOR TYPES
-// ============================================================================
-
-export interface SwarmExecutorConfig extends SwarmConfig {
-  // Additional executor-specific properties can be added here
-}
-
-// ============================================================================
-// START COMMAND TYPES
-// ============================================================================
-
-export interface StartFlags extends CommandFlags {
-  // Re-exports from start-wrapper.js
+export interface SparcCommandResult extends CommandResult {
+  mode?: string;
+  generated?: {
+    specification?: string;
+    pseudocode?: string;
+    architecture?: string;
+    review?: string;
+    code?: string;
+  };
 }
 
 // ============================================================================
@@ -259,253 +211,124 @@ export interface StartFlags extends CommandFlags {
 
 export interface MonitorFlags extends CommandFlags {
   interval?: number;
-  format?: 'pretty' | 'json';
-  watch?: boolean;
+  metrics?: string[];
+  'output-format'?: 'json' | 'table' | 'graph';
+  outputFormat?: 'json' | 'table' | 'graph';
+  realtime?: boolean;
+  r?: boolean;
 }
 
-export interface SystemMetrics {
-  uptime: number;
-  cpu_usage: number;
-  memory_usage: number;
-  memory_total: number;
-  memory_percentage: number;
-  disk_usage: number;
-  disk_used: number;
-  disk_total: number;
-  load_average: number[];
-  cpu_count: number;
-  platform: string;
-  node_version: string;
-}
-
-export interface OrchestratorMetrics {
-  status: 'running' | 'stopped' | 'starting' | 'error';
-  active_agents: number;
-  queued_tasks: number;
-  completed_tasks: number;
-  failed_tasks: number;
-  errors: number;
-  uptime: number;
-}
-
-export interface PerformanceMetrics {
-  avg_task_duration: number;
-  throughput: number;
-  success_rate: number;
-  memory_heap_used: number;
-  memory_heap_total: number;
-  memory_external: number;
-  cpu_user: number;
-  cpu_system: number;
-}
-
-export interface ResourceMetrics {
-  memory_entries: number | string;
-  terminal_sessions: number;
-  mcp_connections: number;
-  open_files: number;
-  open_requests: number;
-}
-
-export interface MonitoringMetrics {
-  timestamp: number;
-  system: SystemMetrics;
-  orchestrator: OrchestratorMetrics;
-  performance: PerformanceMetrics;
-  resources: ResourceMetrics;
+export interface MonitorCommandResult extends CommandResult {
+  metrics?: {
+    [key: string]: any;
+  };
+  history?: Array<{
+    timestamp: number;
+    metrics: { [key: string]: any };
+  }>;
 }
 
 // ============================================================================
-// BATCH MANAGER TYPES
+// BATCH MANAGER COMMAND TYPES
 // ============================================================================
 
 export interface BatchManagerFlags extends CommandFlags {
+  batch?: boolean;
+  b?: boolean;
+  parallel?: boolean;
+  p?: boolean;
+  'max-concurrent'?: number;
+  maxConcurrent?: number;
+  'retry-failed'?: boolean;
+  retryFailed?: boolean;
+  'continue-on-error'?: boolean;
+  continueOnError?: boolean;
+}
+
+export interface BatchTask {
+  id: string;
+  command: string;
+  args: string[];
+  flags: CommandFlags;
+  status: 'pending' | 'running' | 'completed' | 'failed';
+  result?: CommandResult;
+  error?: Error | string;
+  startTime?: number;
+  endTime?: number;
+  retries?: number;
+}
+
+export interface BatchManagerCommandResult extends CommandResult {
+  batchId?: string;
+  tasks?: BatchTask[];
+  summary?: {
+    total: number;
+    completed: number;
+    failed: number;
+    pending: number;
+    running: number;
+    executionTime: number;
+  };
+}
+
+// ============================================================================
+// INIT COMMAND TYPES
+// ============================================================================
+
+export interface InitCommandOptions {
+  force?: boolean;
+  minimal?: boolean;
+  verbose?: boolean;
   interactive?: boolean;
-  i?: boolean;
+  noColor?: boolean;
+  dryRun?: boolean;
+  skipGitCheck?: boolean;
+  outputDir?: string;
+  features?: string[];
+  'interactive-mode'?: 'sparc' | 'standard' | 'minimal';
+  claude?: boolean;
+  memory?: boolean;
+  hooks?: boolean;
+  templates?: boolean;
+  examples?: boolean;
+  all?: boolean;
+  dangerouslySkipPermissions?: boolean;
 }
 
-export interface ProjectTemplate {
-  name: string;
-  description: string;
-  extraDirs?: string[];
-  extraFiles?: { [key: string]: string };
+export interface InitCommandContext {
+  options: InitCommandOptions;
+  targetDir: string;
+  isGitRepo: boolean;
+  existingFiles: string[];
 }
 
-export interface EnvironmentConfig {
-  name: string;
-  features: string[];
-  config: { [key: string]: any };
-}
-
-export interface BatchConfig {
-  _comment?: string;
-  _templates?: string[];
-  _environments?: string[];
-  baseOptions: {
-    sparc: boolean;
-    parallel: boolean;
-    maxConcurrency: number;
-    force?: boolean;
-    minimal?: boolean;
-    progressTracking?: boolean;
-    template?: string;
-    environments?: string[];
-  };
-  projects?: string[];
-  projectConfigs?: {
-    [projectName: string]: {
-      template: string;
-      environment: string;
-      customConfig?: { [key: string]: any };
-    };
-  };
-}
-
-export interface BatchValidationIssue {
-  type: 'error' | 'warning';
-  message: string;
-}
-
-export interface BatchEstimation {
-  projectCount: number;
-  totalEnvironments: number;
-  parallel: boolean;
-  maxConcurrency: number;
-  sequentialTime: number;
-  parallelTime: number;
-  estimatedDiskUsage: number;
-}
-
-// ============================================================================
-// UTILITY TYPES
-// ============================================================================
-
-export interface UtilityResponse {
+export interface InitResult {
   success: boolean;
-  message?: string;
-  data?: any;
-  error?: string;
+  filesCreated: string[];
+  filesSkipped: string[];
+  errors: string[];
+  warnings: string[];
+  rollbackAvailable: boolean;
 }
 
 // ============================================================================
-// COMMAND FUNCTION SIGNATURES
+// VALIDATION TYPES
 // ============================================================================
 
-export type SwarmCommandFunction = (args: CommandArgs, flags: SwarmFlags) => Promise<void>;
-export type ConfigCommandFunction = (subArgs: CommandArgs, flags: ConfigFlags) => Promise<void>;
-export type SparcCommandFunction = (subArgs: CommandArgs, flags: SparcFlags) => Promise<void>;
-export type MonitorCommandFunction = (subArgs: CommandArgs, flags: MonitorFlags) => Promise<void>;
-export type BatchManagerCommandFunction = (subArgs: CommandArgs, flags: BatchManagerFlags) => Promise<void>;
-
-// ============================================================================
-// ERROR TYPES
-// ============================================================================
-
-export interface CommandError extends Error {
-  code?: string;
-  command?: string;
-  args?: CommandArgs;
-  flags?: CommandFlags;
-}
-
-export interface SwarmExecutionError extends CommandError {
-  swarmId?: string;
-  phase?: string;
-}
-
-export interface ConfigValidationError extends CommandError {
-  configPath?: string;
-  validationErrors?: string[];
-}
-
-export interface SparcExecutionError extends CommandError {
-  mode?: string;
-  instanceId?: string;
+export interface ValidationResult {
+  valid: boolean;
+  errors: string[];
+  warnings: string[];
 }
 
 // ============================================================================
-// RESULT TYPES
-// ============================================================================
-
-export interface CommandResult<T = any> {
-  success: boolean;
-  data?: T;
-  error?: CommandError;
-  warnings?: string[];
-}
-
-export interface SwarmCommandResult extends CommandResult<SwarmExecutionResult> {}
-export interface ConfigCommandResult extends CommandResult<DefaultConfig> {}
-export interface SparcCommandResult extends CommandResult<string> {}
-export interface MonitorCommandResult extends CommandResult<MonitoringMetrics> {}
-export interface BatchManagerCommandResult extends CommandResult<BatchConfig> {}
-
-// ============================================================================
-// EXPORT ALL TYPES
+// EXPORTED TYPE MAP
 // ============================================================================
 
 export {
-  // Common
+  CommandContext,
   CommandFlags,
   CommandArgs,
-  CommandContext,
-  
-  // Swarm
-  SwarmFlags,
-  SwarmConfig,
-  SwarmAgent,
-  SwarmTask,
-  SwarmCoordinatorInterface,
-  SwarmStatus,
-  SwarmSummary,
-  SwarmExecutionResult,
-  
-  // Config
-  ConfigFlags,
-  DefaultConfig,
-  ConfigKey,
-  ConfigValue,
-  
-  // SPARC
-  SparcFlags,
-  SparcMode,
-  SparcConfig,
-  SparcPromptOptions,
-  SparcTddPhase,
-  
-  // Monitor
-  MonitorFlags,
-  SystemMetrics,
-  OrchestratorMetrics,
-  PerformanceMetrics,
-  ResourceMetrics,
-  MonitoringMetrics,
-  
-  // Batch Manager
-  BatchManagerFlags,
-  ProjectTemplate,
-  EnvironmentConfig,
-  BatchConfig,
-  BatchValidationIssue,
-  BatchEstimation,
-  
-  // Utility
-  UtilityResponse,
-  
-  // Functions
-  SwarmCommandFunction,
-  ConfigCommandFunction,
-  SparcCommandFunction,
-  MonitorCommandFunction,
-  BatchManagerCommandFunction,
-  
-  // Errors
-  CommandError,
-  SwarmExecutionError,
-  ConfigValidationError,
-  SparcExecutionError,
-  
-  // Results
   CommandResult,
   SwarmCommandResult,
   ConfigCommandResult,

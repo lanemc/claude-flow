@@ -17,7 +17,7 @@ interface CommandContext {
 }
 
 interface Command {
-  name: string;
+  name: string | (() => string);
   description: string;
   aliases?: string[];
   subcommands?: Command[];
@@ -74,7 +74,7 @@ class CLI {
     // Handle both our Command interface and Commander.js Command objects
     const cmdName = typeof (cmd as any).name === 'function' ? (cmd as any).name() : (cmd.name || 'unknown');
     this.commands.set(cmdName, cmd);
-    if (cmd.aliases && typeof cmd.aliases[Symbol.iterator] === 'function') {
+    if (cmd.aliases && Array.isArray(cmd.aliases)) {
       for (const alias of cmd.aliases) {
         this.commands.set(alias, cmd);
       }

@@ -1,4 +1,4 @@
-#!/usr/bin/env -S deno run --allow-all
+#!/usr/bin/env node
 import { getErrorMessage } from '../utils/error-handler.js';
 /**
  * Claude-Flow CLI entry point - Remote execution friendly version
@@ -70,7 +70,7 @@ function printWarning(message: string) {
 }
 
 async function main() {
-  const args = Deno.args;
+  const args = process.argv.slice(2);
   const command = args[0] || 'help';
   const subArgs = args.slice(1);
 
@@ -107,23 +107,19 @@ async function main() {
       console.log(chalk.gray('  # Using npm (recommended)'));
       console.log('  npm install -g claude-flow');
       console.log('');
-      console.log(chalk.gray('  # Or using Deno'));
-      console.log('  deno install --allow-all --name claude-flow \\');
-      console.log('    https://raw.githubusercontent.com/ruvnet/claude-code-flow/main/src/cli/index.ts');
-      console.log('');
       console.log(chalk.gray('  # Or clone and build from source'));
       console.log('  git clone https://github.com/ruvnet/claude-code-flow.git');
       console.log('  cd claude-code-flow');
-      console.log('  deno task build');
+      console.log('  npm run build');
       break;
       
     default:
       printWarning(`Command '${command}' requires local installation.`);
       console.log('\n📥 To use all features, install Claude-Flow:');
       console.log('   npm install -g claude-flow');
-      console.log('\n🌐 Or run directly with Deno:');
-      console.log('   deno install --allow-all --name claude-flow \\');
-      console.log('     https://raw.githubusercontent.com/ruvnet/claude-code-flow/main/src/cli/index.ts');
+      console.log('\n🌐 Or clone the repository:');
+      console.log('   git clone https://github.com/ruvnet/claude-code-flow.git');
+      console.log('   cd claude-code-flow && npm install');
       console.log('\n📚 Documentation: https://github.com/ruvnet/claude-code-flow');
       console.log('💬 Issues: https://github.com/ruvnet/claude-code-flow/issues');
       break;

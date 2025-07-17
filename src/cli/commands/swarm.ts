@@ -237,7 +237,9 @@ export async function swarmAction(ctx: CommandContext): Promise<SwarmExecutionRe
     await fs.mkdir(swarmDir, { recursive: true });
 
     // Create objective in coordinator
-    const objectiveId = await coordinator.createObjective(objective, options.strategy as 'auto' | 'research' | 'development' | 'analysis');
+    const validStrategy = ['auto', 'research', 'development', 'analysis'].includes(options.strategy) ? 
+      options.strategy as 'auto' | 'research' | 'development' | 'analysis' : 'auto';
+    const objectiveId = await coordinator.createObjective(objective, validStrategy);
     
     console.log(`\n📝 Objective created with ID: ${objectiveId}`);
 

@@ -58,50 +58,52 @@ const cli = new Command()
   });
 
 // Add subcommands
-cli
-  .addCommand(startCommand)
-  .addCommand(agentCommand)
-  .addCommand(taskCommand)
-  .addCommand(memoryCommand)
-  .addCommand(configCommand)
-  .addCommand(statusCommand)
-  .addCommand(monitorCommand)
-  .addCommand(sessionCommand)
-  .addCommand(workflowCommand)
-  .addCommand(mcpCommand)
-  .addCommand(helpCommand)
-  .command('repl', new Command()
-    .description('Start interactive REPL mode with command completion')
-    .option('--no-banner', 'Skip welcome banner')
-    .option('--history-file <path:string>', 'Custom history file path')
-    .action(async (options: any) => {
-      await setupLogging(options);
-      if (options.banner !== false) {
-        displayBanner(VERSION);
-      }
-      await startREPL(options);
-    }),
-  )
-  .command('version', new Command()
-    .description('Show detailed version information')
-    .option('--short', 'Show version number only')
-    .action(async (options: any) => {
-      if (options.short) {
-        console.log(VERSION);
-      } else {
-        displayVersion(VERSION, BUILD_DATE);
-      }
-    }),
-  )
-  .command('completion', new Command()
-    .description('Generate shell completion scripts')
-    .arguments('[shell:string]')
-    .option('--install', 'Install completion script automatically')
-    .action(async (options: any, shell: any) => {
-      const generator = new CompletionGenerator();
-      await generator.generate(shell || 'detect', options.install === true);
-    }),
-  );
+cli.addCommand(startCommand);
+cli.addCommand(agentCommand);
+cli.addCommand(taskCommand);
+cli.addCommand(memoryCommand);
+cli.addCommand(configCommand);
+cli.addCommand(statusCommand);
+cli.addCommand(monitorCommand);
+cli.addCommand(sessionCommand);
+cli.addCommand(workflowCommand);
+cli.addCommand(mcpCommand);
+cli.addCommand(helpCommand);
+
+const replCommand = new Command('repl')
+  .description('Start interactive REPL mode with command completion')
+  .option('--no-banner', 'Skip welcome banner')
+  .option('--history-file <path>', 'Custom history file path')
+  .action(async (options: any) => {
+    await setupLogging(options);
+    if (options.banner !== false) {
+      displayBanner(VERSION);
+    }
+    await startREPL(options);
+  });
+cli.addCommand(replCommand);
+
+const versionCommand = new Command('version')
+  .description('Show detailed version information')
+  .option('--short', 'Show version number only')
+  .action(async (options: any) => {
+    if (options.short) {
+      console.log(VERSION);
+    } else {
+      displayVersion(VERSION, BUILD_DATE);
+    }
+  });
+cli.addCommand(versionCommand);
+
+const completionCommand = new Command('completion')
+  .description('Generate shell completion scripts')
+  .argument('[shell]', 'Shell type')
+  .option('--install', 'Install completion script automatically')
+  .action(async (shell: any, options: any) => {
+    const generator = new CompletionGenerator();
+    await generator.generate(shell || 'detect', options.install === true);
+  });
+cli.addCommand(completionCommand);
 
 // Global error handler
 async function handleError(error: unknown, options?: any): Promise<void> {
