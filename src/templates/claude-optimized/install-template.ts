@@ -1,12 +1,15 @@
 #!/usr/bin/env node
 
 import { readFileSync, writeFileSync, existsSync, mkdirSync, copyFileSync } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
-import { TemplateManifest, DirectoryConfig, TemplateFile } from '../types.js';
+import path from 'path';
+import type { 
+  TemplateManifest, 
+  InstallationResult, 
+  InstallationOptions 
+} from '../../types/template.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+// Use __dirname directly for Node.js compatibility
+const __dirname = path.resolve(path.dirname(''));
 
 /**
  * Install Claude optimized template files
@@ -14,167 +17,225 @@ const __dirname = dirname(__filename);
  * to the template directory for packaging and distribution
  */
 
-interface InstallationConfig {
-  sourceDir: string;
-  destDir: string;
-  manifestPath: string;
-}
+const SOURCE_DIR = path.join(__dirname, '../../../.claude');
+const DEST_DIR = path.join(__dirname, '.claude');
+const MANIFEST_PATH = path.join(__dirname, 'manifest.json');
 
-interface InstallationResult {
+interface InstallationStats {
   successCount: number;
   errorCount: number;
-  categoryStats: Map<string, { copied: number; total: number }>;
+  errors: string[];
+  warnings: string[];
 }
 
-function loadManifest(manifestPath: string): TemplateManifest {
-  try {
-    const manifestContent = readFileSync(manifestPath, 'utf8');
-    return JSON.parse(manifestContent) as TemplateManifest;
-  } catch (error) {
-    throw new Error(`Failed to load manifest: ${error instanceof Error ? error.message : 'Unknown error'}`);
+class TemplateInstaller {
+  private manifest: TemplateManifest;
+  private options: InstallationOptions;
+  private stats: InstallationStats;
+
+  constructor(options: InstallationOptions = {}) {
+    this.manifest = this.loadManifest();
+    this.options = {
+      sourceDir: SOURCE_DIR,
+      destinationDir: DEST_DIR,
+      validate: true,
+      createDirectories: true,
+      skipExisting: false,
+      ...options
+    };
+    this.stats = {
+      successCount: 0,
+      errorCount: 0,
+      errors: [],
+      warnings: []
+    };
   }
-}
 
-function createDirectoryStructure(destDir: string, directories: Record<string, DirectoryConfig>): void {
-  console.log('Creating directory structure...');
-  
-  for (const [dirName, dirInfo] of Object.entries(directories)) {
-    const destPath = join(destDir, dirInfo.path);
-    if (!existsSync(destPath)) {
-      mkdirSync(destPath, { recursive: true });
-      console.log(`  ✓ Created ${dirInfo.path}`);
-    }
-    
-    // Create README for empty directories
-    if (dirInfo.createEmpty) {
-      const readmePath = join(destPath, 'README.md');
-      if (!existsSync(readmePath)) {
-        writeFileSync(readmePath, `# ${dirName}\n\nThis directory is intentionally empty and will be populated during usage.\n`);
-      }
-    }
-  }
-}
-
-function copyTemplateFiles(config: InstallationConfig, files: TemplateFile[]): InstallationResult {
-  console.log('\nCopying template files...');
-  let successCount = 0;
-  let errorCount = 0;
-  const categoryStats = new Map<string, { copied: number; total: number }>();
-
-  for (const file of files) {
-    const sourcePath = join(config.sourceDir, file.source);
-    const destPath = join(config.destDir, file.destination);
-    
-    // Initialize category stats
-    if (!categoryStats.has(file.category)) {
-      categoryStats.set(file.category, { copied: 0, total: 0 });
-    }
-    const stats = categoryStats.get(file.category)!;
-    stats.total++;
-    
+  private loadManifest(): TemplateManifest {
     try {
-      if (existsSync(sourcePath)) {
-        // Ensure destination directory exists
-        const destDir = dirname(destPath);
-        if (!existsSync(destDir)) {
-          mkdirSync(destDir, { recursive: true });
-        }
-        
-        // Copy file
-        copyFileSync(sourcePath, destPath);
-        console.log(`  ✓ ${file.destination} (${file.category})`);
-        successCount++;
-        stats.copied++;
-      } else {
-        console.error(`  ✗ ${file.source} - File not found`);
-        errorCount++;
-      }
+      const manifestContent = readFileSync(MANIFEST_PATH, 'utf8');
+      return JSON.parse(manifestContent) as TemplateManifest;
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      console.error(`  ✗ ${file.destination} - Error: ${errorMessage}`);
-      errorCount++;
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error('Failed to read manifest.json:', errorMessage);
+      process.exit(1);
     }
   }
 
-  return { successCount, errorCount, categoryStats };
-}
-
-function printSummary(result: InstallationResult, manifest: TemplateManifest): void {
-  console.log('\n' + '='.repeat(50));
-  console.log('Installation Summary:');
-  console.log(`  Files copied: ${result.successCount}`);
-  console.log(`  Errors: ${result.errorCount}`);
-  console.log(`  Total files in manifest: ${manifest.files.length}`);
-
-  // Category summary
-  console.log('\nFiles by category:');
-  for (const [category, stats] of result.categoryStats) {
-    console.log(`  ${category}: ${stats.copied}/${stats.total} files`);
-  }
-}
-
-function createInstallationTimestamp(destDir: string, version: string): void {
-  const timestamp = new Date().toISOString();
-  writeFileSync(
-    join(destDir, '.installed'), 
-    `Installed: ${timestamp}\nVersion: ${version}\n`
-  );
-}
-
-function printNextSteps(): void {
-  console.log('\nNext steps:');
-  console.log('1. Review the installed files in the .claude directory');
-  console.log('2. Run tests to verify functionality: npm test');
-  console.log('3. Package for distribution if needed');
-  console.log('\nFor more information, see README.md');
-}
-
-function main(): void {
-  const config: InstallationConfig = {
-    sourceDir: join(__dirname, '../../../.claude'),
-    destDir: join(__dirname, '.claude'),
-    manifestPath: join(__dirname, 'manifest.json')
-  };
-
-  try {
-    // Read manifest
-    const manifest = loadManifest(config.manifestPath);
-
-    // Create destination directory
-    if (!existsSync(config.destDir)) {
-      mkdirSync(config.destDir, { recursive: true });
+  private createDestinationDirectory(): void {
+    if (!existsSync(this.options.destinationDir!)) {
+      mkdirSync(this.options.destinationDir!, { recursive: true });
     }
+  }
 
-    // Create directory structure
-    createDirectoryStructure(config.destDir, manifest.directories);
+  private createDirectoryStructure(): void {
+    console.log('Creating directory structure...');
+    
+    for (const [dirName, dirInfo] of Object.entries(this.manifest.directories)) {
+      const destPath = path.join(this.options.destinationDir!, dirInfo.path);
+      
+      if (!existsSync(destPath)) {
+        try {
+          mkdirSync(destPath, { recursive: true });
+          console.log(`  ✓ Created ${dirInfo.path}`);
+        } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          this.stats.errors.push(`Failed to create directory ${dirInfo.path}: ${errorMessage}`);
+          console.error(`  ✗ ${dirInfo.path} - Error: ${errorMessage}`);
+          continue;
+        }
+      }
+      
+      // Create README for empty directories
+      if (dirInfo.createEmpty) {
+        const readmePath = path.join(destPath, 'README.md');
+        if (!existsSync(readmePath)) {
+          try {
+            const readmeContent = `# ${dirName}\n\nThis directory is intentionally empty and will be populated during usage.\n`;
+            writeFileSync(readmePath, readmeContent);
+          } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            this.stats.warnings.push(`Failed to create README for ${dirName}: ${errorMessage}`);
+          }
+        }
+      }
+    }
+  }
 
-    // Copy files
-    const result = copyTemplateFiles(config, manifest.files);
+  private copyTemplateFiles(): void {
+    console.log('\nCopying template files...');
+    
+    for (const file of this.manifest.files) {
+      const sourcePath = path.join(this.options.sourceDir!, file.source);
+      const destPath = path.join(this.options.destinationDir!, file.destination);
+      
+      try {
+        if (existsSync(sourcePath)) {
+          // Check if file already exists and skipExisting is enabled
+          if (this.options.skipExisting && existsSync(destPath)) {
+            console.log(`  ~ ${file.destination} (skipped - already exists)`);
+            continue;
+          }
+          
+          // Ensure destination directory exists
+          const destDir = path.dirname(destPath);
+          if (!existsSync(destDir)) {
+            mkdirSync(destDir, { recursive: true });
+          }
+          
+          // Copy file
+          copyFileSync(sourcePath, destPath);
+          console.log(`  ✓ ${file.destination} (${file.category})`);
+          this.stats.successCount++;
+        } else {
+          console.error(`  ✗ ${file.source} - File not found`);
+          this.stats.errorCount++;
+          this.stats.errors.push(`Source file not found: ${file.source}`);
+        }
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        console.error(`  ✗ ${file.destination} - Error: ${errorMessage}`);
+        this.stats.errorCount++;
+        this.stats.errors.push(`Failed to copy ${file.destination}: ${errorMessage}`);
+      }
+    }
+  }
 
-    // Print summary
-    printSummary(result, manifest);
+  private printSummary(): void {
+    console.log('\n' + '='.repeat(50));
+    console.log('Installation Summary:');
+    console.log(`  Files copied: ${this.stats.successCount}`);
+    console.log(`  Errors: ${this.stats.errorCount}`);
+    console.log(`  Total files in manifest: ${this.manifest.files.length}`);
+  }
 
-    // Create installation timestamp
-    if (result.errorCount === 0) {
-      createInstallationTimestamp(__dirname, manifest.version);
+  private printCategorySummary(): void {
+    console.log('\nFiles by category:');
+    for (const [category, info] of Object.entries(this.manifest.categories)) {
+      const copied = this.manifest.files.filter(f => 
+        f.category === category && 
+        existsSync(path.join(this.options.destinationDir!, f.destination))
+      ).length;
+      console.log(`  ${category}: ${copied}/${info.count} files`);
+    }
+  }
+
+  private createInstallationTimestamp(): void {
+    if (this.stats.errorCount === 0) {
       console.log('\n✅ Template installation completed successfully!');
+      
+      // Create a timestamp file
+      const timestamp = new Date().toISOString();
+      const timestampContent = `Installed: ${timestamp}\nVersion: ${this.manifest.version}\n`;
+      
+      try {
+        writeFileSync(
+          path.join(__dirname, '.installed'), 
+          timestampContent
+        );
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        this.stats.warnings.push(`Failed to create timestamp file: ${errorMessage}`);
+      }
     } else {
       console.log('\n⚠️  Template installation completed with errors.');
       console.log('Please check the error messages above and ensure source files exist.');
     }
+  }
 
-    // Print next steps
-    printNextSteps();
+  private printNextSteps(): void {
+    console.log('\nNext steps:');
+    console.log('1. Review the installed files in the .claude directory');
+    console.log('2. Run tests to verify functionality: npm test');
+    console.log('3. Package for distribution if needed');
+    console.log('\nFor more information, see README.md');
+  }
 
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    console.error(`Installation failed: ${errorMessage}`);
-    process.exit(1);
+  public install(): InstallationResult {
+    this.createDestinationDirectory();
+    this.createDirectoryStructure();
+    this.copyTemplateFiles();
+    this.printSummary();
+    this.printCategorySummary();
+    this.createInstallationTimestamp();
+    this.printNextSteps();
+
+    const categorySummary: Record<string, number> = {};
+    for (const [category, info] of Object.entries(this.manifest.categories)) {
+      const copied = this.manifest.files.filter(f => 
+        f.category === category && 
+        existsSync(path.join(this.options.destinationDir!, f.destination))
+      ).length;
+      categorySummary[category] = copied;
+    }
+
+    const result: InstallationResult = {
+      success: this.stats.errorCount === 0,
+      filesInstalled: this.stats.successCount,
+      errors: this.stats.errors,
+      warnings: this.stats.warnings,
+      summary: {
+        totalFiles: this.manifest.files.length,
+        successCount: this.stats.successCount,
+        errorCount: this.stats.errorCount,
+        categorySummary
+      }
+    };
+
+    return result;
   }
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
-  main();
+// Main execution
+function main(): void {
+  const installer = new TemplateInstaller();
+  const result = installer.install();
+  
+  process.exit(result.success ? 0 : 1);
 }
 
-export { loadManifest, createDirectoryStructure, copyTemplateFiles, InstallationResult };
+// Export main for external usage
+export { main };
+
+export { TemplateInstaller };
+export type { InstallationResult, InstallationOptions };

@@ -1,217 +1,288 @@
 #!/usr/bin/env node
 
 import { readFileSync, writeFileSync, existsSync, mkdirSync, copyFileSync } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
-import { TemplateManifest, DeploymentInfo, TemplateValidationResult } from '../types.js';
+import path from 'path';
+import type { 
+  TemplateManifest, 
+  DeploymentResult, 
+  DeploymentOptions 
+} from '../../types/template.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+// Use __dirname directly for Node.js compatibility
+const __dirname = path.resolve(path.dirname(''));
 
 /**
  * Deploy Claude optimized template to a target project
- * Usage: node deploy-to-project.ts <target-project-path>
+ * Usage: node deploy-to-project.js <target-project-path>
  */
 
-interface DeploymentConfig {
-  targetProject: string;
-  sourceDir: string;
-  targetDir: string;
-  manifestPath: string;
-}
+const SOURCE_DIR = path.join(__dirname, '.claude');
+const MANIFEST_PATH = path.join(__dirname, 'manifest.json');
 
-interface DeploymentResult {
+interface DeploymentStats {
   successCount: number;
   errorCount: number;
-  deploymentInfo: DeploymentInfo;
+  errors: string[];
+  warnings: string[];
 }
 
-function validateTargetProject(targetProject: string): TemplateValidationResult {
-  const errors: string[] = [];
-  const warnings: string[] = [];
+class TemplateDeployer {
+  private manifest: TemplateManifest;
+  private options: DeploymentOptions;
+  private stats: DeploymentStats;
 
-  if (!existsSync(targetProject)) {
-    errors.push(`Target project directory does not exist: ${targetProject}`);
-    return { valid: false, errors, warnings };
+  constructor(options: DeploymentOptions) {
+    this.manifest = this.loadManifest();
+    this.options = {
+      overwrite: true,
+      validate: true,
+      backup: false,
+      skipDependencies: false,
+      ...options
+    };
+    this.stats = {
+      successCount: 0,
+      errorCount: 0,
+      errors: [],
+      warnings: []
+    };
   }
 
-  // Check if it's a valid project (has package.json or similar)
-  const projectFiles = ['package.json', 'tsconfig.json', 'deno.json', 'go.mod', 'Cargo.toml', 'setup.py'];
-  const hasProjectFile = projectFiles.some(file => existsSync(join(targetProject, file)));
-
-  if (!hasProjectFile) {
-    warnings.push('Target directory does not appear to be a project root (no package.json, etc.)');
-  }
-
-  return { valid: true, errors, warnings };
-}
-
-function loadManifest(manifestPath: string): TemplateManifest {
-  try {
-    const manifestContent = readFileSync(manifestPath, 'utf8');
-    return JSON.parse(manifestContent) as TemplateManifest;
-  } catch (error) {
-    throw new Error(`Failed to load manifest: ${error instanceof Error ? error.message : 'Unknown error'}`);
-  }
-}
-
-function createDirectoryStructure(targetDir: string, manifest: TemplateManifest): void {
-  console.log('\nCreating directory structure...');
-  
-  for (const [dirName, dirInfo] of Object.entries(manifest.directories)) {
-    const targetPath = join(targetDir, dirInfo.path);
-    if (!existsSync(targetPath)) {
-      mkdirSync(targetPath, { recursive: true });
-      console.log(`  ✓ ${dirInfo.path}`);
-    }
-    
-    // Create README for empty directories
-    if (dirInfo.createEmpty) {
-      const readmePath = join(targetPath, 'README.md');
-      if (!existsSync(readmePath)) {
-        writeFileSync(readmePath, `# ${dirName}\n\nThis directory will be populated during usage.\n`);
-      }
-    }
-  }
-}
-
-function deployFiles(config: DeploymentConfig, manifest: TemplateManifest): DeploymentResult {
-  console.log('\nDeploying template files...');
-  let successCount = 0;
-  let errorCount = 0;
-
-  for (const file of manifest.files) {
-    const sourcePath = join(config.sourceDir, file.destination);
-    const targetPath = join(config.targetDir, file.destination);
-    
+  private loadManifest(): TemplateManifest {
     try {
-      if (existsSync(sourcePath)) {
-        // Ensure target directory exists
-        const targetDir = dirname(targetPath);
-        if (!existsSync(targetDir)) {
-          mkdirSync(targetDir, { recursive: true });
-        }
-        
-        // Copy file
-        copyFileSync(sourcePath, targetPath);
-        console.log(`  ✓ ${file.destination}`);
-        successCount++;
-      } else {
-        console.error(`  ✗ ${file.destination} - Source file not found`);
-        errorCount++;
-      }
+      const manifestContent = readFileSync(MANIFEST_PATH, 'utf8');
+      return JSON.parse(manifestContent) as TemplateManifest;
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      console.error(`  ✗ ${file.destination} - Error: ${errorMessage}`);
-      errorCount++;
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error('Failed to read manifest.json:', errorMessage);
+      process.exit(1);
     }
   }
 
-  // Create deployment info
-  const deploymentInfo: DeploymentInfo = {
-    deployed: new Date().toISOString(),
-    version: manifest.version,
-    targetProject: config.targetProject,
-    filesDeployed: successCount,
-    errors: errorCount
-  };
+  private validateTargetProject(): boolean {
+    if (!existsSync(this.options.targetPath)) {
+      console.error(`Error: Target project directory does not exist: ${this.options.targetPath}`);
+      return false;
+    }
 
-  return { successCount, errorCount, deploymentInfo };
-}
+    if (this.options.validate) {
+      // Check if it's a valid project (has package.json or similar)
+      const projectFiles = ['package.json', 'tsconfig.json', 'deno.json', 'go.mod', 'Cargo.toml', 'setup.py'];
+      const hasProjectFile = projectFiles.some(file => 
+        existsSync(path.join(this.options.targetPath, file))
+      );
 
-function writeDeploymentInfo(targetDir: string, deploymentInfo: DeploymentInfo): void {
-  writeFileSync(
-    join(targetDir, '.deployment-info.json'),
-    JSON.stringify(deploymentInfo, null, 2)
-  );
-}
+      if (!hasProjectFile) {
+        console.warn('Warning: Target directory does not appear to be a project root (no package.json, etc.)');
+        this.stats.warnings.push('Target directory may not be a valid project root');
+      }
+    }
 
-function printSummary(result: DeploymentResult, manifest: TemplateManifest): void {
-  console.log('\n' + '='.repeat(50));
-  console.log('Deployment Summary:');
-  console.log(`  Files deployed: ${result.successCount}`);
-  console.log(`  Errors: ${result.errorCount}`);
-  console.log(`  Target project: ${result.deploymentInfo.targetProject}`);
-  console.log(`  Template version: ${manifest.version}`);
-
-  if (result.errorCount === 0) {
-    console.log('\n🎉 Template deployed successfully!');
-    console.log('\nNext steps:');
-    console.log('1. Open Claude Code in your project');
-    console.log('2. Type / to see available commands');
-    console.log('3. Use /sparc for SPARC methodology');
-    console.log('4. Use /claude-flow-* for Claude Flow features');
-    console.log('\nFor help, see the documentation files in .claude/');
-  } else {
-    console.log('\n⚠️  Template deployed with errors. Please check the messages above.');
-  }
-}
-
-function main(): void {
-  const args = process.argv.slice(2);
-  if (args.length === 0) {
-    console.error('Usage: node deploy-to-project.ts <target-project-path>');
-    console.error('Example: node deploy-to-project.ts /path/to/my-project');
-    process.exit(1);
+    return true;
   }
 
-  const targetProject = args[0];
-  const config: DeploymentConfig = {
-    targetProject,
-    sourceDir: join(__dirname, '.claude'),
-    targetDir: join(targetProject, '.claude'),
-    manifestPath: join(__dirname, 'manifest.json')
-  };
-
-  console.log('Claude Optimized Template Deployment');
-  console.log('====================================');
-  console.log(`Source: ${config.sourceDir}`);
-  console.log(`Target: ${config.targetDir}`);
-
-  // Validate target project
-  const validation = validateTargetProject(targetProject);
-  if (!validation.valid) {
-    console.error(`Error: ${validation.errors.join(', ')}`);
-    process.exit(1);
+  private printDeploymentHeader(): void {
+    console.log('Claude Optimized Template Deployment');
+    console.log('====================================');
+    console.log(`Source: ${SOURCE_DIR}`);
+    console.log(`Target: ${path.join(this.options.targetPath, '.claude')}`);
   }
 
-  if (validation.warnings.length > 0) {
-    console.warn(`Warning: ${validation.warnings.join(', ')}`);
-  }
-
-  try {
-    // Load manifest
-    const manifest = loadManifest(config.manifestPath);
-
-    // Create target .claude directory
-    if (!existsSync(config.targetDir)) {
-      mkdirSync(config.targetDir, { recursive: true });
+  private createTargetDirectory(): void {
+    const targetDir = path.join(this.options.targetPath, '.claude');
+    
+    if (!existsSync(targetDir)) {
+      mkdirSync(targetDir, { recursive: true });
       console.log('✓ Created .claude directory');
     } else {
-      console.log('⚠️  .claude directory already exists - files will be overwritten');
+      if (this.options.overwrite) {
+        console.log('⚠️  .claude directory already exists - files will be overwritten');
+      } else {
+        console.error('Error: .claude directory already exists and overwrite is disabled');
+        process.exit(1);
+      }
+    }
+  }
+
+  private createDirectoryStructure(): void {
+    console.log('\nCreating directory structure...');
+    const targetDir = path.join(this.options.targetPath, '.claude');
+    
+    for (const [dirName, dirInfo] of Object.entries(this.manifest.directories)) {
+      const targetPath = path.join(targetDir, dirInfo.path);
+      
+      if (!existsSync(targetPath)) {
+        try {
+          mkdirSync(targetPath, { recursive: true });
+          console.log(`  ✓ ${dirInfo.path}`);
+        } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          this.stats.errors.push(`Failed to create directory ${dirInfo.path}: ${errorMessage}`);
+          console.error(`  ✗ ${dirInfo.path} - Error: ${errorMessage}`);
+          continue;
+        }
+      }
+      
+      // Create README for empty directories
+      if (dirInfo.createEmpty) {
+        const readmePath = path.join(targetPath, 'README.md');
+        if (!existsSync(readmePath)) {
+          try {
+            const readmeContent = `# ${dirName}\n\nThis directory will be populated during usage.\n`;
+            writeFileSync(readmePath, readmeContent);
+          } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            this.stats.warnings.push(`Failed to create README for ${dirName}: ${errorMessage}`);
+          }
+        }
+      }
+    }
+  }
+
+  private deployTemplateFiles(): void {
+    console.log('\nDeploying template files...');
+    const targetDir = path.join(this.options.targetPath, '.claude');
+    
+    for (const file of this.manifest.files) {
+      const sourcePath = path.join(SOURCE_DIR, file.destination);
+      const targetPath = path.join(targetDir, file.destination);
+      
+      try {
+        if (existsSync(sourcePath)) {
+          // Create backup if requested
+          if (this.options.backup && existsSync(targetPath)) {
+            const backupPath = `${targetPath}.backup`;
+            copyFileSync(targetPath, backupPath);
+          }
+          
+          // Ensure target directory exists
+          const targetFileDir = path.dirname(targetPath);
+          if (!existsSync(targetFileDir)) {
+            mkdirSync(targetFileDir, { recursive: true });
+          }
+          
+          // Copy file
+          copyFileSync(sourcePath, targetPath);
+          console.log(`  ✓ ${file.destination}`);
+          this.stats.successCount++;
+        } else {
+          console.error(`  ✗ ${file.destination} - Source file not found`);
+          this.stats.errorCount++;
+          this.stats.errors.push(`Source file not found: ${file.destination}`);
+        }
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        console.error(`  ✗ ${file.destination} - Error: ${errorMessage}`);
+        this.stats.errorCount++;
+        this.stats.errors.push(`Failed to deploy ${file.destination}: ${errorMessage}`);
+      }
+    }
+  }
+
+  private createDeploymentInfo(): void {
+    const deploymentInfo = {
+      deployed: new Date().toISOString(),
+      version: this.manifest.version,
+      targetProject: this.options.targetPath,
+      filesDeployed: this.stats.successCount,
+      errors: this.stats.errorCount
+    };
+
+    try {
+      const deploymentInfoPath = path.join(this.options.targetPath, '.claude', '.deployment-info.json');
+      writeFileSync(deploymentInfoPath, JSON.stringify(deploymentInfo, null, 2));
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      this.stats.warnings.push(`Failed to create deployment info: ${errorMessage}`);
+    }
+  }
+
+  private printSummary(): void {
+    console.log('\n' + '='.repeat(50));
+    console.log('Deployment Summary:');
+    console.log(`  Files deployed: ${this.stats.successCount}`);
+    console.log(`  Errors: ${this.stats.errorCount}`);
+    console.log(`  Target project: ${this.options.targetPath}`);
+    console.log(`  Template version: ${this.manifest.version}`);
+  }
+
+  private printNextSteps(): void {
+    if (this.stats.errorCount === 0) {
+      console.log('\n🎉 Template deployed successfully!');
+      console.log('\nNext steps:');
+      console.log('1. Open Claude Code in your project');
+      console.log('2. Type / to see available commands');
+      console.log('3. Use /sparc for SPARC methodology');
+      console.log('4. Use /claude-flow-* for Claude Flow features');
+      console.log('\nFor help, see the documentation files in .claude/');
+    } else {
+      console.log('\n⚠️  Template deployed with errors. Please check the messages above.');
+    }
+  }
+
+  public deploy(): DeploymentResult {
+    this.printDeploymentHeader();
+    
+    if (!this.validateTargetProject()) {
+      return {
+        success: false,
+        filesDeployed: 0,
+        errors: ['Target project validation failed'],
+        warnings: [],
+        deploymentInfo: {
+          deployed: new Date().toISOString(),
+          version: this.manifest.version,
+          targetProject: this.options.targetPath,
+          filesDeployed: 0,
+          errors: 1
+        }
+      };
     }
 
-    // Create directory structure
-    createDirectoryStructure(config.targetDir, manifest);
+    this.createTargetDirectory();
+    this.createDirectoryStructure();
+    this.deployTemplateFiles();
+    this.createDeploymentInfo();
+    this.printSummary();
+    this.printNextSteps();
 
-    // Deploy files
-    const result = deployFiles(config, manifest);
+    const result: DeploymentResult = {
+      success: this.stats.errorCount === 0,
+      filesDeployed: this.stats.successCount,
+      errors: this.stats.errors,
+      warnings: this.stats.warnings,
+      deploymentInfo: {
+        deployed: new Date().toISOString(),
+        version: this.manifest.version,
+        targetProject: this.options.targetPath,
+        filesDeployed: this.stats.successCount,
+        errors: this.stats.errorCount
+      }
+    };
 
-    // Write deployment info
-    writeDeploymentInfo(config.targetDir, result.deploymentInfo);
-
-    // Print summary
-    printSummary(result, manifest);
-
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    console.error(`Deployment failed: ${errorMessage}`);
-    process.exit(1);
+    return result;
   }
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
-  main();
+// Main execution
+function main(): void {
+  const args = process.argv.slice(2);
+  
+  if (args.length === 0) {
+    console.error('Usage: node deploy-to-project.js <target-project-path>');
+    console.error('Example: node deploy-to-project.js /path/to/my-project');
+    process.exit(1);
+  }
+
+  const targetPath = args[0];
+  const deployer = new TemplateDeployer({ targetPath });
+  const result = deployer.deploy();
+  
+  process.exit(result.success ? 0 : 1);
 }
 
-export { validateTargetProject, loadManifest, createDirectoryStructure, deployFiles };
+// Export main for external usage
+export { main };
+
+export { TemplateDeployer };
+export type { DeploymentResult, DeploymentOptions };

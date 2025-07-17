@@ -13,26 +13,26 @@ import {
   createFullClaudeMd, 
   createMinimalClaudeMd,
   createOptimizedSparcClaudeMd 
-} from './templates/claude-md.js';
+} from './templates/claude-md.ts';
 import { 
   createFullMemoryBankMd, 
   createMinimalMemoryBankMd,
   createOptimizedMemoryBankMd 
-} from './templates/memory-bank-md.js';
+} from './templates/memory-bank-md.ts';
 import { 
   createFullCoordinationMd, 
   createMinimalCoordinationMd,
   createOptimizedCoordinationMd 
-} from './templates/coordination-md.js';
+} from './templates/coordination-md.ts';
 import { 
   createAgentsReadme, 
   createSessionsReadme 
-} from './templates/readme-files.js';
+} from './templates/readme-files.ts';
 import { 
   createSparcModeTemplates, 
   createSparcModesOverview,
   createSwarmStrategyTemplates 
-} from './templates/sparc-modes.js';
+} from './templates/sparc-modes.ts';
 import { showInitHelp } from './help.js';
 import { 
   batchInitCommand, 
@@ -48,7 +48,7 @@ import {
   createCommandDoc,
   createHelperScript,
   COMMAND_STRUCTURE
-} from './templates/enhanced-templates.js';
+} from './templates/enhanced-templates.ts';
 import { getIsolatedNpxEnv } from '../../../utils/npx-isolated-cache.js';
 import { updateGitignore, needsGitignoreUpdate } from './gitignore-updater.js';
 

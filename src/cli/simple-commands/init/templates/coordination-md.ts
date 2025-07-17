@@ -1,6 +1,11 @@
-// coordination-md.js - Coordination templates
+// coordination-md.ts - Coordination templates with TypeScript support
 
-export function createMinimalCoordinationMd() {
+import type { TemplateGenerator, AsyncTemplateGenerator } from '../../../../types/template.js';
+
+/**
+ * Creates a minimal coordination MD file
+ */
+export const createMinimalCoordinationMd: TemplateGenerator<void> = (): string => {
   return `# Agent Coordination
 
 ## Quick Commands
@@ -11,9 +16,12 @@ export function createMinimalCoordinationMd() {
 ## Agent Types
 - researcher, coder, analyst, coordinator, general
 `;
-}
+};
 
-export function createFullCoordinationMd() {
+/**
+ * Creates a full coordination MD file with comprehensive documentation
+ */
+export const createFullCoordinationMd: TemplateGenerator<void> = (): string => {
   return `# Agent Coordination System
 
 ## Overview
@@ -103,10 +111,12 @@ Coordination settings in \`claude-flow.config.json\`:
 - Restart stuck agents with terminate/spawn cycle
 - Use \`--verbose\` flags for detailed diagnostic information
 `;
-}
+};
 
-// Create optimized Coordination with batchtools support
-export async function createOptimizedCoordinationMd() {
+/**
+ * Creates an optimized coordination MD with batchtools support
+ */
+export const createOptimizedCoordinationMd: AsyncTemplateGenerator<void> = async (): Promise<string> => {
   return `# Agent Coordination System (Batchtools Optimized)
 
 ## Overview
@@ -337,4 +347,4 @@ npx claude-flow monitor --resources --concurrent --real-time
 
 For more information about coordination system optimization, see: https://github.com/ruvnet/claude-code-flow/docs/coordination-batchtools.md
 `;
-}
+};
