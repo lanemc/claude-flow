@@ -3,11 +3,42 @@
  * This wrapper ensures compatibility and handles known issues in ruv-swarm
  */
 
-import { spawn } from 'child_process';
-import { createInterface } from 'readline';
+import { spawn, ChildProcess } from 'child_process';
+import { createInterface, Interface } from 'readline';
+
+export interface RuvSwarmWrapperOptions {
+  silent?: boolean;
+  autoRestart?: boolean;
+  maxRestarts?: number;
+  restartDelay?: number;
+}
+
+export interface RuvSwarmProcess {
+  process: ChildProcess;
+  stdout: NodeJS.ReadableStream;
+  stdin: NodeJS.WritableStream;
+}
+
+export interface ErrorPattern {
+  pattern: RegExp;
+  code: string;
+  message: string;
+}
+
+export interface ParsedErrorData {
+  error: {
+    code: string;
+    message: string;
+  };
+}
 
 export class RuvSwarmWrapper {
-  constructor(options = {}) {
+  private options: Required<RuvSwarmWrapperOptions>;
+  private process: ChildProcess | null = null;
+  private restartCount: number = 0;
+  private isShuttingDown: boolean = false;
+
+  constructor(options: RuvSwarmWrapperOptions = {}) {
     this.options = {
       silent: options.silent || false,
       autoRestart: options.autoRestart !== false,
@@ -15,13 +46,9 @@ export class RuvSwarmWrapper {
       restartDelay: options.restartDelay || 1000,
       ...options
     };
-    
-    this.process = null;
-    this.restartCount = 0;
-    this.isShuttingDown = false;
   }
 
-  async start() {
+  async start(): Promise<RuvSwarmProcess> {
     if (this.process) {
       throw new Error('RuvSwarm MCP server is already running');
     }
@@ -41,15 +68,15 @@ export class RuvSwarmWrapper {
         });
 
         let initialized = false;
-        let initTimeout;
+        let initTimeout: NodeJS.Timeout;
 
         // Handle stdout (JSON-RPC messages)
-        const rlOut = createInterface({
-          input: this.process.stdout,
+        const rlOut: Interface = createInterface({
+          input: this.process.stdout!,
           crlfDelay: Infinity
         });
 
-        rlOut.on('line', (line) => {
+        rlOut.on('line', (line: string) => {
           try {
             const message = JSON.parse(line);
             
@@ -58,9 +85,9 @@ export class RuvSwarmWrapper {
               initialized = true;
               clearTimeout(initTimeout);
               resolve({
-                process: this.process,
-                stdout: this.process.stdout,
-                stdin: this.process.stdin
+                process: this.process!,
+                stdout: this.process!.stdout!,
+                stdin: this.process!.stdin!
               });
             }
             
@@ -72,15 +99,15 @@ export class RuvSwarmWrapper {
         });
 
         // Handle stderr (logs and errors)
-        const rlErr = createInterface({
-          input: this.process.stderr,
+        const rlErr: Interface = createInterface({
+          input: this.process.stderr!,
           crlfDelay: Infinity
         });
 
-        rlErr.on('line', (line) => {
+        rlErr.on('line', (line: string) => {
           // Parse structured error messages if available
           try {
-            const errorData = JSON.parse(line);
+            const errorData: ParsedErrorData = JSON.parse(line);
             if (errorData.error && errorData.error.code) {
               // Handle specific error codes
               switch (errorData.error.code) {
@@ -104,7 +131,7 @@ export class RuvSwarmWrapper {
             }
           } catch (e) {
             // Not JSON, check for known text patterns as fallback
-            const knownErrorPatterns = [
+            const knownErrorPatterns: ErrorPattern[] = [
               {
                 pattern: /logger\.logMemoryUsage is not a function/,
                 code: 'LOGGER_METHOD_MISSING',
@@ -146,18 +173,18 @@ export class RuvSwarmWrapper {
         });
 
         // Handle process errors
-        this.process.on('error', (error) => {
+        this.process.on('error', (error: Error) => {
           if (!initialized) {
             clearTimeout(initTimeout);
             reject(new Error(`Failed to start ruv-swarm: ${error.message}`));
           } else {
             console.error('RuvSwarm process error:', error);
-            this.handleProcessExit(error.code || 1);
+            this.handleProcessExit(1);
           }
         });
 
         // Handle process exit
-        this.process.on('exit', (code, signal) => {
+        this.process.on('exit', (code: number | null, signal: NodeJS.Signals | null) => {
           if (!initialized) {
             clearTimeout(initTimeout);
             reject(new Error(`RuvSwarm exited before initialization: code ${code}, signal ${signal}`));
@@ -180,7 +207,7 @@ export class RuvSwarmWrapper {
     });
   }
 
-  handleProcessExit(code) {
+  private handleProcessExit(code: number): void {
     this.process = null;
 
     if (this.isShuttingDown) {
@@ -202,7 +229,7 @@ export class RuvSwarmWrapper {
     }
   }
 
-  async stop() {
+  async stop(): Promise<void> {
     this.isShuttingDown = true;
     
     if (!this.process) {
@@ -212,27 +239,27 @@ export class RuvSwarmWrapper {
     return new Promise((resolve) => {
       const killTimeout = setTimeout(() => {
         console.warn('RuvSwarm did not exit gracefully, forcing kill...');
-        this.process.kill('SIGKILL');
+        this.process!.kill('SIGKILL');
       }, 5000);
 
-      this.process.on('exit', () => {
+      this.process!.on('exit', () => {
         clearTimeout(killTimeout);
         this.process = null;
         resolve();
       });
 
       // Send graceful shutdown signal
-      this.process.kill('SIGTERM');
+      this.process!.kill('SIGTERM');
     });
   }
 
-  isRunning() {
+  isRunning(): boolean {
     return this.process !== null && !this.process.killed;
   }
 }
 
 // Export a function to start ruv-swarm with error handling
-export async function startRuvSwarmMCP(options = {}) {
+export async function startRuvSwarmMCP(options: RuvSwarmWrapperOptions = {}): Promise<{ wrapper: RuvSwarmWrapper } & RuvSwarmProcess> {
   const wrapper = new RuvSwarmWrapper(options);
   
   try {
@@ -240,7 +267,7 @@ export async function startRuvSwarmMCP(options = {}) {
     console.log('✅ RuvSwarm MCP server started successfully');
     return { wrapper, ...result };
   } catch (error) {
-    console.error('❌ Failed to start RuvSwarm MCP server:', error.message);
+    console.error('❌ Failed to start RuvSwarm MCP server:', (error as Error).message);
     throw error;
   }
 }
