@@ -4,14 +4,235 @@
  * Supports WebSocket-like functionality and progressive loading
  */
 
+import type { EventEmitter } from 'node:events';
+
+// ===== CORE REALTIME TYPES =====
+
+export type EventType = 
+  | 'tool_start'
+  | 'tool_complete'
+  | 'tool_error'
+  | 'swarm_status_change'
+  | 'memory_change'
+  | 'performance_metrics'
+  | string; // Allow custom event types
+
+export type ViewName = 
+  | 'neural'
+  | 'analysis'
+  | 'workflow'
+  | 'github'
+  | 'daa'
+  | 'system'
+  | 'tools'
+  | 'orchestration'
+  | 'memory'
+  | string; // Allow custom view names
+
+export type UpdateType = 
+  | 'training_progress'
+  | 'model_update'
+  | 'performance_report'
+  | 'metrics_update'
+  | 'execution_start'
+  | 'execution_complete'
+  | 'execution_error'
+  | 'swarm_update'
+  | 'memory_update'
+  | 'tool_result'
+  | 'data_loaded'
+  | 'data_chunk'
+  | 'data_error'
+  | string; // Allow custom update types
+
+// ===== EVENT INTERFACES =====
+
+export interface EventCallback {
+  (data: any, timestamp?: number): void;
+}
+
+export interface EventHistoryEntry {
+  type: EventType;
+  data: any;
+  timestamp: number;
+}
+
+export interface EventSubscription {
+  eventType: EventType;
+  callback: EventCallback;
+  unsubscribe: () => void;
+}
+
+// ===== UPDATE INTERFACES =====
+
+export interface UpdateData {
+  type: UpdateType;
+  id?: string;
+  timestamp: number;
+  [key: string]: any;
+}
+
+export interface QueuedUpdate extends UpdateData {
+  id: string; // Required for queued updates
+}
+
+export interface GroupedUpdates extends Map<UpdateType, QueuedUpdate[]> {}
+
+// ===== PERFORMANCE MONITORING =====
+
+export interface UpdateMetrics {
+  totalUpdates: number;
+  updateLatency: number[];
+  batchedUpdates: number;
+  droppedUpdates: number;
+}
+
+export interface PerformanceMetricsData {
+  totalUpdates: number;
+  averageLatency: number;
+  batchedUpdates: number;
+  droppedUpdates: number;
+  totalQueueSize: number;
+  eventHistorySize: number;
+}
+
+// ===== PROGRESSIVE LOADING =====
+
+export interface ProgressiveLoadOptions {
+  chunkSize?: number;
+  delay?: number;
+  onProgress?: (progress: ProgressInfo) => void;
+  onComplete?: (data: any) => void;
+}
+
+export interface ProgressInfo {
+  loaded: number;
+  total: number;
+  percentage: number;
+}
+
+export interface DataChunkUpdate extends UpdateData {
+  type: 'data_chunk';
+  chunk: any[];
+  progress: ProgressInfo;
+}
+
+export interface DataErrorUpdate extends UpdateData {
+  type: 'data_error';
+  error: string;
+}
+
+// ===== SYSTEM STATUS =====
+
+export interface SystemStatus {
+  subscribers: number;
+  queueSizes: Record<ViewName, number>;
+  metrics: UpdateMetrics;
+  eventHistorySize: number;
+  activeTimers: number;
+}
+
+// ===== UI INTEGRATION =====
+
+export interface UIInstance {
+  currentView?: ViewName;
+  enhancedViews?: {
+    viewData?: Map<ViewName, any>;
+  };
+  swarmIntegration?: {
+    updateSwarmStatus(): void;
+  };
+  memoryStats?: {
+    namespaces: Array<{
+      name: string;
+      entries: number;
+    }>;
+  };
+  addLog(level: 'success' | 'info' | 'error' | 'warning', message: string): void;
+  render?(): void;
+}
+
+// ===== VIEW-SPECIFIC DATA INTERFACES =====
+
+export interface NeuralViewData {
+  trainingJobs: Array<{
+    id: string;
+    startTime?: number;
+    [key: string]: any;
+  }>;
+  models: Array<{
+    id: string;
+    createdAt?: number;
+    [key: string]: any;
+  }>;
+}
+
+export interface AnalysisViewData {
+  reports: Array<{
+    id: string;
+    timestamp: number;
+    [key: string]: any;
+  }>;
+  metrics: Array<{
+    timestamp: number;
+    [key: string]: any;
+  }>;
+}
+
+// ===== TOOL-SPECIFIC EVENT DATA =====
+
+export interface ToolStartData {
+  toolName: string;
+  executionId: string;
+  timestamp?: number;
+}
+
+export interface ToolCompleteData {
+  toolName: string;
+  executionId: string;
+  result: any;
+  timestamp?: number;
+}
+
+export interface ToolErrorData {
+  toolName: string;
+  executionId: string;
+  error: string | Error;
+  timestamp?: number;
+}
+
+export interface SwarmStatusData {
+  swarmId: string;
+  status: string;
+  timestamp?: number;
+}
+
+export interface MemoryChangeData {
+  namespace: string;
+  operation: 'store' | 'retrieve' | 'delete' | 'search';
+  timestamp?: number;
+}
+
+// ===== MAIN CLASS IMPLEMENTATION =====
+
 export class RealtimeUpdateSystem {
-  constructor(ui) {
+  private ui: UIInstance;
+  private subscribers: Map<EventType, Set<EventCallback>>;
+  private updateQueues: Map<ViewName, QueuedUpdate[]>;
+  private updateTimers: Map<ViewName, NodeJS.Timeout>;
+  private batchDelay: number;
+  private eventHistory: EventHistoryEntry[];
+  private maxHistorySize: number;
+  private updateMetrics: UpdateMetrics;
+  private refreshThrottle: NodeJS.Timeout | null = null;
+
+  constructor(ui: UIInstance) {
     this.ui = ui;
-    this.subscribers = new Map(); // Event type -> Set of callbacks
-    this.updateQueues = new Map(); // View -> Queue of pending updates
-    this.updateTimers = new Map(); // View -> Timer for batched updates
+    this.subscribers = new Map();
+    this.updateQueues = new Map();
+    this.updateTimers = new Map();
     this.batchDelay = 100; // ms to batch updates
-    this.eventHistory = []; // Keep last 100 events
+    this.eventHistory = [];
     this.maxHistorySize = 100;
     
     // Performance monitoring
@@ -28,7 +249,7 @@ export class RealtimeUpdateSystem {
   /**
    * Initialize the real-time update system
    */
-  initializeSystem() {
+  private initializeSystem(): void {
     // Setup system event listeners
     this.setupSystemEvents();
     
@@ -44,9 +265,9 @@ export class RealtimeUpdateSystem {
   /**
    * Setup system-level event listeners
    */
-  setupSystemEvents() {
+  private setupSystemEvents(): void {
     // Listen for tool execution events
-    this.subscribe('tool_start', (data) => {
+    this.subscribe('tool_start', (data: ToolStartData) => {
       this.broadcastUpdate('tools', {
         type: 'execution_start',
         toolName: data.toolName,
@@ -55,7 +276,7 @@ export class RealtimeUpdateSystem {
       });
     });
     
-    this.subscribe('tool_complete', (data) => {
+    this.subscribe('tool_complete', (data: ToolCompleteData) => {
       this.broadcastUpdate('tools', {
         type: 'execution_complete',
         toolName: data.toolName,
@@ -68,7 +289,7 @@ export class RealtimeUpdateSystem {
       this.updateRelatedViews(data.toolName, data.result);
     });
     
-    this.subscribe('tool_error', (data) => {
+    this.subscribe('tool_error', (data: ToolErrorData) => {
       this.broadcastUpdate('tools', {
         type: 'execution_error',
         toolName: data.toolName,
@@ -79,7 +300,7 @@ export class RealtimeUpdateSystem {
     });
     
     // Listen for swarm events
-    this.subscribe('swarm_status_change', (data) => {
+    this.subscribe('swarm_status_change', (data: SwarmStatusData) => {
       this.broadcastUpdate('orchestration', {
         type: 'swarm_update',
         swarmId: data.swarmId,
@@ -89,7 +310,7 @@ export class RealtimeUpdateSystem {
     });
     
     // Listen for memory events
-    this.subscribe('memory_change', (data) => {
+    this.subscribe('memory_change', (data: MemoryChangeData) => {
       this.broadcastUpdate('memory', {
         type: 'memory_update',
         namespace: data.namespace,
@@ -102,8 +323,8 @@ export class RealtimeUpdateSystem {
   /**
    * Initialize update queues for all views
    */
-  initializeUpdateQueues() {
-    const views = ['neural', 'analysis', 'workflow', 'github', 'daa', 'system', 'tools', 'orchestration', 'memory'];
+  private initializeUpdateQueues(): void {
+    const views: ViewName[] = ['neural', 'analysis', 'workflow', 'github', 'daa', 'system', 'tools', 'orchestration', 'memory'];
     views.forEach(view => {
       this.updateQueues.set(view, []);
     });
@@ -112,25 +333,23 @@ export class RealtimeUpdateSystem {
   /**
    * Subscribe to specific event types
    */
-  subscribe(eventType, callback) {
+  public subscribe(eventType: EventType, callback: EventCallback): () => void {
     if (!this.subscribers.has(eventType)) {
       this.subscribers.set(eventType, new Set());
     }
-    this.subscribers.get(eventType).add(callback);
+    const subscribers = this.subscribers.get(eventType)!;
+    subscribers.add(callback);
     
     // Return unsubscribe function
     return () => {
-      const subs = this.subscribers.get(eventType);
-      if (subs) {
-        subs.delete(callback);
-      }
+      subscribers.delete(callback);
     };
   }
 
   /**
    * Emit event to all subscribers
    */
-  emit(eventType, data) {
+  public emit(eventType: EventType, data: any): void {
     const timestamp = Date.now();
     
     // Add to event history
@@ -161,15 +380,16 @@ export class RealtimeUpdateSystem {
   /**
    * Broadcast update to specific view
    */
-  broadcastUpdate(viewName, updateData) {
+  public broadcastUpdate(viewName: ViewName, updateData: UpdateData): void {
     const queue = this.updateQueues.get(viewName);
     if (!queue) return;
     
     // Add update to queue
-    queue.push({
+    const queuedUpdate: QueuedUpdate = {
       ...updateData,
       id: `update_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`
-    });
+    };
+    queue.push(queuedUpdate);
     
     // Schedule batched update
     this.scheduleBatchedUpdate(viewName);
@@ -180,7 +400,7 @@ export class RealtimeUpdateSystem {
   /**
    * Schedule batched update for a view
    */
-  scheduleBatchedUpdate(viewName) {
+  private scheduleBatchedUpdate(viewName: ViewName): void {
     // Clear existing timer
     const existingTimer = this.updateTimers.get(viewName);
     if (existingTimer) {
@@ -198,7 +418,7 @@ export class RealtimeUpdateSystem {
   /**
    * Process batched updates for a view
    */
-  processBatchedUpdates(viewName) {
+  private processBatchedUpdates(viewName: ViewName): void {
     const queue = this.updateQueues.get(viewName);
     if (!queue || queue.length === 0) return;
     
@@ -230,14 +450,14 @@ export class RealtimeUpdateSystem {
   /**
    * Group updates by type for efficient processing
    */
-  groupUpdatesByType(updates) {
-    const grouped = new Map();
+  private groupUpdatesByType(updates: QueuedUpdate[]): GroupedUpdates {
+    const grouped: GroupedUpdates = new Map();
     
     updates.forEach(update => {
       if (!grouped.has(update.type)) {
         grouped.set(update.type, []);
       }
-      grouped.get(update.type).push(update);
+      grouped.get(update.type)!.push(update);
     });
     
     return grouped;
@@ -246,7 +466,7 @@ export class RealtimeUpdateSystem {
   /**
    * Apply grouped updates to a specific view
    */
-  applyUpdatesToView(viewName, groupedUpdates) {
+  private applyUpdatesToView(viewName: ViewName, groupedUpdates: GroupedUpdates): void {
     try {
       // Different views handle updates differently
       switch (viewName) {
@@ -286,21 +506,21 @@ export class RealtimeUpdateSystem {
   /**
    * Apply neural-specific updates
    */
-  applyNeuralUpdates(groupedUpdates) {
-    const neuralData = this.ui.enhancedViews?.viewData?.get('neural');
+  private applyNeuralUpdates(groupedUpdates: GroupedUpdates): void {
+    const neuralData = this.ui.enhancedViews?.viewData?.get('neural') as NeuralViewData | undefined;
     if (!neuralData) return;
     
     // Handle training job updates
     const trainingUpdates = groupedUpdates.get('training_progress');
     if (trainingUpdates) {
       trainingUpdates.forEach(update => {
-        const existingJob = neuralData.trainingJobs.find(job => job.id === update.jobId);
+        const existingJob = neuralData.trainingJobs.find(job => job.id === (update as any).jobId);
         if (existingJob) {
-          Object.assign(existingJob, update.data);
+          Object.assign(existingJob, (update as any).data);
         } else {
           neuralData.trainingJobs.push({
-            id: update.jobId,
-            ...update.data,
+            id: (update as any).jobId,
+            ...(update as any).data,
             startTime: update.timestamp
           });
         }
@@ -311,13 +531,13 @@ export class RealtimeUpdateSystem {
     const modelUpdates = groupedUpdates.get('model_update');
     if (modelUpdates) {
       modelUpdates.forEach(update => {
-        const existingModel = neuralData.models.find(model => model.id === update.modelId);
+        const existingModel = neuralData.models.find(model => model.id === (update as any).modelId);
         if (existingModel) {
-          Object.assign(existingModel, update.data);
+          Object.assign(existingModel, (update as any).data);
         } else {
           neuralData.models.push({
-            id: update.modelId,
-            ...update.data,
+            id: (update as any).modelId,
+            ...(update as any).data,
             createdAt: update.timestamp
           });
         }
@@ -328,8 +548,8 @@ export class RealtimeUpdateSystem {
   /**
    * Apply analysis-specific updates
    */
-  applyAnalysisUpdates(groupedUpdates) {
-    const analysisData = this.ui.enhancedViews?.viewData?.get('analysis');
+  private applyAnalysisUpdates(groupedUpdates: GroupedUpdates): void {
+    const analysisData = this.ui.enhancedViews?.viewData?.get('analysis') as AnalysisViewData | undefined;
     if (!analysisData) return;
     
     // Handle performance report updates
@@ -337,8 +557,8 @@ export class RealtimeUpdateSystem {
     if (reportUpdates) {
       reportUpdates.forEach(update => {
         analysisData.reports.unshift({
-          id: update.reportId || `report_${update.timestamp}`,
-          ...update.data,
+          id: (update as any).reportId || `report_${update.timestamp}`,
+          ...(update as any).data,
           timestamp: update.timestamp
         });
         
@@ -354,7 +574,7 @@ export class RealtimeUpdateSystem {
     if (metricsUpdates) {
       metricsUpdates.forEach(update => {
         analysisData.metrics.push({
-          ...update.data,
+          ...(update as any).data,
           timestamp: update.timestamp
         });
         
@@ -367,25 +587,34 @@ export class RealtimeUpdateSystem {
   }
 
   /**
+   * Apply workflow-specific updates
+   */
+  private applyWorkflowUpdates(groupedUpdates: GroupedUpdates): void {
+    // Implement workflow-specific update logic
+    this.applyGenericUpdates('workflow', groupedUpdates);
+  }
+
+  /**
    * Apply tools-specific updates
    */
-  applyToolsUpdates(groupedUpdates) {
+  private applyToolsUpdates(groupedUpdates: GroupedUpdates): void {
     // Handle execution updates
     const executionUpdates = groupedUpdates.get('execution_start');
     if (executionUpdates) {
       executionUpdates.forEach(update => {
-        this.ui.addLog('info', `🔧 Started: ${update.toolName}`);
+        this.ui.addLog('info', `🔧 Started: ${(update as any).toolName}`);
       });
     }
     
     const completionUpdates = groupedUpdates.get('execution_complete');
     if (completionUpdates) {
       completionUpdates.forEach(update => {
-        this.ui.addLog('success', `✅ Completed: ${update.toolName}`);
+        this.ui.addLog('success', `✅ Completed: ${(update as any).toolName}`);
         
         // Show result summary if available
-        if (update.result && update.result.summary) {
-          this.ui.addLog('info', `📋 ${update.result.summary}`);
+        const result = (update as any).result;
+        if (result && result.summary) {
+          this.ui.addLog('info', `📋 ${result.summary}`);
         }
       });
     }
@@ -393,7 +622,7 @@ export class RealtimeUpdateSystem {
     const errorUpdates = groupedUpdates.get('execution_error');
     if (errorUpdates) {
       errorUpdates.forEach(update => {
-        this.ui.addLog('error', `❌ Failed: ${update.toolName} - ${update.error}`);
+        this.ui.addLog('error', `❌ Failed: ${(update as any).toolName} - ${(update as any).error}`);
       });
     }
   }
@@ -401,7 +630,7 @@ export class RealtimeUpdateSystem {
   /**
    * Apply orchestration-specific updates
    */
-  applyOrchestrationUpdates(groupedUpdates) {
+  private applyOrchestrationUpdates(groupedUpdates: GroupedUpdates): void {
     // Handle swarm updates
     const swarmUpdates = groupedUpdates.get('swarm_update');
     if (swarmUpdates) {
@@ -411,7 +640,7 @@ export class RealtimeUpdateSystem {
           this.ui.swarmIntegration.updateSwarmStatus();
         }
         
-        this.ui.addLog('info', `🐝 Swarm ${update.swarmId}: ${update.status}`);
+        this.ui.addLog('info', `🐝 Swarm ${(update as any).swarmId}: ${(update as any).status}`);
       });
     }
   }
@@ -419,25 +648,26 @@ export class RealtimeUpdateSystem {
   /**
    * Apply memory-specific updates
    */
-  applyMemoryUpdates(groupedUpdates) {
+  private applyMemoryUpdates(groupedUpdates: GroupedUpdates): void {
     // Handle memory operation updates
     const memoryUpdates = groupedUpdates.get('memory_update');
     if (memoryUpdates) {
       memoryUpdates.forEach(update => {
         // Update memory stats
         if (this.ui.memoryStats) {
-          const namespace = this.ui.memoryStats.namespaces.find(ns => ns.name === update.namespace);
+          const namespace = this.ui.memoryStats.namespaces.find(ns => ns.name === (update as any).namespace);
           if (namespace) {
             // Update existing namespace stats
-            if (update.operation === 'store') {
+            const operation = (update as any).operation;
+            if (operation === 'store') {
               namespace.entries++;
-            } else if (update.operation === 'delete') {
+            } else if (operation === 'delete') {
               namespace.entries = Math.max(0, namespace.entries - 1);
             }
           }
         }
         
-        this.ui.addLog('info', `💾 Memory ${update.operation} in ${update.namespace}`);
+        this.ui.addLog('info', `💾 Memory ${(update as any).operation} in ${(update as any).namespace}`);
       });
     }
   }
@@ -445,7 +675,7 @@ export class RealtimeUpdateSystem {
   /**
    * Apply generic updates for other views
    */
-  applyGenericUpdates(viewName, groupedUpdates) {
+  private applyGenericUpdates(viewName: ViewName, groupedUpdates: GroupedUpdates): void {
     // Log generic updates
     groupedUpdates.forEach((updates, type) => {
       updates.forEach(update => {
@@ -457,9 +687,9 @@ export class RealtimeUpdateSystem {
   /**
    * Update related views based on tool execution
    */
-  updateRelatedViews(toolName, result) {
+  private updateRelatedViews(toolName: string, result: any): void {
     // Map tool names to affected views
-    const toolViewMap = {
+    const toolViewMap: Record<string, ViewName[]> = {
       // Neural tools affect neural view
       'neural_train': ['neural'],
       'neural_predict': ['neural'],
@@ -499,7 +729,7 @@ export class RealtimeUpdateSystem {
   /**
    * Request UI refresh (throttled)
    */
-  requestUIRefresh() {
+  private requestUIRefresh(): void {
     if (this.refreshThrottle) return;
     
     this.refreshThrottle = setTimeout(() => {
@@ -513,7 +743,7 @@ export class RealtimeUpdateSystem {
   /**
    * Start performance monitoring
    */
-  startPerformanceMonitoring() {
+  private startPerformanceMonitoring(): void {
     setInterval(() => {
       this.reportPerformanceMetrics();
     }, 60000); // Report every minute
@@ -522,7 +752,7 @@ export class RealtimeUpdateSystem {
   /**
    * Report performance metrics
    */
-  reportPerformanceMetrics() {
+  private reportPerformanceMetrics(): void {
     const avgLatency = this.updateMetrics.updateLatency.length > 0 
       ? this.updateMetrics.updateLatency.reduce((a, b) => a + b, 0) / this.updateMetrics.updateLatency.length 
       : 0;
@@ -530,21 +760,23 @@ export class RealtimeUpdateSystem {
     const queueSizes = Array.from(this.updateQueues.values()).map(q => q.length);
     const totalQueueSize = queueSizes.reduce((a, b) => a + b, 0);
     
-    this.emit('performance_metrics', {
+    const metricsData: PerformanceMetricsData = {
       totalUpdates: this.updateMetrics.totalUpdates,
       averageLatency: avgLatency,
       batchedUpdates: this.updateMetrics.batchedUpdates,
       droppedUpdates: this.updateMetrics.droppedUpdates,
       totalQueueSize,
       eventHistorySize: this.eventHistory.length
-    });
+    };
+    
+    this.emit('performance_metrics', metricsData);
   }
 
   /**
    * Get system status
    */
-  getStatus() {
-    const queueSizes = {};
+  public getStatus(): SystemStatus {
+    const queueSizes: Record<ViewName, number> = {};
     this.updateQueues.forEach((queue, viewName) => {
       queueSizes[viewName] = queue.length;
     });
@@ -561,7 +793,11 @@ export class RealtimeUpdateSystem {
   /**
    * Create progressive loading handler
    */
-  createProgressiveLoader(viewName, dataLoader, options = {}) {
+  public createProgressiveLoader<T>(
+    viewName: ViewName, 
+    dataLoader: () => Promise<T>, 
+    options: ProgressiveLoadOptions = {}
+  ): () => Promise<void> {
     const {
       chunkSize = 10,
       delay = 100,
@@ -589,23 +825,21 @@ export class RealtimeUpdateSystem {
         for (let i = 0; i < data.length; i += chunkSize) {
           const chunk = data.slice(i, i + chunkSize);
           
+          const progress: ProgressInfo = {
+            loaded: Math.min(i + chunkSize, data.length),
+            total: data.length,
+            percentage: Math.min(((i + chunkSize) / data.length) * 100, 100)
+          };
+          
           this.broadcastUpdate(viewName, {
             type: 'data_chunk',
             chunk,
-            progress: {
-              loaded: Math.min(i + chunkSize, data.length),
-              total: data.length,
-              percentage: Math.min(((i + chunkSize) / data.length) * 100, 100)
-            },
+            progress,
             timestamp: Date.now()
           });
           
           if (onProgress) {
-            onProgress({
-              loaded: Math.min(i + chunkSize, data.length),
-              total: data.length,
-              percentage: Math.min(((i + chunkSize) / data.length) * 100, 100)
-            });
+            onProgress(progress);
           }
           
           // Small delay between chunks to prevent blocking
@@ -619,7 +853,7 @@ export class RealtimeUpdateSystem {
       } catch (error) {
         this.broadcastUpdate(viewName, {
           type: 'data_error',
-          error: error.message,
+          error: error instanceof Error ? error.message : String(error),
           timestamp: Date.now()
         });
       }
@@ -629,7 +863,7 @@ export class RealtimeUpdateSystem {
   /**
    * Cleanup resources
    */
-  cleanup() {
+  public cleanup(): void {
     // Clear all timers
     this.updateTimers.forEach(timer => clearTimeout(timer));
     this.updateTimers.clear();

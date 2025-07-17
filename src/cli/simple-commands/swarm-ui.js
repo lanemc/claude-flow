@@ -5,10 +5,10 @@
  * Uses blessed for terminal UI
  */
 
-const blessed = require('blessed');
-const fs = require('fs').promises;
-const path = require('path');
-const { spawn } = require('child_process');
+import blessed from 'blessed';
+import { promises as fs } from 'fs';
+import path from 'path';
+import { spawn } from 'child_process';
 
 class SwarmUI {
   constructor() {
@@ -732,8 +732,8 @@ process.on('unhandledRejection', (error) => {
   process.exit(1);
 });
 
-if (require.main === module) {
+if (import.meta.url === `file://${process.argv[1]}`) {
   main();
 }
 
-module.exports = SwarmUI;
+export default SwarmUI;

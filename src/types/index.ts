@@ -6,6 +6,9 @@
 // Export hive-mind shared types
 export * from './hive-mind.types.js';
 
+// Re-export MCP Integration types
+export * from '../cli/simple-commands/mcp-integration-layer.js';
+
 // Memory-specific types that may be referenced
 export interface MemoryEntry {
   id: string;

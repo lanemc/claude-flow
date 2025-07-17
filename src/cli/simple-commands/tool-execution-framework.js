@@ -4,7 +4,7 @@
  * Handles progress tracking, cancellation, and result formatting
  */
 
-import MCPIntegrationLayer from './mcp-integration-layer.js';
+import MCPIntegrationLayer from './mcp-integration-layer.ts';
 
 export class ToolExecutionFramework {
   constructor(ui) {
