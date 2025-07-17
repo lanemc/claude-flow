@@ -228,11 +228,15 @@ export class ClaudeCodeMCPWrapper {
 
     // Execute the SPARC mode directly
     try {
-      // Import the execution function dynamically to avoid circular dependencies
-      // const { executeSparcMode } = await import('../cli/mcp-stdio-server.js');
-      // TODO: Implement proper SPARC mode execution or fix import path
-      const executeSparcMode = (mode: string, task: string, tools: any[], context: any) => {
-        throw new Error('SPARC mode execution not yet implemented in wrapper');
+      // Import the execution function from SPARC commands
+      const { executeSparcCommand } = await import('../cli/simple-commands/sparc/commands.js');
+      const executeSparcMode = async (mode: string, task: string, tools: any[], context: any) => {
+        try {
+          const result = await executeSparcCommand(mode, task, context);
+          return { output: JSON.stringify(result, null, 2) };
+        } catch (error) {
+          throw new Error(`SPARC ${mode} execution failed: ${error instanceof Error ? error.message : String(error)}`);
+        }
       };
       
       const result = await executeSparcMode(
@@ -676,17 +680,17 @@ Use the appropriate tools for each phase and maintain progress in TodoWrite.`;
         if (mode) {
           // Execute using the existing SPARC execution logic
           try {
-            const result = await executeSparcMode(
+            const { executeSparcCommand } = await import('../cli/simple-commands/sparc/commands.js');
+            const result = await executeSparcCommand(
               modeName,
               args.prompt || '',
-              mode.tools || [],
               {}
             );
             
             return {
               content: [{
                 type: 'text',
-                text: result.output,
+                text: JSON.stringify(result, null, 2),
               }],
             };
           } catch (error) {
