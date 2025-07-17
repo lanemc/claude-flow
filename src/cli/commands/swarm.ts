@@ -162,11 +162,7 @@ export async function swarmAction(ctx: CommandContext) {
     await fs.mkdir(swarmDir, { recursive: true });
 
     // Create objective in coordinator
-    const objectiveId = await coordinator.createObjective(
-      `Swarm Task ${Date.now()}`,
-      objective,
-      options.strategy || 'auto'
-    );
+    const objectiveId = await coordinator.createObjective(objective, options.strategy as 'auto' | 'research' | 'development' | 'analysis');
     
     console.log(`\n📝 Objective created with ID: ${objectiveId}`);
 

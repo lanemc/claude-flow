@@ -10,25 +10,110 @@
  * - 4 main tabs: Metrics, Reports, Analysis, Health
  */
 
+// Type definitions for Analysis Tools
+interface PerformanceMetrics {
+    responseTime: number;
+    throughput: number;
+    errorRate: number;
+    uptime: string;
+}
+
+interface TokenMetrics {
+    input: number;
+    output: number;
+    cached: number;
+}
+
+interface HealthMetrics {
+    cpu: number;
+    memory: number;
+    disk: number;
+    network: number;
+    api: number;
+    database: number;
+}
+
+interface LoadMetrics {
+    oneMin: number;
+    fiveMin: number;
+    fifteenMin: number;
+    thirtyMin: number;
+    oneHour: number;
+    twentyFourHour: number;
+}
+
+interface Metrics {
+    performance?: PerformanceMetrics;
+    tokens?: TokenMetrics;
+    health?: HealthMetrics;
+    load?: LoadMetrics;
+}
+
+interface Alert {
+    severity: 'info' | 'warning' | 'error' | 'critical';
+    title: string;
+    message: string;
+    timestamp: number;
+}
+
+interface WebSocketMessage {
+    type: 'metrics_update' | 'alert' | 'health_status' | 'request_metrics';
+    payload?: any;
+    timestamp?: number;
+}
+
+interface PerformanceReport {
+    summary: string;
+    metrics: PerformanceMetrics;
+    recommendations: string[];
+}
+
+interface Bottleneck {
+    component: string;
+    severity: 'low' | 'medium' | 'high';
+    impact: string;
+}
+
+interface BottleneckAnalysis {
+    bottlenecks: Bottleneck[];
+    recommendations: string[];
+}
+
+interface TokenUsageData {
+    totalTokens: number;
+    inputTokens: number;
+    outputTokens: number;
+    cachedTokens: number;
+    cost: number;
+    efficiency: number;
+}
+
+type TabName = 'metrics' | 'reports' | 'analysis' | 'health';
+type ExportFormat = 'json' | 'csv';
+type ConnectionStatus = 'connected' | 'disconnected' | 'error';
+
+declare var Chart: any; // Chart.js global
+
 class AnalysisTools {
+    private ws: WebSocket | null = null;
+    private charts: Record<string, any> = {};
+    private currentTab: TabName = 'metrics';
+    private isConnected: boolean = false;
+    private metricsCache: Map<string, any> = new Map();
+    private updateInterval: number | null = null;
+
     constructor() {
-        this.ws = null;
-        this.charts = {};
-        this.currentTab = 'metrics';
-        this.isConnected = false;
-        this.metricsCache = new Map();
-        this.updateInterval = null;
         this.init();
     }
 
-    init() {
+    private init(): void {
         this.setupWebSocket();
         this.setupEventListeners();
         this.initializeCharts();
         this.startRealTimeUpdates();
     }
 
-    setupWebSocket() {
+    private setupWebSocket(): void {
         try {
             this.ws = new WebSocket('ws://localhost:3000/analysis');
             
@@ -38,8 +123,8 @@ class AnalysisTools {
                 this.updateConnectionStatus('connected');
             };
 
-            this.ws.onmessage = (event) => {
-                const data = JSON.parse(event.data);
+            this.ws.onmessage = (event: MessageEvent) => {
+                const data: WebSocketMessage = JSON.parse(event.data);
                 this.handleWebSocketData(data);
             };
 
@@ -50,7 +135,7 @@ class AnalysisTools {
                 setTimeout(() => this.setupWebSocket(), 5000);
             };
 
-            this.ws.onerror = (error) => {
+            this.ws.onerror = (error: Event) => {
                 console.error('Analysis WebSocket error:', error);
                 this.updateConnectionStatus('error');
             };
@@ -60,41 +145,54 @@ class AnalysisTools {
         }
     }
 
-    setupEventListeners() {
+    private setupEventListeners(): void {
         // Tab switching
         document.querySelectorAll('.analysis-tab').forEach(tab => {
             tab.addEventListener('click', (e) => {
-                this.switchTab(e.target.dataset.tab);
+                const target = e.target as HTMLElement;
+                const tabName = target.dataset.tab as TabName;
+                if (tabName) {
+                    this.switchTab(tabName);
+                }
             });
         });
 
         // Export buttons
         document.querySelectorAll('.export-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
-                const format = e.target.dataset.format;
-                const type = e.target.dataset.type;
-                this.exportData(type, format);
+                const target = e.target as HTMLElement;
+                const format = target.dataset.format as ExportFormat;
+                const type = target.dataset.type;
+                if (format && type) {
+                    this.exportData(type, format);
+                }
             });
         });
 
         // Tool buttons
         document.querySelectorAll('.tool-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
-                const tool = e.target.dataset.tool;
-                this.executeTool(tool);
+                const target = e.target as HTMLElement;
+                const tool = target.dataset.tool;
+                if (tool) {
+                    this.executeTool(tool);
+                }
             });
         });
 
         // Refresh buttons
         document.querySelectorAll('.refresh-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
-                const section = e.target.dataset.section;
-                this.refreshSection(section);
+                const target = e.target as HTMLElement;
+                const section = target.dataset.section;
+                if (section) {
+                    this.refreshSection(section);
+                }
             });
         });
     }
 
-    initializeCharts() {
+    private initializeCharts(): void {
         // Performance metrics chart
         this.charts.performance = new Chart(document.getElementById('performance-chart'), {
             type: 'line',
@@ -221,30 +319,31 @@ class AnalysisTools {
         });
     }
 
-    startRealTimeUpdates() {
-        this.updateInterval = setInterval(() => {
+    private startRealTimeUpdates(): void {
+        this.updateInterval = window.setInterval(() => {
             if (this.isConnected) {
                 this.requestMetricsUpdate();
             }
         }, 5000);
     }
 
-    requestMetricsUpdate() {
+    private requestMetricsUpdate(): void {
         if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-            this.ws.send(JSON.stringify({
+            const message: WebSocketMessage = {
                 type: 'request_metrics',
                 timestamp: Date.now()
-            }));
+            };
+            this.ws.send(JSON.stringify(message));
         }
     }
 
-    handleWebSocketData(data) {
+    private handleWebSocketData(data: WebSocketMessage): void {
         switch (data.type) {
             case 'metrics_update':
-                this.updateMetrics(data.payload);
+                this.updateMetrics(data.payload as Metrics);
                 break;
             case 'alert':
-                this.handleAlert(data.payload);
+                this.handleAlert(data.payload as Alert);
                 break;
             case 'health_status':
                 this.updateHealthStatus(data.payload);
@@ -254,7 +353,7 @@ class AnalysisTools {
         }
     }
 
-    updateMetrics(metrics) {
+    private updateMetrics(metrics: Metrics): void {
         this.metricsCache.set('latest', metrics);
         
         // Update performance chart
@@ -319,7 +418,7 @@ class AnalysisTools {
         this.updateMetricDisplays(metrics);
     }
 
-    updateMetricDisplays(metrics) {
+    private updateMetricDisplays(metrics: Metrics): void {
         // Performance metrics
         const perfSection = document.getElementById('performance-metrics');
         if (perfSection && metrics.performance) {
@@ -412,14 +511,14 @@ class AnalysisTools {
         }
     }
 
-    getHealthClass(score) {
+    private getHealthClass(score: number): string {
         if (score >= 90) return 'health-excellent';
         if (score >= 70) return 'health-good';
         if (score >= 50) return 'health-warning';
         return 'health-critical';
     }
 
-    handleAlert(alert) {
+    private handleAlert(alert: Alert): void {
         const alertsContainer = document.getElementById('alerts-container');
         if (alertsContainer) {
             const alertElement = document.createElement('div');
@@ -445,20 +544,31 @@ class AnalysisTools {
         }
     }
 
-    switchTab(tabName) {
+    private updateHealthStatus(status: any): void {
+        // Implementation depends on health status structure
+        console.log('Health status update:', status);
+    }
+
+    private switchTab(tabName: TabName): void {
         this.currentTab = tabName;
         
         // Update tab buttons
         document.querySelectorAll('.analysis-tab').forEach(tab => {
             tab.classList.remove('active');
         });
-        document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+        const activeTab = document.querySelector(`[data-tab="${tabName}"]`);
+        if (activeTab) {
+            activeTab.classList.add('active');
+        }
         
         // Update content panels
         document.querySelectorAll('.analysis-panel').forEach(panel => {
             panel.classList.remove('active');
         });
-        document.getElementById(`${tabName}-panel`).classList.add('active');
+        const activePanel = document.getElementById(`${tabName}-panel`);
+        if (activePanel) {
+            activePanel.classList.add('active');
+        }
         
         // Refresh charts when switching tabs
         setTimeout(() => {
@@ -471,8 +581,8 @@ class AnalysisTools {
     }
 
     // Tool execution methods
-    async executeTool(toolName) {
-        const button = document.querySelector(`[data-tool="${toolName}"]`);
+    private async executeTool(toolName: string): Promise<void> {
+        const button = document.querySelector(`[data-tool="${toolName}"]`) as HTMLButtonElement;
         if (button) {
             button.classList.add('loading');
             button.disabled = true;
@@ -524,7 +634,7 @@ class AnalysisTools {
             }
         } catch (error) {
             console.error(`Error executing tool ${toolName}:`, error);
-            this.showError(`Failed to execute ${toolName}: ${error.message}`);
+            this.showError(`Failed to execute ${toolName}: ${(error as Error).message}`);
         } finally {
             if (button) {
                 button.classList.remove('loading');
@@ -534,9 +644,9 @@ class AnalysisTools {
     }
 
     // Tool implementations
-    async performanceReport() {
+    private async performanceReport(): Promise<void> {
         try {
-            const report = await this.fetchAnalysisData('/api/analysis/performance-report');
+            const report = await this.fetchAnalysisData<PerformanceReport>('/api/analysis/performance-report');
             this.displayReport('performance-report-output', report);
             await this.notifyToolCompletion('performance_report');
         } catch (error) {
@@ -544,9 +654,9 @@ class AnalysisTools {
         }
     }
 
-    async bottleneckAnalyze() {
+    private async bottleneckAnalyze(): Promise<void> {
         try {
-            const analysis = await this.fetchAnalysisData('/api/analysis/bottleneck-analyze');
+            const analysis = await this.fetchAnalysisData<BottleneckAnalysis>('/api/analysis/bottleneck-analyze');
             this.displayAnalysis('bottleneck-analysis-output', analysis);
             await this.notifyToolCompletion('bottleneck_analyze');
         } catch (error) {
@@ -554,9 +664,9 @@ class AnalysisTools {
         }
     }
 
-    async tokenUsage() {
+    private async tokenUsage(): Promise<void> {
         try {
-            const usage = await this.fetchAnalysisData('/api/analysis/token-usage');
+            const usage = await this.fetchAnalysisData<TokenUsageData>('/api/analysis/token-usage');
             this.displayUsage('token-usage-output', usage);
             await this.notifyToolCompletion('token_usage');
         } catch (error) {
@@ -564,7 +674,7 @@ class AnalysisTools {
         }
     }
 
-    async benchmarkRun() {
+    private async benchmarkRun(): Promise<void> {
         try {
             const benchmark = await this.fetchAnalysisData('/api/analysis/benchmark-run');
             this.displayBenchmark('benchmark-output', benchmark);
@@ -574,7 +684,7 @@ class AnalysisTools {
         }
     }
 
-    async metricsCollect() {
+    private async metricsCollect(): Promise<void> {
         try {
             const metrics = await this.fetchAnalysisData('/api/analysis/metrics-collect');
             this.displayMetrics('metrics-output', metrics);
@@ -584,7 +694,7 @@ class AnalysisTools {
         }
     }
 
-    async trendAnalysis() {
+    private async trendAnalysis(): Promise<void> {
         try {
             const trends = await this.fetchAnalysisData('/api/analysis/trend-analysis');
             this.displayTrends('trends-output', trends);
@@ -594,7 +704,7 @@ class AnalysisTools {
         }
     }
 
-    async costAnalysis() {
+    private async costAnalysis(): Promise<void> {
         try {
             const costs = await this.fetchAnalysisData('/api/analysis/cost-analysis');
             this.displayCosts('costs-output', costs);
@@ -604,7 +714,7 @@ class AnalysisTools {
         }
     }
 
-    async qualityAssess() {
+    private async qualityAssess(): Promise<void> {
         try {
             const quality = await this.fetchAnalysisData('/api/analysis/quality-assess');
             this.displayQuality('quality-output', quality);
@@ -614,7 +724,7 @@ class AnalysisTools {
         }
     }
 
-    async errorAnalysis() {
+    private async errorAnalysis(): Promise<void> {
         try {
             const errors = await this.fetchAnalysisData('/api/analysis/error-analysis');
             this.displayErrors('errors-output', errors);
@@ -624,7 +734,7 @@ class AnalysisTools {
         }
     }
 
-    async usageStats() {
+    private async usageStats(): Promise<void> {
         try {
             const stats = await this.fetchAnalysisData('/api/analysis/usage-stats');
             this.displayStats('stats-output', stats);
@@ -634,7 +744,7 @@ class AnalysisTools {
         }
     }
 
-    async healthCheck() {
+    private async healthCheck(): Promise<void> {
         try {
             const health = await this.fetchAnalysisData('/api/analysis/health-check');
             this.displayHealth('health-output', health);
@@ -644,7 +754,7 @@ class AnalysisTools {
         }
     }
 
-    async loadMonitor() {
+    private async loadMonitor(): Promise<void> {
         try {
             const load = await this.fetchAnalysisData('/api/analysis/load-monitor');
             this.displayLoad('load-output', load);
@@ -654,7 +764,7 @@ class AnalysisTools {
         }
     }
 
-    async capacityPlan() {
+    private async capacityPlan(): Promise<void> {
         try {
             const capacity = await this.fetchAnalysisData('/api/analysis/capacity-plan');
             this.displayCapacity('capacity-output', capacity);
@@ -664,7 +774,7 @@ class AnalysisTools {
         }
     }
 
-    async fetchAnalysisData(endpoint) {
+    private async fetchAnalysisData<T = any>(endpoint: string): Promise<T> {
         try {
             const response = await fetch(endpoint);
             if (!response.ok) {
@@ -674,51 +784,12 @@ class AnalysisTools {
         } catch (error) {
             console.error('Fetch error:', error);
             // Show error message instead of falling back to mock data
-            this.showError(`Failed to fetch data from ${endpoint}: ${error.message}`);
+            this.showError(`Failed to fetch data from ${endpoint}: ${(error as Error).message}`);
             throw error; // Re-throw to let calling functions handle the error
         }
     }
 
-    getMockData(endpoint) {
-        const mockData = {
-            '/api/analysis/performance-report': {
-                summary: 'System performance is within acceptable ranges',
-                metrics: {
-                    averageResponseTime: 245,
-                    throughput: 1250,
-                    errorRate: 0.02,
-                    uptime: '99.8%'
-                },
-                recommendations: [
-                    'Consider caching frequently accessed data',
-                    'Optimize database queries for better performance',
-                    'Monitor memory usage during peak hours'
-                ]
-            },
-            '/api/analysis/bottleneck-analyze': {
-                bottlenecks: [
-                    { component: 'Database', severity: 'medium', impact: 'Response time +15%' },
-                    { component: 'API Gateway', severity: 'low', impact: 'Throughput -5%' }
-                ],
-                recommendations: [
-                    'Add database read replicas',
-                    'Implement connection pooling',
-                    'Optimize slow queries'
-                ]
-            },
-            '/api/analysis/token-usage': {
-                totalTokens: 2450000,
-                inputTokens: 1200000,
-                outputTokens: 950000,
-                cachedTokens: 300000,
-                cost: 245.50,
-                efficiency: 85.2
-            }
-        };
-        return mockData[endpoint] || { message: 'No data available' };
-    }
-
-    displayReport(containerId, report) {
+    private displayReport(containerId: string, report: PerformanceReport): void {
         const container = document.getElementById(containerId);
         if (!container) return;
 
@@ -731,7 +802,7 @@ class AnalysisTools {
                 <div class="metric-grid">
                     <div class="metric-item">
                         <label>Average Response Time</label>
-                        <span>${report.metrics.averageResponseTime}ms</span>
+                        <span>${report.metrics.responseTime}ms</span>
                     </div>
                     <div class="metric-item">
                         <label>Throughput</label>
@@ -756,7 +827,7 @@ class AnalysisTools {
         `;
     }
 
-    displayAnalysis(containerId, analysis) {
+    private displayAnalysis(containerId: string, analysis: BottleneckAnalysis): void {
         const container = document.getElementById(containerId);
         if (!container) return;
 
@@ -782,7 +853,7 @@ class AnalysisTools {
         `;
     }
 
-    displayUsage(containerId, usage) {
+    private displayUsage(containerId: string, usage: TokenUsageData): void {
         const container = document.getElementById(containerId);
         if (!container) return;
 
@@ -819,7 +890,68 @@ class AnalysisTools {
         `;
     }
 
-    exportData(type, format) {
+    // Display methods for other tool outputs
+    private displayBenchmark(containerId: string, data: any): void {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        container.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+    }
+
+    private displayMetrics(containerId: string, data: any): void {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        container.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+    }
+
+    private displayTrends(containerId: string, data: any): void {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        container.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+    }
+
+    private displayCosts(containerId: string, data: any): void {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        container.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+    }
+
+    private displayQuality(containerId: string, data: any): void {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        container.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+    }
+
+    private displayErrors(containerId: string, data: any): void {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        container.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+    }
+
+    private displayStats(containerId: string, data: any): void {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        container.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+    }
+
+    private displayHealth(containerId: string, data: any): void {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        container.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+    }
+
+    private displayLoad(containerId: string, data: any): void {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        container.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+    }
+
+    private displayCapacity(containerId: string, data: any): void {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        container.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+    }
+
+    private exportData(type: string, format: ExportFormat): void {
         const data = this.metricsCache.get('latest') || {};
         const timestamp = new Date().toISOString().split('T')[0];
         const filename = `${type}_${timestamp}.${format}`;
@@ -831,7 +963,7 @@ class AnalysisTools {
         }
     }
 
-    downloadJSON(data, filename) {
+    private downloadJSON(data: any, filename: string): void {
         const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -841,7 +973,7 @@ class AnalysisTools {
         URL.revokeObjectURL(url);
     }
 
-    downloadCSV(data, filename) {
+    private downloadCSV(data: any, filename: string): void {
         const csv = this.jsonToCSV(data);
         const blob = new Blob([csv], { type: 'text/csv' });
         const url = URL.createObjectURL(blob);
@@ -852,9 +984,9 @@ class AnalysisTools {
         URL.revokeObjectURL(url);
     }
 
-    jsonToCSV(json) {
-        const flatten = (obj, prefix = '') => {
-            const flattened = {};
+    private jsonToCSV(json: any): string {
+        const flatten = (obj: any, prefix = ''): Record<string, any> => {
+            const flattened: Record<string, any> = {};
             for (const key in obj) {
                 if (typeof obj[key] === 'object' && obj[key] !== null && !Array.isArray(obj[key])) {
                     Object.assign(flattened, flatten(obj[key], prefix + key + '.'));
@@ -884,7 +1016,7 @@ class AnalysisTools {
         return [headers.join(','), valueRow].join('\n');
     }
 
-    refreshSection(section) {
+    private refreshSection(section: string): void {
         switch (section) {
             case 'metrics':
                 this.requestMetricsUpdate();
@@ -897,14 +1029,17 @@ class AnalysisTools {
                 });
                 break;
             case 'alerts':
-                document.getElementById('alerts-container').innerHTML = '';
+                const alertsContainer = document.getElementById('alerts-container');
+                if (alertsContainer) {
+                    alertsContainer.innerHTML = '';
+                }
                 break;
             default:
                 console.warn('Unknown section:', section);
         }
     }
 
-    updateConnectionStatus(status) {
+    private updateConnectionStatus(status: ConnectionStatus): void {
         const statusElement = document.getElementById('connection-status');
         if (statusElement) {
             statusElement.className = `connection-status ${status}`;
@@ -912,7 +1047,7 @@ class AnalysisTools {
         }
     }
 
-    showError(message) {
+    private showError(message: string): void {
         const errorElement = document.createElement('div');
         errorElement.className = 'error-message';
         errorElement.textContent = message;
@@ -923,7 +1058,7 @@ class AnalysisTools {
         }, 5000);
     }
 
-    displayError(containerId, message) {
+    private displayError(containerId: string, message: string): void {
         const container = document.getElementById(containerId);
         if (!container) return;
 
@@ -942,7 +1077,7 @@ class AnalysisTools {
         `;
     }
 
-    async notifyToolCompletion(toolName) {
+    private async notifyToolCompletion(toolName: string): Promise<void> {
         try {
             // Notify swarm of tool completion
             const response = await fetch('/api/swarm/notify', {
@@ -965,7 +1100,7 @@ class AnalysisTools {
         }
     }
 
-    destroy() {
+    public destroy(): void {
         if (this.updateInterval) {
             clearInterval(this.updateInterval);
         }
@@ -984,10 +1119,8 @@ class AnalysisTools {
 
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
-    window.analysisTools = new AnalysisTools();
+    (window as any).analysisTools = new AnalysisTools();
 });
 
 // Export for module use
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = AnalysisTools;
-}
+export default AnalysisTools;

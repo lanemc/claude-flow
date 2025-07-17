@@ -15,7 +15,7 @@ import {
 } from '../../test.utils.ts';
 import { EventBus } from '../../../src/core/event-bus.ts';
 import { SystemEvents } from '../../../src/utils/types.ts';
-import { cleanupTestEnv, setupTestEnv } from '../../test.config.ts';
+// import { cleanupTestEnv, setupTestEnv } from '../../test.config.ts';
 
 describe('EventBus', () => {
   let eventBus: EventBus;

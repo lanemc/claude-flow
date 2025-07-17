@@ -2,10 +2,10 @@
  * Enhanced comprehensive unit tests for Orchestrator
  */
 
-import { describe, it, beforeEach, afterEach  } from "../test.utils.ts";
+import { describe, it, beforeEach, afterEach  } from "../../test.utils.js";
 import { expect } from "@jest/globals";
 // FakeTime equivalent available in test.utils.ts
-import { stub, spy  } from "../test.utils.ts";
+import { stub, spy  } from "../../test.utils.js";
 
 import { Orchestrator } from '../../../src/core/orchestrator.ts';
 import { 
@@ -22,9 +22,9 @@ import {
   MemoryTestUtils, 
   PerformanceTestUtils,
   TestAssertions 
-} from '../../utils/test-utils.ts';
-import { generateCoordinationTasks, generateErrorScenarios } from '../../fixtures/generators.ts';
-import { setupTestEnv, cleanupTestEnv, TEST_CONFIG } from '../../test.config.ts';
+} from '../../test.utils.js';
+// import { generateCoordinationTasks, generateErrorScenarios } from '../../fixtures/generators.ts';
+// import { setupTestEnv, cleanupTestEnv, TEST_CONFIG } from '../../test.config.ts';
 
 describe('Orchestrator - Enhanced Tests', () => {
   let orchestrator: Orchestrator;

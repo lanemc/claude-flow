@@ -3,7 +3,47 @@
  * Handles real-time communication with the backend MCP server
  */
 
-export class WebSocketClient {
+import type {
+  WebSocketStatus,
+  WebSocketMessage,
+  WebSocketError,
+  WebSocketNotification,
+  ConnectionInfo,
+  ReconnectionInfo,
+  IWebSocketClient,
+  CommandResult,
+  Tool,
+  HealthStatus,
+  InitializeParams,
+  EventCallback,
+  ConsoleEventType
+} from './types.js';
+
+interface RequestHandler {
+  resolve: (value: any) => void;
+  reject: (reason: Error) => void;
+}
+
+export class WebSocketClient implements IWebSocketClient {
+  private ws: WebSocket | null;
+  private url: string;
+  private authToken: string;
+  public isConnected: boolean;
+  private isConnecting: boolean;
+  private reconnectAttempts: number;
+  private maxReconnectAttempts: number;
+  private reconnectDelay: number;
+  private messageQueue: WebSocketMessage[];
+  private requestHandlers: Map<number | string, RequestHandler>;
+  private eventListeners: Map<string, EventCallback[]>;
+  private messageId: number;
+  
+  // Heartbeat configuration
+  private heartbeatInterval: number;
+  private heartbeatTimer: ReturnType<typeof setInterval> | null;
+  private lastPongReceived: number;
+  private connectionTimeout: number;
+  
   constructor() {
     this.ws = null;
     this.url = '';
@@ -30,7 +70,7 @@ export class WebSocketClient {
   /**
    * Connect to WebSocket server
    */
-  async connect(url, authToken = '') {
+  async connect(url: string, authToken: string = ''): Promise<void> {
     if (this.isConnecting || this.isConnected) {
       console.warn('Already connected or connecting');
       return;
@@ -51,7 +91,7 @@ export class WebSocketClient {
   /**
    * Establish WebSocket connection
    */
-  async establishConnection() {
+  private async establishConnection(): Promise<void> {
     return new Promise((resolve, reject) => {
       try {
         // Create WebSocket connection
@@ -81,12 +121,12 @@ export class WebSocketClient {
           resolve();
         };
         
-        this.ws.onclose = (event) => {
+        this.ws.onclose = (event: CloseEvent) => {
           clearTimeout(connectionTimer);
           this.handleDisconnection(event);
         };
         
-        this.ws.onerror = (error) => {
+        this.ws.onerror = (error: Event) => {
           clearTimeout(connectionTimer);
           console.error('WebSocket error:', error);
           this.isConnecting = false;
@@ -97,7 +137,7 @@ export class WebSocketClient {
           }
         };
         
-        this.ws.onmessage = (event) => {
+        this.ws.onmessage = (event: MessageEvent) => {
           this.handleMessage(event);
         };
         
@@ -111,7 +151,7 @@ export class WebSocketClient {
   /**
    * Disconnect from WebSocket server
    */
-  disconnect() {
+  disconnect(): void {
     if (this.ws) {
       this.stopHeartbeat();
       this.ws.close(1000, 'User initiated disconnect');
@@ -130,9 +170,9 @@ export class WebSocketClient {
   /**
    * Send a request and wait for response
    */
-  async sendRequest(method, params = {}) {
+  async sendRequest(method: string, params: any = {}): Promise<any> {
     const id = this.generateMessageId();
-    const request = {
+    const request: WebSocketMessage = {
       jsonrpc: '2.0',
       id,
       method,
@@ -159,8 +199,8 @@ export class WebSocketClient {
   /**
    * Send a notification (no response expected)
    */
-  sendNotification(method, params = {}) {
-    const notification = {
+  sendNotification(method: string, params: any = {}): void {
+    const notification: WebSocketMessage = {
       jsonrpc: '2.0',
       method,
       params
@@ -172,7 +212,7 @@ export class WebSocketClient {
   /**
    * Send raw message
    */
-  sendMessage(message) {
+  private sendMessage(message: WebSocketMessage): void {
     if (!this.isConnected) {
       // Queue message for later
       this.messageQueue.push(message);
@@ -182,7 +222,7 @@ export class WebSocketClient {
     
     try {
       const messageStr = JSON.stringify(message);
-      this.ws.send(messageStr);
+      this.ws!.send(messageStr);
       this.emit('message_sent', message);
     } catch (error) {
       console.error('Failed to send message:', error);
@@ -193,9 +233,9 @@ export class WebSocketClient {
   /**
    * Handle incoming messages
    */
-  handleMessage(event) {
+  private handleMessage(event: MessageEvent): void {
     try {
-      const message = JSON.parse(event.data);
+      const message: WebSocketMessage = JSON.parse(event.data);
       
       // Handle pong response
       if (message.method === 'pong') {
@@ -205,7 +245,7 @@ export class WebSocketClient {
       
       // Handle responses to requests
       if (message.id !== undefined && this.requestHandlers.has(message.id)) {
-        const handler = this.requestHandlers.get(message.id);
+        const handler = this.requestHandlers.get(message.id)!;
         this.requestHandlers.delete(message.id);
         
         if (message.error) {
@@ -233,7 +273,7 @@ export class WebSocketClient {
   /**
    * Handle disconnection
    */
-  handleDisconnection(event) {
+  private handleDisconnection(event: CloseEvent): void {
     const wasConnected = this.isConnected;
     this.isConnected = false;
     this.isConnecting = false;
@@ -242,7 +282,11 @@ export class WebSocketClient {
     console.log('WebSocket disconnected:', event.code, event.reason);
     
     if (wasConnected) {
-      this.emit('disconnected', { code: event.code, reason: event.reason });
+      const connectionInfo: ConnectionInfo = { 
+        code: event.code, 
+        reason: event.reason 
+      };
+      this.emit('disconnected', connectionInfo);
       
       // Attempt reconnection if not a clean close
       if (event.code !== 1000 && this.reconnectAttempts < this.maxReconnectAttempts) {
@@ -254,12 +298,17 @@ export class WebSocketClient {
   /**
    * Attempt to reconnect
    */
-  async attemptReconnection() {
+  private async attemptReconnection(): Promise<void> {
     this.reconnectAttempts++;
     const delay = this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1);
     
     console.log(`Attempting reconnection ${this.reconnectAttempts}/${this.maxReconnectAttempts} in ${delay}ms`);
-    this.emit('reconnecting', { attempt: this.reconnectAttempts, delay });
+    
+    const reconnectInfo: ReconnectionInfo = { 
+      attempt: this.reconnectAttempts, 
+      delay 
+    };
+    this.emit('reconnecting', reconnectInfo);
     
     setTimeout(async () => {
       try {
@@ -279,7 +328,7 @@ export class WebSocketClient {
   /**
    * Start heartbeat mechanism
    */
-  startHeartbeat() {
+  private startHeartbeat(): void {
     this.stopHeartbeat();
     
     this.heartbeatTimer = setInterval(() => {
@@ -289,7 +338,7 @@ export class WebSocketClient {
         
         if (timeSinceLastPong > this.heartbeatInterval * 2) {
           console.warn('Heartbeat timeout - connection may be dead');
-          this.ws.close(1006, 'Heartbeat timeout');
+          this.ws!.close(1006, 'Heartbeat timeout');
           return;
         }
         
@@ -302,7 +351,7 @@ export class WebSocketClient {
   /**
    * Stop heartbeat mechanism
    */
-  stopHeartbeat() {
+  private stopHeartbeat(): void {
     if (this.heartbeatTimer) {
       clearInterval(this.heartbeatTimer);
       this.heartbeatTimer = null;
@@ -312,9 +361,9 @@ export class WebSocketClient {
   /**
    * Process queued messages
    */
-  processMessageQueue() {
+  private processMessageQueue(): void {
     while (this.messageQueue.length > 0 && this.isConnected) {
-      const message = this.messageQueue.shift();
+      const message = this.messageQueue.shift()!;
       this.sendMessage(message);
     }
   }
@@ -322,14 +371,14 @@ export class WebSocketClient {
   /**
    * Generate unique message ID
    */
-  generateMessageId() {
+  private generateMessageId(): number {
     return this.messageId++;
   }
   
   /**
    * Set up internal event listeners
    */
-  setupEventListeners() {
+  private setupEventListeners(): void {
     // Handle page visibility changes
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) {
@@ -355,19 +404,19 @@ export class WebSocketClient {
   /**
    * Add event listener
    */
-  on(event, callback) {
+  on(event: string, callback: EventCallback): void {
     if (!this.eventListeners.has(event)) {
       this.eventListeners.set(event, []);
     }
-    this.eventListeners.get(event).push(callback);
+    this.eventListeners.get(event)!.push(callback);
   }
   
   /**
    * Remove event listener
    */
-  off(event, callback) {
+  off(event: string, callback: EventCallback): void {
     if (this.eventListeners.has(event)) {
-      const listeners = this.eventListeners.get(event);
+      const listeners = this.eventListeners.get(event)!;
       const index = listeners.indexOf(callback);
       if (index > -1) {
         listeners.splice(index, 1);
@@ -378,9 +427,9 @@ export class WebSocketClient {
   /**
    * Emit event
    */
-  emit(event, data = null) {
+  private emit(event: string, data: any = null): void {
     if (this.eventListeners.has(event)) {
-      this.eventListeners.get(event).forEach(callback => {
+      this.eventListeners.get(event)!.forEach(callback => {
         try {
           callback(data);
         } catch (error) {
@@ -393,7 +442,7 @@ export class WebSocketClient {
   /**
    * Get connection status
    */
-  getStatus() {
+  getStatus(): WebSocketStatus {
     return {
       connected: this.isConnected,
       connecting: this.isConnecting,
@@ -407,8 +456,8 @@ export class WebSocketClient {
   /**
    * Initialize Claude Code session
    */
-  async initializeSession(clientInfo = {}) {
-    const params = {
+  async initializeSession(clientInfo: any = {}): Promise<any> {
+    const params: InitializeParams = {
       protocolVersion: { major: 2024, minor: 11, patch: 5 },
       clientInfo: {
         name: 'Claude Flow v2',
@@ -436,7 +485,7 @@ export class WebSocketClient {
   /**
    * Execute Claude Flow command
    */
-  async executeCommand(command, args = {}) {
+  async executeCommand(command: string, args: any = {}): Promise<CommandResult> {
     try {
       const result = await this.sendRequest('tools/call', {
         name: 'claude-flow/execute',
@@ -453,7 +502,7 @@ export class WebSocketClient {
   /**
    * Get available tools
    */
-  async getAvailableTools() {
+  async getAvailableTools(): Promise<Tool[]> {
     try {
       const result = await this.sendRequest('tools/list');
       // The server returns { tools: [...] }, so we need to extract the tools array
@@ -467,7 +516,7 @@ export class WebSocketClient {
   /**
    * Get server health status
    */
-  async getHealthStatus() {
+  async getHealthStatus(): Promise<HealthStatus> {
     try {
       return await this.sendRequest('tools/call', {
         name: 'system/health'

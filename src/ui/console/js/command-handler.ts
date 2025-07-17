@@ -3,8 +3,41 @@
  * Processes and executes console commands
  */
 
-export class CommandHandler {
-  constructor(terminal, wsClient) {
+import type {
+  CommandDefinition,
+  CommandResult,
+  ParsedCommand,
+  BuiltinCommand,
+  ClaudeFlowCommand,
+  SparcModeCommand,
+  ICommandHandler,
+  ITerminalEmulator,
+  IWebSocketClient,
+  Tool,
+  HealthStatus,
+  ConsoleSettings,
+  TerminalEntry,
+  WebSocketStatus
+} from './types.js';
+
+export class CommandHandler implements ICommandHandler {
+  private terminal: ITerminalEmulator;
+  private wsClient: IWebSocketClient;
+  private isProcessing: boolean;
+  
+  // Built-in commands mapping
+  private builtinCommands: Record<BuiltinCommand, (args: string[]) => Promise<void>>;
+  
+  // Claude Flow commands mapping
+  private claudeFlowCommands: Record<ClaudeFlowCommand, (args: string[]) => Promise<void>>;
+  
+  // Direct SPARC mode commands mapping
+  private sparcModeCommands: Record<SparcModeCommand, (args: string[]) => Promise<void>>;
+  
+  // All commands combined
+  private allCommands: Record<string, (args: string[]) => Promise<void>>;
+  
+  constructor(terminal: ITerminalEmulator, wsClient: IWebSocketClient) {
     this.terminal = terminal;
     this.wsClient = wsClient;
     this.isProcessing = false;
@@ -50,13 +83,17 @@ export class CommandHandler {
       'designer': this.executeSparcMode.bind(this, 'designer')
     };
     
-    this.allCommands = { ...this.builtinCommands, ...this.claudeFlowCommands, ...this.sparcModeCommands };
+    this.allCommands = { 
+      ...this.builtinCommands, 
+      ...this.claudeFlowCommands, 
+      ...this.sparcModeCommands 
+    };
   }
   
   /**
    * Process a command
    */
-  async processCommand(command) {
+  async processCommand(command: string): Promise<void> {
     if (this.isProcessing) {
       this.terminal.writeWarning('Another command is still processing. Please wait...');
       return;
@@ -74,7 +111,7 @@ export class CommandHandler {
         await this.executeRemoteCommand(cmd, args);
       }
     } catch (error) {
-      this.terminal.writeError(error.message);
+      this.terminal.writeError((error as Error).message);
       console.error('Command execution error:', error);
     } finally {
       this.isProcessing = false;
@@ -85,7 +122,7 @@ export class CommandHandler {
   /**
    * Parse command string into command and arguments
    */
-  parseCommand(commandString) {
+  parseCommand(commandString: string): ParsedCommand {
     const parts = commandString.trim().split(/\s+/);
     const cmd = parts[0].toLowerCase();
     const args = parts.slice(1);
@@ -96,7 +133,7 @@ export class CommandHandler {
   /**
    * Show help information
    */
-  async showHelp(args) {
+  private async showHelp(args: string[]): Promise<void> {
     if (args.length > 0) {
       const command = args[0].toLowerCase();
       if (this.allCommands[command]) {
@@ -139,8 +176,8 @@ export class CommandHandler {
   /**
    * Get command description
    */
-  getCommandDescription(command) {
-    const descriptions = {
+  private getCommandDescription(command: string): string {
+    const descriptions: Record<string, string> = {
       'help': 'Show help information',
       'clear': 'Clear console output',
       'status': 'Show connection and system status',
@@ -168,8 +205,8 @@ export class CommandHandler {
   /**
    * Show detailed command help
    */
-  showCommandHelp(command) {
-    const helpText = {
+  private showCommandHelp(command: string): void {
+    const helpText: Record<string, string> = {
       'help': `
 Usage: help [command]
 Show help information for all commands or a specific command.
@@ -237,7 +274,7 @@ Examples:
   /**
    * Clear console
    */
-  async clearConsole() {
+  private async clearConsole(): Promise<void> {
     this.terminal.clear();
     this.terminal.writeSuccess('Console cleared');
   }
@@ -245,7 +282,7 @@ Examples:
   /**
    * Show status
    */
-  async showStatus() {
+  private async showStatus(): Promise<void> {
     const wsStatus = this.wsClient.getStatus();
     const terminalStats = this.terminal.getStats();
     
@@ -287,7 +324,7 @@ Examples:
   /**
    * Connect to server
    */
-  async connectToServer(args) {
+  private async connectToServer(args: string[]): Promise<void> {
     const url = args[0] || 'ws://localhost:3000/ws';
     const token = args[1] || '';
     
@@ -302,14 +339,14 @@ Examples:
       this.terminal.writeSuccess('Connected successfully');
       this.terminal.setPrompt('claude-flow>');
     } catch (error) {
-      this.terminal.writeError(`Connection failed: ${error.message}`);
+      this.terminal.writeError(`Connection failed: ${(error as Error).message}`);
     }
   }
   
   /**
    * Disconnect from server
    */
-  async disconnectFromServer() {
+  private async disconnectFromServer(): Promise<void> {
     this.wsClient.disconnect();
     this.terminal.writeSuccess('Disconnected from server');
     this.terminal.setPrompt('offline>');
@@ -318,7 +355,7 @@ Examples:
   /**
    * List available tools
    */
-  async listTools() {
+  private async listTools(): Promise<void> {
     if (!this.wsClient.isConnected) {
       this.terminal.writeError('Not connected to server');
       return;
@@ -338,14 +375,14 @@ Examples:
         this.terminal.writeWarning('No tools available');
       }
     } catch (error) {
-      this.terminal.writeError(`Failed to list tools: ${error.message}`);
+      this.terminal.writeError(`Failed to list tools: ${(error as Error).message}`);
     }
   }
   
   /**
    * Check server health
    */
-  async checkHealth() {
+  private async checkHealth(): Promise<void> {
     if (!this.wsClient.isConnected) {
       this.terminal.writeError('Not connected to server');
       return;
@@ -368,14 +405,14 @@ Examples:
         });
       }
     } catch (error) {
-      this.terminal.writeError(`Health check failed: ${error.message}`);
+      this.terminal.writeError(`Health check failed: ${(error as Error).message}`);
     }
   }
   
   /**
    * Show command history
    */
-  async showHistory() {
+  private async showHistory(): Promise<void> {
     const history = this.terminal.history;
     
     if (history.length === 0) {
@@ -392,7 +429,7 @@ Examples:
   /**
    * Export session data
    */
-  async exportSession(args) {
+  private async exportSession(args: string[]): Promise<void> {
     const format = args[0] || 'json';
     
     const sessionData = {
@@ -414,16 +451,16 @@ Examples:
   /**
    * Change theme
    */
-  async changeTheme(args) {
+  private async changeTheme(args: string[]): Promise<void> {
     const theme = args[0];
-    const validThemes = ['dark', 'light', 'classic', 'matrix'];
+    const validThemes: ConsoleSettings['theme'][] = ['dark', 'light', 'classic', 'matrix'];
     
     if (!theme) {
       this.terminal.writeInfo(`Available themes: ${validThemes.join(', ')}`);
       return;
     }
     
-    if (!validThemes.includes(theme)) {
+    if (!validThemes.includes(theme as ConsoleSettings['theme'])) {
       this.terminal.writeError(`Invalid theme: ${theme}`);
       return;
     }
@@ -436,7 +473,7 @@ Examples:
   /**
    * Show version information
    */
-  async showVersion() {
+  private async showVersion(): Promise<void> {
     this.terminal.writeInfo('🌊 Claude Flow v2.0.0');
     this.terminal.writeLine('Advanced swarm orchestration platform');
     this.terminal.writeLine('Built with modern web technologies');
@@ -445,7 +482,7 @@ Examples:
   /**
    * Execute Claude Flow command
    */
-  async executeClaudeFlow(args) {
+  private async executeClaudeFlow(args: string[]): Promise<void> {
     if (!this.wsClient.isConnected) {
       this.terminal.writeError('Not connected to server');
       return;
@@ -470,14 +507,14 @@ Examples:
         this.terminal.writeLine(result.output);
       }
     } catch (error) {
-      this.terminal.writeError(`Claude Flow command failed: ${error.message}`);
+      this.terminal.writeError(`Claude Flow command failed: ${(error as Error).message}`);
     }
   }
   
   /**
    * Execute swarm command
    */
-  async executeSwarm(args) {
+  private async executeSwarm(args: string[]): Promise<void> {
     if (!this.wsClient.isConnected) {
       this.terminal.writeError('Not connected to server');
       return;
@@ -498,14 +535,14 @@ Examples:
         this.terminal.writeSuccess('Swarm command executed successfully');
       }
     } catch (error) {
-      this.terminal.writeError(`Swarm command failed: ${error.message}`);
+      this.terminal.writeError(`Swarm command failed: ${(error as Error).message}`);
     }
   }
   
   /**
    * Initialize project
    */
-  async initializeProject(args) {
+  private async initializeProject(args: string[]): Promise<void> {
     if (!this.wsClient.isConnected) {
       this.terminal.writeError('Not connected to server');
       return;
@@ -517,14 +554,14 @@ Examples:
   /**
    * Manage configuration
    */
-  async manageConfig(args) {
+  private async manageConfig(args: string[]): Promise<void> {
     this.terminal.writeInfo('Use the Settings panel (⚙️ button) to manage configuration');
   }
   
   /**
    * Manage memory
    */
-  async manageMemory(args) {
+  private async manageMemory(args: string[]): Promise<void> {
     if (!this.wsClient.isConnected) {
       this.terminal.writeError('Not connected to server');
       return;
@@ -548,14 +585,14 @@ Examples:
         this.terminal.writeSuccess('Memory operation completed successfully');
       }
     } catch (error) {
-      this.terminal.writeError(`Memory command failed: ${error.message}`);
+      this.terminal.writeError(`Memory command failed: ${(error as Error).message}`);
     }
   }
   
   /**
    * Manage agents
    */
-  async manageAgents(args) {
+  private async manageAgents(args: string[]): Promise<void> {
     if (!this.wsClient.isConnected) {
       this.terminal.writeError('Not connected to server');
       return;
@@ -579,14 +616,14 @@ Examples:
         this.terminal.writeSuccess('Agent operation completed successfully');
       }
     } catch (error) {
-      this.terminal.writeError(`Agent command failed: ${error.message}`);
+      this.terminal.writeError(`Agent command failed: ${(error as Error).message}`);
     }
   }
   
   /**
    * Run benchmark
    */
-  async runBenchmark(args) {
+  private async runBenchmark(args: string[]): Promise<void> {
     if (!this.wsClient.isConnected) {
       this.terminal.writeError('Not connected to server');
       return;
@@ -609,14 +646,14 @@ Examples:
         this.terminal.writeSuccess('Benchmark completed successfully');
       }
     } catch (error) {
-      this.terminal.writeError(`Benchmark failed: ${error.message}`);
+      this.terminal.writeError(`Benchmark failed: ${(error as Error).message}`);
     }
   }
   
   /**
    * Execute SPARC mode
    */
-  async executeSparc(args) {
+  private async executeSparc(args: string[]): Promise<void> {
     if (!this.wsClient.isConnected) {
       this.terminal.writeError('Not connected to server');
       return;
@@ -624,7 +661,7 @@ Examples:
     
     if (args.length === 0) {
       this.terminal.writeInfo('Available SPARC modes:');
-      const modes = ['coder', 'architect', 'analyst', 'researcher', 'reviewer', 
+      const modes: SparcModeCommand[] = ['coder', 'architect', 'analyst', 'researcher', 'reviewer', 
                     'tester', 'debugger', 'documenter', 'optimizer', 'designer'];
       modes.forEach(mode => {
         this.terminal.writeLine(`  ${mode}`);
@@ -650,14 +687,14 @@ Examples:
         this.terminal.writeSuccess(`SPARC ${mode} mode executed successfully`);
       }
     } catch (error) {
-      this.terminal.writeError(`SPARC execution failed: ${error.message}`);
+      this.terminal.writeError(`SPARC execution failed: ${(error as Error).message}`);
     }
   }
   
   /**
    * Execute specific SPARC mode
    */
-  async executeSparcMode(mode, args) {
+  private async executeSparcMode(mode: SparcModeCommand, args: string[]): Promise<void> {
     if (!this.wsClient.isConnected) {
       this.terminal.writeError('Not connected to server');
       return;
@@ -680,14 +717,14 @@ Examples:
         this.terminal.writeSuccess(`SPARC ${mode} mode executed successfully`);
       }
     } catch (error) {
-      this.terminal.writeError(`SPARC ${mode} execution failed: ${error.message}`);
+      this.terminal.writeError(`SPARC ${mode} execution failed: ${(error as Error).message}`);
     }
   }
   
   /**
    * Execute remote command via WebSocket
    */
-  async executeRemoteCommand(command, args) {
+  private async executeRemoteCommand(command: string, args: string[]): Promise<void> {
     if (!this.wsClient.isConnected) {
       this.terminal.writeError('Not connected to server. Use "connect" command first.');
       return;
@@ -709,19 +746,19 @@ Examples:
         this.terminal.writeSuccess('Command executed successfully');
       }
     } catch (error) {
-      this.terminal.writeError(`Remote command failed: ${error.message}`);
+      this.terminal.writeError(`Remote command failed: ${(error as Error).message}`);
     }
   }
 
   /**
    * Execute tool directly by name
    */
-  async executeToolDirect(toolName, args) {
+  private async executeToolDirect(toolName: string, args: string[]): Promise<void> {
     try {
       this.terminal.writeInfo(`Executing tool: ${toolName}...`);
       
       // Prepare arguments based on tool
-      let toolArgs = {};
+      let toolArgs: Record<string, any> = {};
       
       switch (toolName) {
         case 'system/health':
@@ -788,14 +825,14 @@ Examples:
         this.terminal.writeSuccess(`Tool ${toolName} executed successfully`);
       }
     } catch (error) {
-      this.terminal.writeError(`Tool execution failed: ${error.message}`);
+      this.terminal.writeError(`Tool execution failed: ${(error as Error).message}`);
     }
   }
   
   /**
    * Download file helper
    */
-  downloadFile(blob, filename) {
+  private downloadFile(blob: Blob, filename: string): void {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -809,7 +846,7 @@ Examples:
   /**
    * Get command suggestions
    */
-  getCommandSuggestions(input) {
+  getCommandSuggestions(input: string): string[] {
     const allCommands = Object.keys(this.allCommands);
     return allCommands.filter(cmd => cmd.startsWith(input.toLowerCase()));
   }
@@ -817,7 +854,7 @@ Examples:
   /**
    * Check if command exists
    */
-  hasCommand(command) {
+  hasCommand(command: string): boolean {
     return this.allCommands.hasOwnProperty(command.toLowerCase());
   }
 }

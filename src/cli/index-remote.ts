@@ -130,7 +130,8 @@ async function main() {
   }
 }
 
-if (import.meta.url === `file://${Deno.execPath()}`) {
+// For Node.js compatibility
+if (typeof process !== 'undefined' && process.argv[1] === new URL(import.meta.url).pathname) {
   main().catch((error) => {
     printError(`Error: ${(error instanceof Error ? error.message : String(error))}`);
     process.exit(1);

@@ -221,10 +221,17 @@ function showEnvironmentWarnings(env: ExecutionEnvironment): void {
 export function applySmartDefaults<T extends Record<string, any>>(
   options: T,
   env?: ExecutionEnvironment
-): T & { appliedDefaults: string[] } {
+): T & { 
+  appliedDefaults: string[]; 
+  skipPermissions?: boolean;
+  dangerouslySkipPermissions?: boolean;
+  nonInteractive?: boolean;
+  json?: boolean;
+  noColor?: boolean;
+} {
   const environment = env || detectExecutionEnvironment({ skipWarnings: true });
   const appliedDefaults: string[] = [];
-  const enhanced = { ...options, appliedDefaults };
+  const enhanced: any = { ...options, appliedDefaults };
   
   // Apply defaults based on environment
   if ((environment.isVSCode || environment.isCI || !environment.supportsRawMode) && 

@@ -3,8 +3,31 @@
  * Provides terminal-like behavior and output formatting
  */
 
-export class TerminalEmulator {
-  constructor(outputElement, inputElement) {
+import type {
+  OutputType,
+  TerminalStats,
+  TerminalEntry,
+  AnsiColorMap,
+  EventCallback,
+  ITerminalEmulator
+} from './types.js';
+
+export class TerminalEmulator implements ITerminalEmulator {
+  private outputElement: HTMLElement;
+  private inputElement: HTMLInputElement;
+  public history: string[];
+  private historyIndex: number;
+  private maxHistorySize: number;
+  private maxOutputLines: number;
+  private currentPrompt: string;
+  private isLocked: boolean;
+  private commands: string[];
+  private ansiColors: AnsiColorMap;
+  private eventListeners: Map<string, EventCallback[]>;
+  private isUserScrolling?: () => boolean;
+  public resumeAutoScroll!: () => void;
+
+  constructor(outputElement: HTMLElement, inputElement: HTMLInputElement) {
     this.outputElement = outputElement;
     this.inputElement = inputElement;
     this.history = [];
@@ -13,6 +36,7 @@ export class TerminalEmulator {
     this.maxOutputLines = 1000;
     this.currentPrompt = 'claude-flow>';
     this.isLocked = false;
+    this.eventListeners = new Map();
     
     // Command suggestions
     this.commands = [
@@ -48,7 +72,7 @@ export class TerminalEmulator {
   /**
    * Write output to terminal
    */
-  write(content, type = 'output', timestamp = true) {
+  write(content: string, type: OutputType = 'output', timestamp: boolean = true): HTMLElement {
     const entry = this.createOutputEntry(content, type, timestamp);
     this.outputElement.appendChild(entry);
     this.limitOutputLines();
@@ -59,49 +83,49 @@ export class TerminalEmulator {
   /**
    * Write line to terminal
    */
-  writeLine(content, type = 'output', timestamp = true) {
+  writeLine(content: string, type: OutputType = 'output', timestamp: boolean = true): HTMLElement {
     return this.write(content + '\n', type, timestamp);
   }
   
   /**
    * Write command to terminal
    */
-  writeCommand(command) {
+  writeCommand(command: string): HTMLElement {
     return this.write(`${this.currentPrompt} ${command}`, 'command', true);
   }
   
   /**
    * Write error message
    */
-  writeError(message) {
+  writeError(message: string): HTMLElement {
     return this.writeLine(`Error: ${message}`, 'error');
   }
   
   /**
    * Write success message
    */
-  writeSuccess(message) {
+  writeSuccess(message: string): HTMLElement {
     return this.writeLine(message, 'success');
   }
   
   /**
    * Write warning message
    */
-  writeWarning(message) {
+  writeWarning(message: string): HTMLElement {
     return this.writeLine(`Warning: ${message}`, 'warning');
   }
   
   /**
    * Write info message
    */
-  writeInfo(message) {
+  writeInfo(message: string): HTMLElement {
     return this.writeLine(message, 'info');
   }
   
   /**
    * Write raw HTML content
    */
-  writeHTML(html, type = 'output') {
+  writeHTML(html: string, type: OutputType = 'output'): HTMLElement {
     const entry = document.createElement('div');
     entry.className = 'output-entry';
     entry.innerHTML = html;
@@ -119,7 +143,7 @@ export class TerminalEmulator {
   /**
    * Clear terminal output
    */
-  clear() {
+  clear(): void {
     this.outputElement.innerHTML = '';
     this.showWelcomeMessage();
   }
@@ -127,7 +151,7 @@ export class TerminalEmulator {
   /**
    * Show welcome message
    */
-  showWelcomeMessage() {
+  showWelcomeMessage(): void {
     // Check if welcome message already exists (from static HTML)
     const existingWelcome = this.outputElement.querySelector('.welcome-message');
     if (existingWelcome) {
@@ -154,7 +178,7 @@ export class TerminalEmulator {
   /**
    * Set prompt text
    */
-  setPrompt(prompt) {
+  setPrompt(prompt: string): void {
     this.currentPrompt = prompt;
     const promptElement = document.getElementById('promptText');
     if (promptElement) {
@@ -165,7 +189,7 @@ export class TerminalEmulator {
   /**
    * Lock/unlock input
    */
-  setLocked(locked) {
+  setLocked(locked: boolean): void {
     this.isLocked = locked;
     this.inputElement.disabled = locked;
     
@@ -180,7 +204,7 @@ export class TerminalEmulator {
   /**
    * Focus input
    */
-  focus() {
+  focus(): void {
     if (!this.isLocked) {
       this.inputElement.focus();
     }
@@ -189,28 +213,28 @@ export class TerminalEmulator {
   /**
    * Get current input value
    */
-  getInput() {
+  getInput(): string {
     return this.inputElement.value;
   }
   
   /**
    * Set input value
    */
-  setInput(value) {
+  setInput(value: string): void {
     this.inputElement.value = value;
   }
   
   /**
    * Clear input
    */
-  clearInput() {
+  clearInput(): void {
     this.inputElement.value = '';
   }
   
   /**
    * Add command to history
    */
-  addToHistory(command) {
+  addToHistory(command: string): void {
     if (command.trim() && this.history[this.history.length - 1] !== command) {
       this.history.push(command);
       
@@ -225,7 +249,7 @@ export class TerminalEmulator {
   /**
    * Navigate command history
    */
-  navigateHistory(direction) {
+  navigateHistory(direction: 'up' | 'down'): void {
     if (this.history.length === 0) return;
     
     if (direction === 'up') {
@@ -252,7 +276,7 @@ export class TerminalEmulator {
   /**
    * Create output entry element
    */
-  createOutputEntry(content, type, timestamp) {
+  private createOutputEntry(content: string, type: string, timestamp: boolean): HTMLElement {
     const entry = document.createElement('div');
     entry.className = 'output-entry';
     
@@ -287,7 +311,7 @@ export class TerminalEmulator {
   /**
    * Process ANSI escape codes
    */
-  processAnsiCodes(text) {
+  private processAnsiCodes(text: string): string {
     // Simple ANSI processing - convert color codes to HTML
     return text
       .replace(/\x1b\[(\d+)m/g, (match, code) => {
@@ -309,7 +333,7 @@ export class TerminalEmulator {
   /**
    * Format timestamp
    */
-  formatTimestamp(date) {
+  private formatTimestamp(date: Date): string {
     return date.toLocaleTimeString('en-US', {
       hour12: false,
       hour: '2-digit',
@@ -321,7 +345,7 @@ export class TerminalEmulator {
   /**
    * Check if timestamps should be shown
    */
-  shouldShowTimestamp() {
+  private shouldShowTimestamp(): boolean {
     const showTimestamps = localStorage.getItem('console_show_timestamps');
     return showTimestamps !== 'false';
   }
@@ -329,7 +353,7 @@ export class TerminalEmulator {
   /**
    * Limit output lines
    */
-  limitOutputLines() {
+  private limitOutputLines(): void {
     const entries = this.outputElement.querySelectorAll('.output-entry');
     
     if (entries.length > this.maxOutputLines) {
@@ -345,7 +369,7 @@ export class TerminalEmulator {
   /**
    * Scroll to bottom
    */
-  scrollToBottom(smooth = false) {
+  private scrollToBottom(smooth: boolean = false): void {
     if (this.shouldAutoScroll()) {
       if (smooth) {
         this.outputElement.scrollTo({
@@ -361,7 +385,7 @@ export class TerminalEmulator {
   /**
    * Check if auto-scroll is enabled
    */
-  shouldAutoScroll() {
+  private shouldAutoScroll(): boolean {
     const autoScroll = localStorage.getItem('console_auto_scroll');
     return autoScroll !== 'false';
   }
@@ -369,7 +393,7 @@ export class TerminalEmulator {
   /**
    * Setup input event handlers
    */
-  setupInputHandlers() {
+  private setupInputHandlers(): void {
     this.inputElement.addEventListener('keydown', (event) => {
       if (this.isLocked) {
         event.preventDefault();
@@ -423,7 +447,7 @@ export class TerminalEmulator {
   /**
    * Handle Enter key
    */
-  handleEnter() {
+  private handleEnter(): void {
     const command = this.getInput().trim();
     
     if (command) {
@@ -439,7 +463,7 @@ export class TerminalEmulator {
   /**
    * Handle Tab key (autocomplete)
    */
-  handleTab() {
+  private handleTab(): void {
     const input = this.getInput();
     const matches = this.commands.filter(cmd => cmd.startsWith(input));
     
@@ -453,7 +477,7 @@ export class TerminalEmulator {
   /**
    * Handle input changes
    */
-  handleInput() {
+  private handleInput(): void {
     // Could be used for live suggestions in the future
     this.emit('input_change', this.getInput());
   }
@@ -461,7 +485,7 @@ export class TerminalEmulator {
   /**
    * Handle Ctrl+C interrupt
    */
-  handleInterrupt() {
+  private handleInterrupt(): void {
     this.writeLine('^C', 'warning');
     this.clearInput();
     this.emit('interrupt');
@@ -470,9 +494,9 @@ export class TerminalEmulator {
   /**
    * Setup scroll behavior
    */
-  setupScrollBehavior() {
+  private setupScrollBehavior(): void {
     let isUserScrolling = false;
-    let scrollTimeout;
+    let scrollTimeout: ReturnType<typeof setTimeout>;
     let lastScrollTop = 0;
     
     this.outputElement.addEventListener('scroll', () => {
@@ -510,9 +534,9 @@ export class TerminalEmulator {
     });
     
     // Override shouldAutoScroll to check user scrolling
-    const originalShouldAutoScroll = this.shouldAutoScroll;
+    const originalShouldAutoScroll = this.shouldAutoScroll.bind(this);
     this.shouldAutoScroll = () => {
-      return originalShouldAutoScroll.call(this) && !isUserScrolling;
+      return originalShouldAutoScroll() && !isUserScrolling;
     };
     
     // Store reference for manual scroll control
@@ -527,7 +551,7 @@ export class TerminalEmulator {
   /**
    * Show scroll indicator
    */
-  showScrollIndicator() {
+  private showScrollIndicator(): void {
     let indicator = document.getElementById('scrollIndicator');
     
     if (!indicator) {
@@ -536,7 +560,7 @@ export class TerminalEmulator {
       indicator.className = 'scroll-indicator';
       indicator.innerHTML = `
         <span class="scroll-text">Auto-scroll paused</span>
-        <button class="scroll-resume-btn" onclick="window.claudeConsole.terminal.resumeAutoScroll()">
+        <button class="scroll-resume-btn" onclick="(window as any).claudeConsole.terminal.resumeAutoScroll()">
           ↓ Resume
         </button>
       `;
@@ -556,7 +580,7 @@ export class TerminalEmulator {
   /**
    * Hide scroll indicator
    */
-  hideScrollIndicator() {
+  private hideScrollIndicator(): void {
     const indicator = document.getElementById('scrollIndicator');
     if (indicator) {
       indicator.style.display = 'none';
@@ -566,7 +590,7 @@ export class TerminalEmulator {
   /**
    * Stream text output with typing effect
    */
-  async streamText(text, delay = 10) {
+  async streamText(text: string, delay: number = 10): Promise<HTMLElement> {
     const entry = this.createOutputEntry('', 'output', true);
     this.outputElement.appendChild(entry);
     
@@ -587,10 +611,7 @@ export class TerminalEmulator {
   /**
    * Add event listener
    */
-  on(event, callback) {
-    if (!this.eventListeners) {
-      this.eventListeners = new Map();
-    }
+  on(event: string, callback: EventCallback): void {
     
     if (!this.eventListeners.has(event)) {
       this.eventListeners.set(event, []);
@@ -602,8 +623,8 @@ export class TerminalEmulator {
   /**
    * Emit event
    */
-  emit(event, data) {
-    if (!this.eventListeners || !this.eventListeners.has(event)) {
+  private emit(event: string, data?: any): void {
+    if (!this.eventListeners.has(event)) {
       return;
     }
     
@@ -619,7 +640,7 @@ export class TerminalEmulator {
   /**
    * Set maximum output lines
    */
-  setMaxLines(maxLines) {
+  setMaxLines(maxLines: number): void {
     this.maxOutputLines = Math.max(100, Math.min(10000, maxLines));
     this.limitOutputLines();
   }
@@ -627,7 +648,7 @@ export class TerminalEmulator {
   /**
    * Get terminal statistics
    */
-  getStats() {
+  getStats(): TerminalStats {
     const entries = this.outputElement.querySelectorAll('.output-entry');
     
     return {
@@ -641,7 +662,7 @@ export class TerminalEmulator {
   /**
    * Export terminal history
    */
-  exportHistory() {
+  exportHistory(): TerminalEntry[] {
     const entries = Array.from(this.outputElement.querySelectorAll('.output-entry'));
     
     return entries.map(entry => {
@@ -656,11 +677,11 @@ export class TerminalEmulator {
   /**
    * Import terminal history
    */
-  importHistory(history) {
+  importHistory(history: TerminalEntry[]): void {
     this.clear();
     
     history.forEach(({ timestamp, content, type }) => {
-      this.write(content, type.replace('output-', ''), false);
+      this.write(content, type.replace('output-', '') as OutputType, false);
     });
   }
 }

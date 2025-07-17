@@ -25,7 +25,7 @@ import { ConflictResolver } from '../../../src/coordination/conflict-resolution.
 import { SystemEvents } from '../../../src/utils/types.ts';
 import { createMocks } from '../../mocks/index.ts';
 import { TestDataBuilder } from '../../test.utils.ts';
-import { cleanupTestEnv, setupTestEnv } from '../../test.config.ts';
+// import { cleanupTestEnv, setupTestEnv } from '../../test.config.ts';
 
 describe('CoordinationManager', () => {
   let manager: CoordinationManager;

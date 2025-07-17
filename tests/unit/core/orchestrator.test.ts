@@ -20,7 +20,7 @@ import { SystemEvents } from '../../../src/utils/types.ts';
 import { InitializationError, SystemError, ShutdownError } from '../../../src/utils/errors.ts';
 import { createMocks, MockEventBus } from '../../mocks/index.ts';
 import { TestDataBuilder } from '../../test.utils.ts';
-import { cleanupTestEnv, setupTestEnv } from '../../test.config.ts';
+// import { cleanupTestEnv, setupTestEnv } from '../../test.config.ts';
 
 describe('Orchestrator', () => {
   let orchestrator: Orchestrator;
