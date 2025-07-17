@@ -1,4 +1,4 @@
-// index.js - SPARC mode orchestration loader
+// index.ts - SPARC mode orchestration loader
 import { getArchitectOrchestration } from './architect.js';
 import { getCodeOrchestration } from './code.js';
 import { getTddOrchestration } from './tdd.js';
@@ -17,9 +17,17 @@ import { getTutorialOrchestration } from './tutorial.js';
 import { getSparcOrchestratorOrchestration } from './sparc-orchestrator.js';
 import { getGenericOrchestration } from './generic.js';
 import { getSwarmOrchestration } from './swarm.js';
+import type { OrchestrationFunction } from './types.js';
+
+interface ModeConfig {
+  slug: string;
+  name: string;
+  roleDefinition: string;
+  customInstructions: string;
+}
 
 // Mode orchestration mapping
-const modeOrchestrations = {
+const modeOrchestrations: Record<string, OrchestrationFunction> = {
   'architect': getArchitectOrchestration,
   'code': getCodeOrchestration,
   'tdd': getTddOrchestration,
@@ -46,7 +54,7 @@ const modeOrchestrations = {
  * @param {string} memoryNamespace - The memory namespace
  * @returns {string} The orchestration template
  */
-export function getModeOrchestration(modeSlug, taskDescription, memoryNamespace) {
+export function getModeOrchestration(modeSlug: string, taskDescription: string, memoryNamespace: string): string {
   const orchestrationFunction = modeOrchestrations[modeSlug];
   
   if (orchestrationFunction) {
@@ -64,10 +72,10 @@ export function getModeOrchestration(modeSlug, taskDescription, memoryNamespace)
  * @param {string} memoryNamespace - The memory namespace
  * @returns {string} The complete SPARC prompt
  */
-export function createSparcPrompt(mode, taskDescription, memoryNamespace) {
+export function createSparcPrompt(mode: ModeConfig, taskDescription: string, memoryNamespace: string): string {
   const orchestration = getModeOrchestration(mode.slug, taskDescription, memoryNamespace);
   // Get the actual working directory where the command was run from
-  const cwd = Deno.env.get('PWD') || Deno.cwd();
+  const cwd = process.env.PWD || process.cwd();
   
   return `# ${mode.name} - Task Execution
 

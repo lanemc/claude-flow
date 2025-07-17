@@ -1,5 +1,27 @@
-// architect.js - Architect mode orchestration template
-export function getArchitectOrchestration(taskDescription, memoryNamespace) {
+// architect.ts - Architect mode orchestration template
+import { OrchestrationFunction, SparcModeError } from './types.js';
+
+export const getArchitectOrchestration: OrchestrationFunction = (
+  taskDescription: string,
+  memoryNamespace: string
+): string => {
+  // Validate inputs
+  if (!taskDescription || taskDescription.trim().length === 0) {
+    throw new SparcModeError(
+      'Task description is required for architect mode',
+      'architect',
+      'INVALID_INPUT'
+    );
+  }
+
+  if (!memoryNamespace || memoryNamespace.trim().length === 0) {
+    throw new SparcModeError(
+      'Memory namespace is required for architect mode',
+      'architect',
+      'INVALID_INPUT'
+    );
+  }
+
   return `
 ## Task Orchestration Steps
 
@@ -122,4 +144,4 @@ npx claude-flow swarm "Full implementation of ${taskDescription} architecture" \
 npx claude-flow status
 tail -f ./swarm-runs/*/swarm.log
 \`\`\``;
-}
+};

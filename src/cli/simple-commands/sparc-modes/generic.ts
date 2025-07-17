@@ -1,5 +1,7 @@
-// generic.js - Generic mode orchestration template
-export function getGenericOrchestration(taskDescription, memoryNamespace) {
+// generic.ts - Generic mode orchestration template
+import type { OrchestrationFunction } from './types.js';
+
+export const getGenericOrchestration: OrchestrationFunction = (taskDescription: string, memoryNamespace: string) => {
   return `
 ## Task Orchestration Steps
 
@@ -31,4 +33,4 @@ export function getGenericOrchestration(taskDescription, memoryNamespace) {
    - Completed implementation
    - Documentation
    - Test results`;
-}
+};

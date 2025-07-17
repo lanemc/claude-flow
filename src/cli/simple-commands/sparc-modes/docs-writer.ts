@@ -1,5 +1,7 @@
-// docs-writer.js - Documentation Writer mode orchestration template
-export function getDocsWriterOrchestration(taskDescription, memoryNamespace) {
+// docs-writer.ts - Documentation Writer mode orchestration template
+import type { OrchestrationFunction } from './types.js';
+
+export const getDocsWriterOrchestration: OrchestrationFunction = (taskDescription, memoryNamespace) => {
   return `
 ## Task Orchestration Steps
 
@@ -35,4 +37,4 @@ export function getDocsWriterOrchestration(taskDescription, memoryNamespace) {
    - docs/getting-started.md
    - docs/api-reference.md
    - docs/troubleshooting.md`;
-}
+};

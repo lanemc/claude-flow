@@ -1,5 +1,7 @@
-// optimization.js - Optimizer mode orchestration template
-export function getOptimizationOrchestration(taskDescription, memoryNamespace) {
+// optimization.ts - Optimizer mode orchestration template
+import type { OrchestrationFunction } from './types.js';
+
+export const getOptimizationOrchestration: OrchestrationFunction = (taskDescription: string, memoryNamespace: string) => {
   return `
 ## Task Orchestration Steps
 
@@ -35,4 +37,4 @@ export function getOptimizationOrchestration(taskDescription, memoryNamespace) {
    - Performance metrics
    - Refactoring documentation
    - Best practices guide`;
-}
+};

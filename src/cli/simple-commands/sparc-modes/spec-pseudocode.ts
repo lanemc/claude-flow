@@ -1,5 +1,7 @@
-// spec-pseudocode.js - Specification Writer mode orchestration template
-export function getSpecPseudocodeOrchestration(taskDescription, memoryNamespace) {
+// spec-pseudocode.ts - Specification Writer mode orchestration template
+import type { OrchestrationFunction } from './types';
+
+export const getSpecPseudocodeOrchestration: OrchestrationFunction = (taskDescription, memoryNamespace) => {
   return `
 ## Task Orchestration Steps
 
@@ -35,4 +37,4 @@ export function getSpecPseudocodeOrchestration(taskDescription, memoryNamespace)
    - phase_2_pseudocode.md
    - phase_3_modules.md
    - phase_4_testing.md`;
-}
+};

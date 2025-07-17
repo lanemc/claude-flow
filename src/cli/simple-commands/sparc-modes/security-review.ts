@@ -1,5 +1,7 @@
-// security-review.js - Security Reviewer mode orchestration template
-export function getSecurityReviewOrchestration(taskDescription, memoryNamespace) {
+// security-review.ts - Security Reviewer mode orchestration template
+import type { OrchestrationFunction } from './types.js';
+
+export const getSecurityReviewOrchestration: OrchestrationFunction = (taskDescription: string, memoryNamespace: string) => {
   return `
 ## Task Orchestration Steps
 
@@ -127,4 +129,4 @@ After security review:
 - \`npx claude-flow sparc run code "Implement security remediation plan" --non-interactive\`
 - \`npx claude-flow sparc run tdd "Write security test cases" --non-interactive\`
 - \`npx claude-flow sparc run post-deployment-monitoring-mode "Set up security monitoring and alerts" --non-interactive\``;
-}
+};

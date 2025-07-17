@@ -1,5 +1,7 @@
-// tdd.js - Test-Driven Development mode orchestration template
-export function getTddOrchestration(taskDescription, memoryNamespace) {
+// tdd.ts - Test-Driven Development mode orchestration template
+import type { OrchestrationFunction } from './types';
+
+export const getTddOrchestration: OrchestrationFunction = (taskDescription, memoryNamespace) => {
   return `
 ## Task Orchestration Steps - London School TDD
 
@@ -109,4 +111,4 @@ After TDD cycle completes:
 - \`npx claude-flow sparc run debug "Investigate any failing edge cases" --non-interactive\`
 - \`npx claude-flow sparc run refinement-optimization-mode "Optimize performance bottlenecks" --non-interactive\`
 - \`npx claude-flow sparc run docs-writer "Create user documentation" --non-interactive\``;
-}
+};

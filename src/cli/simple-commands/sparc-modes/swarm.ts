@@ -4,6 +4,8 @@
  * Advanced multi-agent coordination with timeout-free execution
  */
 
+import type { OrchestrationFunction } from './types';
+
 const SWARM_MODE = {
   name: "swarm",
   description: "Advanced multi-agent coordination with timeout-free execution for complex tasks",
@@ -275,7 +277,7 @@ Now, let's coordinate your swarm to accomplish your complex objective efficientl
  * @param {string} memoryNamespace - The memory namespace
  * @returns {string} The orchestration template
  */
-export function getSwarmOrchestration(taskDescription, memoryNamespace) {
+export const getSwarmOrchestration: OrchestrationFunction = (taskDescription, memoryNamespace) => {
   return `
 ## 🐝 SWARM ORCHESTRATION PLAN
 
@@ -426,11 +428,7 @@ Your swarm execution is successful when:
 
 Remember: The swarm system is specifically designed to handle complexity and duration that would overwhelm individual agents. Use it confidently for your most challenging tasks!
 `;
-}
+};
 
 // Export mode configuration
 export default SWARM_MODE;
-
-if (import.meta.main) {
-  console.log(prompt);
-}

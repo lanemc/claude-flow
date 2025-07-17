@@ -1,5 +1,7 @@
-// monitoring.js - Deployment Monitor mode orchestration template
-export function getMonitoringOrchestration(taskDescription, memoryNamespace) {
+// monitoring.ts - Deployment Monitor mode orchestration template
+import type { OrchestrationFunction } from './types.js';
+
+export const getMonitoringOrchestration: OrchestrationFunction = (taskDescription: string, memoryNamespace: string) => {
   return `
 ## Task Orchestration Steps
 
@@ -35,4 +37,4 @@ export function getMonitoringOrchestration(taskDescription, memoryNamespace) {
    - Dashboard definitions
    - Alert rules
    - Ops runbook`;
-}
+};

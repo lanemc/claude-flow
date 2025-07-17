@@ -1,5 +1,7 @@
-// mcp.js - MCP Integration mode orchestration template
-export function getMcpOrchestration(taskDescription, memoryNamespace) {
+// mcp.ts - MCP Integration mode orchestration template
+import type { OrchestrationFunction } from './types.js';
+
+export const getMcpOrchestration: OrchestrationFunction = (taskDescription: string, memoryNamespace: string) => {
   return `
 ## Task Orchestration Steps
 
@@ -35,4 +37,4 @@ export function getMcpOrchestration(taskDescription, memoryNamespace) {
    - Configuration files
    - API documentation
    - Integration tests`;
-}
+};
