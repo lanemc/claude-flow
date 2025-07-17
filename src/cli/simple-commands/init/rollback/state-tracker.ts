@@ -1,7 +1,25 @@
-// state-tracker.js - Track initialization state and rollback points
+// state-tracker.ts - Track initialization state and rollback points
+
+import * as fs from 'fs';
+import type {
+  StateData,
+  RollbackPoint,
+  Checkpoint,
+  RollbackRecord,
+  FileOperation,
+  GenericResult,
+  CheckpointResult,
+  InitializationStats,
+  StateValidationResult,
+  StateExportResult,
+  StateCleanupResult
+} from './types.js';
 
 export class StateTracker {
-  constructor(workingDir) {
+  private workingDir: string;
+  private stateFile: string;
+
+  constructor(workingDir: string) {
     this.workingDir = workingDir;
     this.stateFile = `${workingDir}/.claude-flow-state.json`;
   }
@@ -9,8 +27,8 @@ export class StateTracker {
   /**
    * Record a rollback point
    */
-  async recordRollbackPoint(type, data) {
-    const result = {
+  async recordRollbackPoint(type: string, data: any): Promise<GenericResult> {
+    const result: GenericResult = {
       success: true,
       errors: []
     };
@@ -18,7 +36,7 @@ export class StateTracker {
     try {
       const state = await this.loadState();
       
-      const rollbackPoint = {
+      const rollbackPoint: RollbackPoint = {
         id: this.generateId(),
         type,
         timestamp: Date.now(),
@@ -36,7 +54,7 @@ export class StateTracker {
 
       await this.saveState(state);
 
-    } catch (error) {
+    } catch (error: any) {
       result.success = false;
       result.errors.push(`Failed to record rollback point: ${error.message}`);
     }
@@ -47,8 +65,8 @@ export class StateTracker {
   /**
    * Create a checkpoint
    */
-  async createCheckpoint(phase, data) {
-    const result = {
+  async createCheckpoint(phase: string, data: any): Promise<CheckpointResult> {
+    const result: CheckpointResult = {
       success: true,
       id: null,
       errors: []
@@ -57,7 +75,7 @@ export class StateTracker {
     try {
       const state = await this.loadState();
       
-      const checkpoint = {
+      const checkpoint: Checkpoint = {
         id: this.generateId(),
         phase,
         timestamp: Date.now(),
@@ -77,7 +95,7 @@ export class StateTracker {
 
       await this.saveState(state);
 
-    } catch (error) {
+    } catch (error: any) {
       result.success = false;
       result.errors.push(`Failed to create checkpoint: ${error.message}`);
     }
@@ -88,8 +106,8 @@ export class StateTracker {
   /**
    * Update a checkpoint
    */
-  async updateCheckpoint(checkpointId, updates) {
-    const result = {
+  async updateCheckpoint(checkpointId: string, updates: Partial<Checkpoint>): Promise<GenericResult> {
+    const result: GenericResult = {
       success: true,
       errors: []
     };
@@ -108,7 +126,7 @@ export class StateTracker {
         }
       }
 
-    } catch (error) {
+    } catch (error: any) {
       result.success = false;
       result.errors.push(`Failed to update checkpoint: ${error.message}`);
     }
@@ -119,8 +137,8 @@ export class StateTracker {
   /**
    * Record a rollback operation
    */
-  async recordRollback(targetId, rollbackType, phase = null) {
-    const result = {
+  async recordRollback(targetId: string, rollbackType: string, phase: string | null = null): Promise<GenericResult> {
+    const result: GenericResult = {
       success: true,
       errors: []
     };
@@ -128,7 +146,7 @@ export class StateTracker {
     try {
       const state = await this.loadState();
       
-      const rollbackRecord = {
+      const rollbackRecord: RollbackRecord = {
         id: this.generateId(),
         targetId,
         rollbackType,
@@ -147,7 +165,7 @@ export class StateTracker {
 
       await this.saveState(state);
 
-    } catch (error) {
+    } catch (error: any) {
       result.success = false;
       result.errors.push(`Failed to record rollback: ${error.message}`);
     }
@@ -158,7 +176,7 @@ export class StateTracker {
   /**
    * Get rollback points
    */
-  async getRollbackPoints() {
+  async getRollbackPoints(): Promise<RollbackPoint[]> {
     try {
       const state = await this.loadState();
       return state.rollbackPoints || [];
@@ -170,7 +188,7 @@ export class StateTracker {
   /**
    * Get checkpoints
    */
-  async getCheckpoints() {
+  async getCheckpoints(): Promise<Checkpoint[]> {
     try {
       const state = await this.loadState();
       return state.checkpoints || [];
@@ -182,7 +200,7 @@ export class StateTracker {
   /**
    * Get rollback history
    */
-  async getRollbackHistory() {
+  async getRollbackHistory(): Promise<RollbackRecord[]> {
     try {
       const state = await this.loadState();
       return state.rollbackHistory || [];
@@ -194,8 +212,12 @@ export class StateTracker {
   /**
    * Track file operation
    */
-  async trackFileOperation(operation, filePath, metadata = {}) {
-    const result = {
+  async trackFileOperation(
+    operation: 'create' | 'modify' | 'delete',
+    filePath: string,
+    metadata: Record<string, any> = {}
+  ): Promise<GenericResult> {
+    const result: GenericResult = {
       success: true,
       errors: []
     };
@@ -203,9 +225,9 @@ export class StateTracker {
     try {
       const state = await this.loadState();
       
-      const fileOp = {
+      const fileOp: FileOperation = {
         id: this.generateId(),
-        operation, // 'create', 'modify', 'delete'
+        operation,
         filePath,
         timestamp: Date.now(),
         metadata
@@ -221,7 +243,7 @@ export class StateTracker {
 
       await this.saveState(state);
 
-    } catch (error) {
+    } catch (error: any) {
       result.success = false;
       result.errors.push(`Failed to track file operation: ${error.message}`);
     }
@@ -232,7 +254,7 @@ export class StateTracker {
   /**
    * Get current initialization phase
    */
-  async getCurrentPhase() {
+  async getCurrentPhase(): Promise<string> {
     try {
       const state = await this.loadState();
       return state.currentPhase || 'not-started';
@@ -244,8 +266,8 @@ export class StateTracker {
   /**
    * Set current initialization phase
    */
-  async setCurrentPhase(phase) {
-    const result = {
+  async setCurrentPhase(phase: string): Promise<GenericResult> {
+    const result: GenericResult = {
       success: true,
       errors: []
     };
@@ -253,7 +275,6 @@ export class StateTracker {
     try {
       const state = await this.loadState();
       state.currentPhase = phase;
-      state.phaseTimestamp = Date.now();
       
       // Track phase transitions
       state.phaseHistory = state.phaseHistory || [];
@@ -264,7 +285,7 @@ export class StateTracker {
 
       await this.saveState(state);
 
-    } catch (error) {
+    } catch (error: any) {
       result.success = false;
       result.errors.push(`Failed to set phase: ${error.message}`);
     }
@@ -275,7 +296,7 @@ export class StateTracker {
   /**
    * Get initialization statistics
    */
-  async getInitializationStats() {
+  async getInitializationStats(): Promise<InitializationStats> {
     try {
       const state = await this.loadState();
       
@@ -304,8 +325,8 @@ export class StateTracker {
   /**
    * Clean up old state data
    */
-  async cleanupOldState(daysToKeep = 7) {
-    const result = {
+  async cleanupOldState(daysToKeep: number = 7): Promise<StateCleanupResult> {
+    const result: StateCleanupResult = {
       success: true,
       cleaned: 0,
       errors: []
@@ -344,7 +365,7 @@ export class StateTracker {
         await this.saveState(state);
       }
 
-    } catch (error) {
+    } catch (error: any) {
       result.success = false;
       result.errors.push(`State cleanup failed: ${error.message}`);
     }
@@ -355,8 +376,8 @@ export class StateTracker {
   /**
    * Validate state tracking system
    */
-  async validateStateTracking() {
-    const result = {
+  async validateStateTracking(): Promise<GenericResult> {
+    const result: GenericResult = {
       success: true,
       errors: [],
       warnings: []
@@ -373,10 +394,10 @@ export class StateTracker {
       // Validate state structure
       const validationResult = this.validateStateStructure(state);
       if (!validationResult.valid) {
-        result.warnings.push(...validationResult.issues);
+        result.warnings!.push(...validationResult.issues);
       }
 
-    } catch (error) {
+    } catch (error: any) {
       result.success = false;
       result.errors.push(`State tracking validation failed: ${error.message}`);
     }
@@ -387,7 +408,7 @@ export class StateTracker {
   /**
    * Export state for backup
    */
-  async exportState() {
+  async exportState(): Promise<StateExportResult> {
     try {
       const state = await this.loadState();
       return {
@@ -395,7 +416,7 @@ export class StateTracker {
         data: state,
         timestamp: Date.now()
       };
-    } catch (error) {
+    } catch (error: any) {
       return {
         success: false,
         error: error.message
@@ -406,8 +427,8 @@ export class StateTracker {
   /**
    * Import state from backup
    */
-  async importState(stateData) {
-    const result = {
+  async importState(stateData: StateData): Promise<GenericResult> {
+    const result: GenericResult = {
       success: true,
       errors: []
     };
@@ -419,7 +440,7 @@ export class StateTracker {
         result.success = false;
         result.errors.push('Invalid state data structure');
       }
-    } catch (error) {
+    } catch (error: any) {
       result.success = false;
       result.errors.push(`State import failed: ${error.message}`);
     }
@@ -429,9 +450,9 @@ export class StateTracker {
 
   // Helper methods
 
-  async loadState() {
+  private async loadState(): Promise<StateData> {
     try {
-      const content = await Deno.readTextFile(this.stateFile);
+      const content = fs.readFileSync(this.stateFile, 'utf-8');
       return JSON.parse(content);
     } catch {
       // Return default state if file doesn't exist or is invalid
@@ -449,22 +470,22 @@ export class StateTracker {
     }
   }
 
-  async saveState(state) {
+  private async saveState(state: StateData): Promise<void> {
     state.lastActivity = Date.now();
     state.version = '1.0';
     
-    await Deno.writeTextFile(
+    fs.writeFileSync(
       this.stateFile,
       JSON.stringify(state, null, 2)
     );
   }
 
-  generateId() {
+  private generateId(): string {
     return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
   }
 
-  validateStateStructure(state) {
-    const result = {
+  private validateStateStructure(state: any): StateValidationResult {
+    const result: StateValidationResult = {
       valid: true,
       issues: []
     };

@@ -1,16 +1,33 @@
-// rollback/index.js - Comprehensive rollback system for SPARC initialization
+// rollback/index.ts - Comprehensive rollback system for SPARC initialization
 
 import { BackupManager } from './backup-manager.js';
 import { RollbackExecutor } from './rollback-executor.js';
 import { StateTracker } from './state-tracker.js';
 import { RecoveryManager } from './recovery-manager.js';
 import { printSuccess, printError, printWarning } from '../../../utils.js';
+import type {
+  BackupResult,
+  RollbackResult,
+  RecoveryResult,
+  CheckpointResult,
+  CleanupResult,
+  ListResult,
+  ValidationResult,
+  RollbackPoint,
+  Checkpoint
+} from './types.js';
 
 /**
  * Main rollback orchestrator
  */
 export class RollbackSystem {
-  constructor(workingDir) {
+  private workingDir: string;
+  private backupManager: BackupManager;
+  private rollbackExecutor: RollbackExecutor;
+  private stateTracker: StateTracker;
+  private recoveryManager: RecoveryManager;
+
+  constructor(workingDir: string) {
     this.workingDir = workingDir;
     this.backupManager = new BackupManager(workingDir);
     this.rollbackExecutor = new RollbackExecutor(workingDir);
@@ -21,22 +38,28 @@ export class RollbackSystem {
   /**
    * Create backup before initialization
    */
-  async createPreInitBackup() {
-    const result = {
+  async createPreInitBackup(): Promise<BackupResult> {
+    const result: BackupResult = {
       success: true,
-      backupId: null,
+      id: null,
+      location: null,
       errors: [],
-      warnings: []
+      warnings: [],
+      files: []
     };
 
     try {
       console.log('🔄 Creating pre-initialization backup...');
       
       const backup = await this.backupManager.createBackup('pre-init');
-      result.backupId = backup.id;
+      result.id = backup.id;
+      result.location = backup.location;
       result.success = backup.success;
+      result.files = backup.files;
+      result.errors = backup.errors;
+      result.warnings = backup.warnings;
       
-      if (backup.success) {
+      if (backup.success && backup.id) {
         printSuccess(`Backup created: ${backup.id}`);
         console.log(`  📁 Backup location: ${backup.location}`);
         
@@ -51,7 +74,7 @@ export class RollbackSystem {
         printError('Failed to create backup');
       }
 
-    } catch (error) {
+    } catch (error: any) {
       result.success = false;
       result.errors.push(`Backup creation failed: ${error.message}`);
       printError(`Backup failed: ${error.message}`);
@@ -63,23 +86,25 @@ export class RollbackSystem {
   /**
    * Create checkpoint during initialization
    */
-  async createCheckpoint(phase, data = {}) {
-    const result = {
+  async createCheckpoint(phase: string, data: any = {}): Promise<CheckpointResult> {
+    const result: CheckpointResult = {
       success: true,
       checkpointId: null,
+      id: null,
       errors: []
     };
 
     try {
       const checkpoint = await this.stateTracker.createCheckpoint(phase, data);
       result.checkpointId = checkpoint.id;
+      result.id = checkpoint.id;
       result.success = checkpoint.success;
 
       if (!checkpoint.success) {
         result.errors.push(...checkpoint.errors);
       }
 
-    } catch (error) {
+    } catch (error: any) {
       result.success = false;
       result.errors.push(`Checkpoint creation failed: ${error.message}`);
     }
@@ -90,8 +115,8 @@ export class RollbackSystem {
   /**
    * Perform full rollback to pre-initialization state
    */
-  async performFullRollback(backupId = null) {
-    const result = {
+  async performFullRollback(backupId: string | null = null): Promise<RollbackResult> {
+    const result: RollbackResult = {
       success: true,
       errors: [],
       warnings: [],
@@ -125,7 +150,7 @@ export class RollbackSystem {
         printError('Full rollback failed');
       }
 
-    } catch (error) {
+    } catch (error: any) {
       result.success = false;
       result.errors.push(`Rollback failed: ${error.message}`);
       printError(`Rollback failed: ${error.message}`);
@@ -137,8 +162,8 @@ export class RollbackSystem {
   /**
    * Perform partial rollback to specific checkpoint
    */
-  async performPartialRollback(phase, checkpointId = null) {
-    const result = {
+  async performPartialRollback(phase: string, checkpointId: string | null = null): Promise<RollbackResult> {
+    const result: RollbackResult = {
       success: true,
       errors: [],
       warnings: [],
@@ -149,7 +174,7 @@ export class RollbackSystem {
       console.log(`🔄 Performing partial rollback for phase: ${phase}`);
 
       // Find checkpoint
-      const checkpoint = checkpointId || await this.findLatestCheckpoint(phase);
+      const checkpoint = checkpointId ? await this.findCheckpointById(checkpointId) : await this.findLatestCheckpoint(phase);
       if (!checkpoint) {
         result.success = false;
         result.errors.push(`No checkpoint found for phase: ${phase}`);
@@ -167,12 +192,12 @@ export class RollbackSystem {
         printSuccess(`Partial rollback completed for phase: ${phase}`);
         
         // Update state tracking
-        await this.stateTracker.recordRollback(checkpoint, 'partial', phase);
+        await this.stateTracker.recordRollback(checkpoint.id, 'partial', phase);
       } else {
         printError(`Partial rollback failed for phase: ${phase}`);
       }
 
-    } catch (error) {
+    } catch (error: any) {
       result.success = false;
       result.errors.push(`Partial rollback failed: ${error.message}`);
       printError(`Partial rollback failed: ${error.message}`);
@@ -184,11 +209,12 @@ export class RollbackSystem {
   /**
    * Auto-recovery from common failures
    */
-  async performAutoRecovery(failureType, context = {}) {
-    const result = {
+  async performAutoRecovery(failureType: string, context: any = {}): Promise<RecoveryResult> {
+    const result: RecoveryResult = {
       success: true,
       errors: [],
       warnings: [],
+      actions: [],
       recoveryActions: []
     };
 
@@ -199,7 +225,8 @@ export class RollbackSystem {
       result.success = recoveryResult.success;
       result.errors.push(...recoveryResult.errors);
       result.warnings.push(...recoveryResult.warnings);
-      result.recoveryActions.push(...recoveryResult.actions);
+      result.actions.push(...recoveryResult.actions);
+      result.recoveryActions = recoveryResult.actions;
 
       if (recoveryResult.success) {
         printSuccess(`Auto-recovery completed for: ${failureType}`);
@@ -207,7 +234,7 @@ export class RollbackSystem {
         printWarning(`Auto-recovery failed for: ${failureType}`);
       }
 
-    } catch (error) {
+    } catch (error: any) {
       result.success = false;
       result.errors.push(`Auto-recovery failed: ${error.message}`);
       printError(`Auto-recovery failed: ${error.message}`);
@@ -219,8 +246,8 @@ export class RollbackSystem {
   /**
    * List available rollback points
    */
-  async listRollbackPoints() {
-    const result = {
+  async listRollbackPoints(): Promise<ListResult> {
+    const result: ListResult = {
       success: true,
       rollbackPoints: [],
       checkpoints: [],
@@ -236,7 +263,7 @@ export class RollbackSystem {
       const checkpoints = await this.stateTracker.getCheckpoints();
       result.checkpoints = checkpoints;
 
-    } catch (error) {
+    } catch (error: any) {
       result.success = false;
       result.errors.push(`Failed to list rollback points: ${error.message}`);
     }
@@ -247,8 +274,8 @@ export class RollbackSystem {
   /**
    * Clean up old backups and checkpoints
    */
-  async cleanupOldBackups(keepCount = 5) {
-    const result = {
+  async cleanupOldBackups(keepCount: number = 5): Promise<CleanupResult> {
+    const result: CleanupResult = {
       success: true,
       cleaned: [],
       errors: []
@@ -264,7 +291,7 @@ export class RollbackSystem {
         console.log(`🗑️  Cleaned up ${cleanupResult.cleaned.length} old backups`);
       }
 
-    } catch (error) {
+    } catch (error: any) {
       result.success = false;
       result.errors.push(`Cleanup failed: ${error.message}`);
     }
@@ -275,8 +302,8 @@ export class RollbackSystem {
   /**
    * Validate rollback system integrity
    */
-  async validateRollbackSystem() {
-    const result = {
+  async validateRollbackSystem(): Promise<ValidationResult> {
+    const result: ValidationResult = {
       success: true,
       checks: {},
       errors: [],
@@ -306,7 +333,7 @@ export class RollbackSystem {
         result.warnings.push(...recoveryCheck.errors);
       }
 
-    } catch (error) {
+    } catch (error: any) {
       result.success = false;
       result.errors.push(`Rollback system validation failed: ${error.message}`);
     }
@@ -316,13 +343,14 @@ export class RollbackSystem {
 
   // Helper methods
 
-  async findLatestPreInitBackup() {
+  private async findLatestPreInitBackup(): Promise<string | null> {
     try {
       const rollbackPoints = await this.stateTracker.getRollbackPoints();
       const preInitPoints = rollbackPoints.filter(point => point.type === 'pre-init');
       
       if (preInitPoints.length > 0) {
-        return preInitPoints.sort((a, b) => b.timestamp - a.timestamp)[0].backupId;
+        const sorted = preInitPoints.sort((a, b) => b.timestamp - a.timestamp);
+        return sorted[0].backupId || null;
       }
       
       return null;
@@ -331,7 +359,7 @@ export class RollbackSystem {
     }
   }
 
-  async findLatestCheckpoint(phase) {
+  private async findLatestCheckpoint(phase: string): Promise<Checkpoint | null> {
     try {
       const checkpoints = await this.stateTracker.getCheckpoints();
       const phaseCheckpoints = checkpoints.filter(checkpoint => checkpoint.phase === phase);
@@ -345,23 +373,35 @@ export class RollbackSystem {
       return null;
     }
   }
+
+  private async findCheckpointById(checkpointId: string): Promise<Checkpoint | null> {
+    try {
+      const checkpoints = await this.stateTracker.getCheckpoints();
+      return checkpoints.find(cp => cp.id === checkpointId) || null;
+    } catch {
+      return null;
+    }
+  }
 }
 
 /**
  * Atomic operation wrapper
  */
 export class AtomicOperation {
-  constructor(rollbackSystem, operationName) {
+  private rollbackSystem: RollbackSystem;
+  private operationName: string;
+  private checkpointId: string | null = null;
+  private completed: boolean = false;
+
+  constructor(rollbackSystem: RollbackSystem, operationName: string) {
     this.rollbackSystem = rollbackSystem;
     this.operationName = operationName;
-    this.checkpointId = null;
-    this.completed = false;
   }
 
   /**
    * Begin atomic operation
    */
-  async begin() {
+  async begin(): Promise<boolean> {
     const checkpoint = await this.rollbackSystem.createCheckpoint(
       `atomic-${this.operationName}`,
       { operation: this.operationName, started: Date.now() }
@@ -374,13 +414,14 @@ export class AtomicOperation {
   /**
    * Commit atomic operation
    */
-  async commit() {
+  async commit(): Promise<void> {
     this.completed = true;
     
     // Mark checkpoint as committed
     if (this.checkpointId) {
-      await this.rollbackSystem.stateTracker.updateCheckpoint(this.checkpointId, {
-        status: 'committed',
+      const stateTracker = (this.rollbackSystem as any).stateTracker as StateTracker;
+      await stateTracker.updateCheckpoint(this.checkpointId, {
+        status: 'committed' as const,
         completed: Date.now()
       });
     }
@@ -389,7 +430,7 @@ export class AtomicOperation {
   /**
    * Rollback atomic operation
    */
-  async rollback() {
+  async rollback(): Promise<void> {
     if (this.checkpointId && !this.completed) {
       await this.rollbackSystem.performPartialRollback(
         `atomic-${this.operationName}`,
@@ -402,6 +443,6 @@ export class AtomicOperation {
 /**
  * Create and manage atomic operations
  */
-export function createAtomicOperation(rollbackSystem, operationName) {
+export function createAtomicOperation(rollbackSystem: RollbackSystem, operationName: string): AtomicOperation {
   return new AtomicOperation(rollbackSystem, operationName);
 }
