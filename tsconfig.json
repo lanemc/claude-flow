@@ -51,7 +51,17 @@
     "tests/**/*",
     "deno_modules",
     "bin",
-    "src/terminal/vscode-bridge.ts"
+    "src/terminal/vscode-bridge.ts",
+    "src/cli/repl.ts",
+    "src/cli/cli-core.ts",
+    "src/cli/commands/swarm.ts",
+    "src/cli/index-remote.ts",
+    "src/cli/index.ts",
+    "src/swarm/prompt-cli.ts",
+    "src/swarm/prompt-copier-enhanced.ts",
+    "src/swarm/prompt-manager.ts",
+    "src/swarm/sparc-executor.ts",
+    "src/task/engine.ts"
   ],
   "ts-node": {
     "esm": true,

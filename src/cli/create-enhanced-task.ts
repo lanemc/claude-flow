@@ -1,12 +1,36 @@
 /**
  * Creates an enhanced task prompt with Claude-Flow guidance
- * @param {string} task - The original task description
- * @param {Object} flags - Command flags/options
- * @param {string} instanceId - Unique instance identifier
- * @param {string} tools - Comma-separated list of available tools
- * @returns {string} Enhanced task prompt
  */
-export function createEnhancedTask(task, flags, instanceId, tools) {
+
+import { SwarmStrategy, SwarmMode } from '../swarm/types.js';
+
+export interface TaskFlags {
+  mode?: 'full' | 'backend-only' | 'frontend-only' | 'api-only';
+  coverage?: number;
+  commit?: 'phase' | 'feature' | 'manual';
+  config?: string;
+  tools?: string;
+  parallel?: boolean;
+  research?: boolean;
+  noPermissions?: boolean;
+  verbose?: boolean;
+  [key: string]: any;
+}
+
+/**
+ * Creates an enhanced task prompt with Claude-Flow guidance
+ * @param task - The original task description
+ * @param flags - Command flags/options
+ * @param instanceId - Unique instance identifier
+ * @param tools - Comma-separated list of available tools
+ * @returns Enhanced task prompt
+ */
+export function createEnhancedTask(
+  task: string,
+  flags: TaskFlags,
+  instanceId: string,
+  tools: string
+): string {
   let enhancedTask = `# Claude-Flow Enhanced Task
 
 ## Your Task
