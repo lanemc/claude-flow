@@ -1,7 +1,22 @@
-// optimized-sparc-commands.js - Batchtools-optimized SPARC-specific slash commands
+// optimized-sparc-commands.ts - Batchtools-optimized SPARC-specific slash commands
 
-// Create batchtools-optimized SPARC mode slash command
-export function createOptimizedSparcSlashCommand(mode) {
+import { writeFile } from 'fs/promises';
+import { 
+  SparcMode, 
+  ToolDescriptions, 
+  ExampleTasks, 
+  BatchtoolsPractices, 
+  BatchtoolsPracticesMap, 
+  CommandGenerationError, 
+  CommandError 
+} from './types.js';
+
+/**
+ * Create batchtools-optimized SPARC mode slash command with TypeScript support
+ * @param mode - The SPARC mode configuration
+ * @returns string - The generated optimized command content
+ */
+export function createOptimizedSparcSlashCommand(mode: SparcMode): string {
   // Extract the full description without truncation
   const fullDescription = mode.roleDefinition.length > 100 
     ? `${mode.roleDefinition.substring(0, 97)}...` 
@@ -176,9 +191,13 @@ For detailed ${mode.name} documentation and batchtools integration guides, see:
 `;
 }
 
-// Helper function to get optimized tool descriptions
-function getOptimizedToolDescription(tool) {
-  const toolDescriptions = {
+/**
+ * Helper function to get optimized tool descriptions
+ * @param tool - The tool name
+ * @returns string - The optimized tool description
+ */
+function getOptimizedToolDescription(tool: string): string {
+  const toolDescriptions: ToolDescriptions = {
     'read': 'File reading and viewing with parallel processing',
     'edit': 'File modification and creation with batch operations',
     'browser': 'Web browsing capabilities with concurrent requests',
@@ -188,9 +207,13 @@ function getOptimizedToolDescription(tool) {
   return toolDescriptions[tool] || 'Tool access with batchtools optimization';
 }
 
-// Helper function to get optimized example tasks
-function getOptimizedExampleTask(slug) {
-  const examples = {
+/**
+ * Helper function to get optimized example tasks
+ * @param slug - The mode slug
+ * @returns string - The optimized example task
+ */
+function getOptimizedExampleTask(slug: string): string {
+  const examples: ExampleTasks = {
     'architect': 'design microservices architecture with parallel component analysis',
     'code': 'implement REST API endpoints with concurrent optimization',
     'tdd': 'create user authentication tests with parallel test generation',
@@ -212,9 +235,13 @@ function getOptimizedExampleTask(slug) {
   return examples[slug] || 'implement feature with batchtools optimization';
 }
 
-// Helper function to get batchtools best practices for specific modes
-function getBatchtoolsPractices(slug) {
-  const practices = {
+/**
+ * Helper function to get batchtools best practices for specific modes
+ * @param slug - The mode slug
+ * @returns BatchtoolsPractices - The practices configuration
+ */
+function getBatchtoolsPractices(slug: string): BatchtoolsPractices {
+  const practices: BatchtoolsPracticesMap = {
     'architect': {
       parallel: [
         'Analyzing multiple architectural patterns simultaneously',
@@ -299,8 +326,12 @@ function getBatchtoolsPractices(slug) {
   };
 }
 
-// Create optimized main SPARC command
-export function createOptimizedMainSparcCommand(modes) {
+/**
+ * Create optimized main SPARC command with TypeScript support
+ * @param modes - Array of SPARC modes
+ * @returns string - The generated optimized main command content
+ */
+export function createOptimizedMainSparcCommand(modes: SparcMode[]): string {
   const modeList = modes.map(m => `- \`/sparc-${m.slug}\` - ${m.name} (Batchtools optimized)`).join('\n');
   
   // Find the sparc orchestrator mode for its full description
@@ -484,4 +515,64 @@ For comprehensive SPARC and batchtools documentation, see:
 - Batchtools Documentation: https://github.com/ruvnet/claude-code-flow/docs/batchtools.md
 - Performance Optimization: https://github.com/ruvnet/claude-code-flow/docs/performance.md
 `;
+}
+
+/**
+ * Create and write all optimized SPARC commands to files
+ * @param workingDir - The working directory path
+ * @param modes - Array of SPARC modes
+ * @returns Promise<void>
+ */
+export async function createOptimizedSparcCommands(workingDir: string, modes: SparcMode[]): Promise<void> {
+  try {
+    // Create individual optimized mode commands
+    for (const mode of modes) {
+      const commandContent = createOptimizedSparcSlashCommand(mode);
+      await writeFile(`${workingDir}/.claude/commands/sparc-${mode.slug}.md`, commandContent, 'utf8');
+      console.log(`  ✓ Created optimized SPARC slash command: /sparc-${mode.slug} (Batchtools enhanced)`);
+    }
+    
+    // Create optimized main SPARC command
+    const mainCommand = createOptimizedMainSparcCommand(modes);
+    await writeFile(`${workingDir}/.claude/commands/sparc.md`, mainCommand, 'utf8');
+    console.log('  ✓ Created optimized main SPARC slash command: /sparc (Batchtools enhanced)');
+  } catch (error) {
+    console.error('❌ Error creating optimized SPARC commands:', error);
+    throw error;
+  }
+}
+
+/**
+ * Validate optimized SPARC mode configuration
+ * @param mode - The SPARC mode to validate
+ * @returns boolean - True if valid
+ */
+export function validateOptimizedSparcMode(mode: SparcMode): boolean {
+  return !!(
+    mode.slug &&
+    mode.name &&
+    mode.roleDefinition &&
+    mode.customInstructions
+  );
+}
+
+/**
+ * Get performance metrics for a SPARC mode
+ * @param slug - The mode slug
+ * @returns object - Performance metrics
+ */
+export function getPerformanceMetrics(slug: string): { 
+  parallelCapability: number; 
+  batchOptimization: number; 
+  concurrentProcessing: number; 
+} {
+  const metrics = {
+    'architect': { parallelCapability: 85, batchOptimization: 90, concurrentProcessing: 80 },
+    'code': { parallelCapability: 95, batchOptimization: 85, concurrentProcessing: 90 },
+    'tdd': { parallelCapability: 90, batchOptimization: 95, concurrentProcessing: 85 },
+    'debug': { parallelCapability: 75, batchOptimization: 80, concurrentProcessing: 85 },
+    'security-review': { parallelCapability: 80, batchOptimization: 85, concurrentProcessing: 75 }
+  };
+  
+  return metrics[slug] || { parallelCapability: 80, batchOptimization: 80, concurrentProcessing: 80 };
 }

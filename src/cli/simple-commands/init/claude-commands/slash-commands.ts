@@ -1,16 +1,17 @@
-// slash-commands.js - Create Claude Code slash commands
+// slash-commands.ts - Create Claude Code slash commands
 
 import { createSparcSlashCommand, createMainSparcCommand } from './sparc-commands.js';
 import { createClaudeFlowCommands } from './claude-flow-commands.js';
+import type { RoomodesConfig, SparcMode } from './types.js';
 
 // Create Claude Code slash commands for SPARC modes
-export async function createClaudeSlashCommands(workingDir) {
+export async function createClaudeSlashCommands(workingDir: string): Promise<void> {
   try {
     console.log('\n📝 Creating Claude Code slash commands...');
     
     // Parse .roomodes to get all SPARC modes
     const roomodesContent = await Deno.readTextFile(`${workingDir}/.roomodes`);
-    const roomodes = JSON.parse(roomodesContent);
+    const roomodes: RoomodesConfig = JSON.parse(roomodesContent);
     
     // Create slash commands for each SPARC mode
     for (const mode of roomodes.customModes) {

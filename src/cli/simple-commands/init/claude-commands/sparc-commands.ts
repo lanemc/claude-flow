@@ -1,7 +1,14 @@
-// sparc-commands.js - SPARC-specific slash commands
+// sparc-commands.ts - SPARC-specific slash commands
 
-// Create SPARC mode slash command
-export function createSparcSlashCommand(mode) {
+import { writeFile } from 'fs/promises';
+import { SparcMode, ToolDescriptions, ExampleTasks, CommandGenerationError, CommandError } from './types.js';
+
+/**
+ * Create SPARC mode slash command with TypeScript support
+ * @param mode - The SPARC mode configuration
+ * @returns string - The generated command content
+ */
+export function createSparcSlashCommand(mode: SparcMode): string {
   // Extract the full description without truncation
   const fullDescription = mode.roleDefinition.length > 100 
     ? `${mode.roleDefinition.substring(0, 97)}...` 
@@ -64,9 +71,13 @@ To use this SPARC mode, you can:
 `;
 }
 
-// Helper function to get tool descriptions
-function getToolDescription(tool) {
-  const toolDescriptions = {
+/**
+ * Helper function to get tool descriptions
+ * @param tool - The tool name
+ * @returns string - The tool description
+ */
+function getToolDescription(tool: string): string {
+  const toolDescriptions: ToolDescriptions = {
     'read': 'File reading and viewing',
     'edit': 'File modification and creation',
     'browser': 'Web browsing capabilities',
@@ -76,9 +87,13 @@ function getToolDescription(tool) {
   return toolDescriptions[tool] || 'Tool access';
 }
 
-// Helper function to get example tasks
-function getExampleTask(slug) {
-  const examples = {
+/**
+ * Helper function to get example tasks
+ * @param slug - The mode slug
+ * @returns string - The example task
+ */
+function getExampleTask(slug: string): string {
+  const examples: ExampleTasks = {
     'architect': 'design microservices architecture',
     'code': 'implement REST API endpoints',
     'tdd': 'create user authentication tests',
@@ -100,8 +115,12 @@ function getExampleTask(slug) {
   return examples[slug] || 'implement feature';
 }
 
-// Create main SPARC command
-export function createMainSparcCommand(modes) {
+/**
+ * Create main SPARC command with TypeScript support
+ * @param modes - Array of SPARC modes
+ * @returns string - The generated main command content
+ */
+export function createMainSparcCommand(modes: SparcMode[]): string {
   const modeList = modes.map(m => `- \`/sparc-${m.slug}\` - ${m.name}`).join('\n');
   
   // Find the sparc orchestrator mode for its full description
@@ -207,4 +226,51 @@ For CI/CD integration and automation:
 
 See \`/claude-flow-help\` for all available commands.
 `;
+}
+
+/**
+ * Create and write all SPARC commands to files
+ * @param workingDir - The working directory path
+ * @param modes - Array of SPARC modes
+ * @returns Promise<void>
+ */
+export async function createSparcCommands(workingDir: string, modes: SparcMode[]): Promise<void> {
+  try {
+    // Create individual mode commands
+    for (const mode of modes) {
+      const commandContent = createSparcSlashCommand(mode);
+      await writeFile(`${workingDir}/.claude/commands/sparc-${mode.slug}.md`, commandContent, 'utf8');
+      console.log(`  ✓ Created SPARC slash command: /sparc-${mode.slug}`);
+    }
+    
+    // Create main SPARC command
+    const mainCommand = createMainSparcCommand(modes);
+    await writeFile(`${workingDir}/.claude/commands/sparc.md`, mainCommand, 'utf8');
+    console.log('  ✓ Created main SPARC slash command: /sparc');
+  } catch (error) {
+    console.error('❌ Error creating SPARC commands:', error);
+    throw error;
+  }
+}
+
+/**
+ * Validate SPARC mode configuration
+ * @param mode - The SPARC mode to validate
+ * @returns boolean - True if valid
+ */
+export function validateSparcMode(mode: SparcMode): boolean {
+  return !!(
+    mode.slug &&
+    mode.name &&
+    mode.roleDefinition &&
+    mode.customInstructions
+  );
+}
+
+/**
+ * Get available tool names for validation
+ * @returns string[] - Array of available tool names
+ */
+export function getAvailableTools(): string[] {
+  return ['read', 'edit', 'browser', 'mcp', 'command'];
 }

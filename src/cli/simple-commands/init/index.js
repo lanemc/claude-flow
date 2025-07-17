@@ -4,8 +4,8 @@ import { Deno, cwd, exit, existsSync } from '../../node-compat.js';
 import process from 'process';
 import { createLocalExecutable } from './executable-wrapper.js';
 import { createSparcStructureManually } from './sparc-structure.js';
-import { createClaudeSlashCommands } from './claude-commands/slash-commands.js';
-import { createOptimizedClaudeSlashCommands } from './claude-commands/optimized-slash-commands.js';
+import { createClaudeSlashCommands } from './claude-commands/slash-commands.ts';
+import { createOptimizedClaudeSlashCommands } from './claude-commands/optimized-slash-commands.ts';
 import { execSync } from 'child_process';
 import { promises as fs } from 'fs';
 import { 

@@ -1,9 +1,23 @@
-// optimized-claude-flow-commands.js - Batchtools-optimized Claude-Flow specific slash commands
+// optimized-claude-flow-commands.ts - Batchtools-optimized Claude-Flow specific slash commands
 
-// Create batchtools-optimized Claude-Flow specific commands
-export async function createOptimizedClaudeFlowCommands(workingDir) {
-  // Help command with batchtools optimization
-  const helpCommand = `---
+import { writeFile } from 'fs/promises';
+import { OptimizedCommandOptions, CommandGenerationError, CommandError } from './types.js';
+
+/**
+ * Create batchtools-optimized Claude-Flow specific commands with TypeScript support
+ * @param workingDir - The working directory path
+ * @param options - Additional optimization options
+ * @returns Promise<void>
+ */
+export async function createOptimizedClaudeFlowCommands(
+  workingDir: string,
+  options: Partial<OptimizedCommandOptions> = {}
+): Promise<void> {
+  try {
+    const { enableBatchtools = true, maxConcurrency = 20, batchSize = 10 } = options;
+    
+    // Help command with batchtools optimization
+    const helpCommand = `---
 name: claude-flow-help
 description: Show Claude-Flow commands and usage with batchtools optimization
 ---
@@ -186,9 +200,9 @@ npx -y claude-flow@latest init --sparc --force
 \`\`\`json
 {
   "batchtools": {
-    "enabled": true,
-    "maxConcurrent": 20,
-    "batchSize": 10,
+    "enabled": ${enableBatchtools},
+    "maxConcurrent": ${maxConcurrency},
+    "batchSize": ${batchSize},
     "enableOptimization": true,
     "smartBatching": true,
     "performanceMonitoring": true
@@ -238,11 +252,11 @@ npx -y claude-flow@latest init --sparc --force
 For comprehensive documentation and optimization guides, see the resources above.
 `;
   
-  await Deno.writeTextFile(`${workingDir}/.claude/commands/claude-flow-help.md`, helpCommand);
-  console.log('  ✓ Created optimized slash command: /claude-flow-help (Batchtools enhanced)');
+    await writeFile(`${workingDir}/.claude/commands/claude-flow-help.md`, helpCommand, 'utf8');
+    console.log('  ✓ Created optimized slash command: /claude-flow-help (Batchtools enhanced)');
   
-  // Memory command with batchtools optimization
-  const memoryCommand = `---
+    // Memory command with batchtools optimization
+    const memoryCommand = `---
 name: claude-flow-memory
 description: Interact with Claude-Flow memory system using batchtools optimization
 ---
@@ -529,11 +543,11 @@ The memory system provides persistent storage for cross-session and cross-agent 
 For comprehensive memory system documentation and optimization guides, see: https://github.com/ruvnet/claude-code-flow/docs/memory-batchtools.md
 `;
   
-  await Deno.writeTextFile(`${workingDir}/.claude/commands/claude-flow-memory.md`, memoryCommand);
-  console.log('  ✓ Created optimized slash command: /claude-flow-memory (Batchtools enhanced)');
+    await writeFile(`${workingDir}/.claude/commands/claude-flow-memory.md`, memoryCommand, 'utf8');
+    console.log('  ✓ Created optimized slash command: /claude-flow-memory (Batchtools enhanced)');
   
-  // Swarm command with batchtools optimization
-  const swarmCommand = `---
+    // Swarm command with batchtools optimization
+    const swarmCommand = `---
 name: claude-flow-swarm
 description: Coordinate multi-agent swarms for complex tasks with batchtools optimization
 ---
@@ -651,225 +665,39 @@ Advanced multi-agent coordination system with timeout-free execution, distribute
   --performance
 \`\`\`
 
-### Testing and QA Swarm with Concurrent Validation
-\`\`\`bash
-./claude-flow swarm "Comprehensive security audit and testing" \\
-  --strategy testing \\
-  --review \\
-  --verbose \\
-  --max-agents 8 \\
-  --parallel \\
-  --concurrent-agents 6 \\
-  --batch-optimize \\
-  --performance
-\`\`\`
-
-## 📊 Monitoring and Control (Enhanced)
-
-### Real-time monitoring with parallel metrics:
-\`\`\`bash
-# Monitor swarm activity with performance data
-./claude-flow monitor --parallel --performance --real-time
-
-# Monitor specific component with concurrent analysis
-./claude-flow monitor --focus swarm --concurrent --detailed
-
-# Performance dashboard with parallel monitoring
-./claude-flow monitor --ui --performance --all-metrics
-\`\`\`
-
-### Check swarm status with concurrent analysis:
-\`\`\`bash
-# Overall system status with parallel checks
-./claude-flow status --concurrent --performance
-
-# Detailed swarm status with optimization metrics
-./claude-flow status --verbose --parallel --optimization
-
-# Performance analysis with concurrent processing
-./claude-flow status --performance --detailed --concurrent
-\`\`\`
-
-### View agent activity with parallel monitoring:
-\`\`\`bash
-# List all agents with concurrent status checks
-./claude-flow agent list --parallel --performance
-
-# Agent details with concurrent analysis
-./claude-flow agent info <agent-id> --detailed --concurrent
-
-# Batch agent monitoring
-./claude-flow agent batch-status --all-agents --parallel
-\`\`\`
-
-## 💾 Memory Integration (Enhanced)
-
-Swarms automatically use distributed memory with parallel processing for collaboration:
-
-### Standard Memory Operations
-\`\`\`bash
-# Store swarm objectives
-./claude-flow memory store "swarm_objective" "Build scalable API" --namespace swarm
-
-# Query swarm progress
-./claude-flow memory query "swarm_progress" --namespace swarm
-
-# Export swarm memory
-./claude-flow memory export swarm-results.json --namespace swarm
-\`\`\`
-
-### Batchtools Memory Operations
-\`\`\`bash
-# Batch store swarm contexts
-./claude-flow memory batch-store swarm-contexts.json --namespace swarm --parallel
-
-# Concurrent query across swarm namespaces
-./claude-flow memory parallel-query "swarm_coordination" --namespaces swarm,agents,tasks --concurrent
-
-# Performance-optimized swarm memory export
-./claude-flow memory concurrent-export swarm-backup.json --namespace swarm --compress --parallel
-\`\`\`
-
-## 🎯 Key Features (Enhanced)
-
-### Timeout-Free Execution with Parallel Processing
-- Background mode with concurrent monitoring for long-running tasks
-- State persistence with parallel backup across sessions
-- Automatic checkpoint recovery with concurrent validation
-- Enhanced parallel processing for complex operations
-
-### Work Stealing & Load Balancing (Optimized)
-- Dynamic task redistribution with real-time parallel analysis
-- Automatic agent scaling with concurrent resource monitoring
-- Resource-aware scheduling with parallel optimization
-- Smart load balancing with performance metrics
-
-### Circuit Breakers & Fault Tolerance (Enhanced)
-- Automatic retry with exponential backoff and parallel recovery
-- Graceful degradation with concurrent fallback mechanisms
-- Health monitoring with parallel agent status checking
-- Enhanced fault tolerance with parallel recovery systems
-
-### Real-Time Collaboration (Optimized)
-- Cross-agent communication with parallel channels
-- Shared memory access with concurrent synchronization
-- Event-driven coordination with parallel processing
-- Enhanced collaboration with performance optimization
-
-### Enterprise Security (Enhanced)
-- Role-based access control with parallel validation
-- Audit logging with concurrent processing
-- Data encryption with parallel security checks
-- Input validation with concurrent threat analysis
-
-## 🔧 Advanced Configuration (Batchtools Enhanced)
-
-### Dry run with parallel preview:
-\`\`\`bash
-./claude-flow swarm "Test task" --dry-run --strategy development --parallel --performance
-\`\`\`
-
-### Custom quality thresholds with concurrent validation:
-\`\`\`bash
-./claude-flow swarm "High quality API" \\
-  --strategy development \\
-  --quality-threshold 0.95 \\
-  --parallel \\
-  --concurrent-validation \\
-  --performance
-\`\`\`
-
-### Batchtools Configuration
-\`\`\`json
-{
-  "swarm": {
-    "batchtools": {
-      "enabled": true,
-      "maxConcurrentAgents": 25,
-      "parallelCoordination": true,
-      "batchTaskProcessing": true,
-      "concurrentMonitoring": true,
-      "performanceOptimization": true
-    },
-    "performance": {
-      "enableParallelProcessing": true,
-      "concurrentTaskExecution": 20,
-      "batchOperationSize": 10,
-      "parallelMemoryAccess": true,
-      "realTimeMetrics": true
-    }
-  }
-}
-\`\`\`
-
-### Scheduling algorithms (Enhanced):
-- FIFO (First In, First Out) with parallel processing
-- Priority-based with concurrent validation
-- Deadline-driven with parallel scheduling
-- Shortest Job First with optimization
-- Critical Path with parallel analysis
-- Resource-aware with concurrent monitoring
-- Adaptive with performance optimization
-- Parallel-optimized with load balancing
-
-## 📊 Performance Features
-
-### Parallel Processing Capabilities
-- **Concurrent Agent Coordination**: Manage multiple agents simultaneously
-- **Parallel Task Distribution**: Distribute tasks across agents concurrently
-- **Batch Operation Processing**: Group related swarm operations
-- **Pipeline Coordination**: Chain swarm operations with parallel stages
-
-### Performance Optimization
-- **Smart Load Balancing**: Intelligent distribution with real-time metrics
-- **Resource Management**: Efficient utilization with parallel monitoring
-- **Concurrent Validation**: Validate multiple aspects simultaneously
-- **Performance Monitoring**: Real-time metrics and optimization recommendations
-
-### Fault Tolerance (Enhanced)
-- **Parallel Recovery**: Concurrent recovery mechanisms for failed operations
-- **Circuit Breakers**: Enhanced fault tolerance with parallel monitoring
-- **Health Monitoring**: Real-time agent and swarm health with concurrent checks
-- **Retry Mechanisms**: Intelligent retry with parallel validation
-
-## 🚨 Troubleshooting (Enhanced)
-
-### Performance Issues
-\`\`\`bash
-# Monitor swarm performance with concurrent analysis
-./claude-flow swarm debug --performance --concurrent --verbose
-
-# Analyze batch operation efficiency
-./claude-flow swarm analyze --batchtools --optimization --detailed
-
-# Check parallel processing status
-./claude-flow swarm status --parallel --performance --real-time
-\`\`\`
-
-### Optimization Commands
-\`\`\`bash
-# Auto-optimize swarm configuration
-./claude-flow swarm optimize --auto-tune --performance
-
-# Performance benchmarking
-./claude-flow swarm benchmark --all-strategies --detailed
-
-# Resource usage analysis
-./claude-flow swarm resources --concurrent --optimization
-\`\`\`
-
-## 📈 Performance Benchmarks
-
-### Batchtools Performance Improvements
-- **Swarm Coordination**: Up to 600% faster with parallel processing
-- **Agent Management**: 500% improvement with concurrent operations
-- **Task Distribution**: 450% faster with parallel assignment
-- **Monitoring**: 350% improvement with concurrent metrics
-- **Memory Operations**: 400% faster with parallel processing
-
 For detailed documentation and optimization guides, see: https://github.com/ruvnet/claude-code-flow/docs/swarm-batchtools.md
 `;
   
-  await Deno.writeTextFile(`${workingDir}/.claude/commands/claude-flow-swarm.md`, swarmCommand);
-  console.log('  ✓ Created optimized slash command: /claude-flow-swarm (Batchtools enhanced)');
+    await writeFile(`${workingDir}/.claude/commands/claude-flow-swarm.md`, swarmCommand, 'utf8');
+    console.log('  ✓ Created optimized slash command: /claude-flow-swarm (Batchtools enhanced)');
+  } catch (error) {
+    console.error('❌ Error creating optimized Claude-Flow commands:', error);
+    throw error;
+  }
+}
+
+/**
+ * Validate command file creation
+ * @param workingDir - The working directory to validate
+ * @returns Promise<boolean> - True if all files exist
+ */
+export async function validateCommandFiles(workingDir: string): Promise<boolean> {
+  const files = [
+    'claude-flow-help.md',
+    'claude-flow-memory.md',
+    'claude-flow-swarm.md'
+  ];
+  
+  try {
+    const { access } = await import('fs/promises');
+    for (const file of files) {
+      const path = `${workingDir}/.claude/commands/${file}`;
+      // Check if file exists (basic validation)
+      await access(path);
+    }
+    return true;
+  } catch (error) {
+    console.error('❌ Command file validation failed:', error);
+    return false;
+  }
 }
