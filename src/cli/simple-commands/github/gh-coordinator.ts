@@ -4,21 +4,42 @@
  * Provides GitHub workflow orchestration and coordination capabilities
  */
 
-import { printSuccess, printError, printWarning, printInfo } from '../utils.js';
+import { printSuccess, printError, printWarning, printInfo } from '../../utils.js';
 import { githubAPI } from './github-api.js';
 import { execSync } from 'child_process';
+import {
+  WorkflowConfiguration,
+  RepositoryAnalysis,
+  CoordinatorOptions,
+  CoordinatorState,
+  WorkflowTemplate,
+  GitHubSecretRecommendation,
+  GitHubBranchProtection,
+  GitHubCreateWebhookData,
+  GitHubRepository,
+  GitHubWorkflowsResponse,
+  GitHubWorkflowRunsResponse,
+  CreateFileData,
+  RepositoryIdentifier
+} from './types.js';
 
 class GitHubCoordinator {
+  private api: typeof githubAPI;
+  public state: CoordinatorState;
+
   constructor() {
     this.api = githubAPI;
-    this.workflows = new Map();
-    this.activeCoordinations = new Map();
+    this.state = {
+      swarmEnabled: false,
+      workflows: new Map<string, WorkflowConfiguration>(),
+      activeCoordinations: new Map<string, WorkflowConfiguration>()
+    };
   }
 
   /**
    * Initialize GitHub coordination
    */
-  async initialize(options = {}) {
+  async initialize(options: CoordinatorOptions = {}): Promise<void> {
     printInfo('🚀 Initializing GitHub Coordinator...');
     
     // Authenticate with GitHub
@@ -33,8 +54,8 @@ class GitHubCoordinator {
       const repoMatch = remoteUrl.match(/github\.com[:/]([^/]+)\/([^/]+?)(?:\.git)?$/);
       
       if (repoMatch) {
-        this.currentRepo = { owner: repoMatch[1], repo: repoMatch[2] };
-        printSuccess(`Connected to repository: ${this.currentRepo.owner}/${this.currentRepo.repo}`);
+        this.state.currentRepo = { owner: repoMatch[1], repo: repoMatch[2] };
+        printSuccess(`Connected to repository: ${this.state.currentRepo.owner}/${this.state.currentRepo.repo}`);
       }
     } catch (error) {
       printWarning('Not in a git repository or no GitHub remote found');
@@ -49,7 +70,7 @@ class GitHubCoordinator {
   /**
    * Initialize swarm integration for coordination
    */
-  async initializeSwarmIntegration() {
+  private async initializeSwarmIntegration(): Promise<void> {
     try {
       // Check if ruv-swarm is available
       execSync('npx ruv-swarm --version', { stdio: 'pipe' });
@@ -60,30 +81,30 @@ class GitHubCoordinator {
       
       if (swarmInit.includes('continue')) {
         printSuccess('🐝 Swarm integration initialized for GitHub coordination');
-        this.swarmEnabled = true;
+        this.state.swarmEnabled = true;
       }
     } catch (error) {
       printWarning('Swarm integration not available - continuing without swarm features');
-      this.swarmEnabled = false;
+      this.state.swarmEnabled = false;
     }
   }
 
   /**
    * Coordinate CI/CD pipeline setup
    */
-  async coordinateCIPipeline(options = {}) {
+  async coordinateCIPipeline(options: CoordinatorOptions = {}): Promise<WorkflowConfiguration> {
     printInfo('🔄 Coordinating CI/CD pipeline setup...');
     
-    if (!this.currentRepo) {
+    if (!this.state.currentRepo) {
       throw new Error('No GitHub repository context available');
     }
 
-    const { owner, repo } = this.currentRepo;
+    const { owner, repo } = this.state.currentRepo;
     const pipeline = options.pipeline || 'nodejs';
     const autoApprove = options.autoApprove || false;
 
     // Create workflow coordination plan
-    const coordinationPlan = {
+    const coordinationPlan: WorkflowConfiguration = {
       id: `ci-setup-${Date.now()}`,
       type: 'ci_pipeline_setup',
       repository: `${owner}/${repo}`,
@@ -99,10 +120,10 @@ class GitHubCoordinator {
       status: 'planning'
     };
 
-    this.activeCoordinations.set(coordinationPlan.id, coordinationPlan);
+    this.state.activeCoordinations.set(coordinationPlan.id, coordinationPlan);
 
     // Execute coordination with swarm if available
-    if (this.swarmEnabled) {
+    if (this.state.swarmEnabled) {
       await this.executeWithSwarm(coordinationPlan);
     } else {
       await this.executeCoordination(coordinationPlan);
@@ -114,7 +135,7 @@ class GitHubCoordinator {
   /**
    * Execute coordination with swarm integration
    */
-  async executeWithSwarm(coordinationPlan) {
+  public async executeWithSwarm(coordinationPlan: WorkflowConfiguration): Promise<void> {
     printInfo('🐝 Executing coordination with swarm...');
     
     // Store coordination plan in swarm memory
@@ -142,7 +163,7 @@ class GitHubCoordinator {
   /**
    * Execute coordination without swarm
    */
-  async executeCoordination(coordinationPlan) {
+  public async executeCoordination(coordinationPlan: WorkflowConfiguration): Promise<void> {
     printInfo('⚡ Executing coordination...');
     
     for (const step of coordinationPlan.steps) {
@@ -154,15 +175,19 @@ class GitHubCoordinator {
   /**
    * Execute individual coordination step
    */
-  async executeCoordinationStep(coordinationPlan, step) {
-    const { owner, repo } = this.currentRepo;
+  private async executeCoordinationStep(coordinationPlan: WorkflowConfiguration, step: string): Promise<void> {
+    if (!this.state.currentRepo) {
+      throw new Error('No repository context available');
+    }
+
+    const { owner, repo } = this.state.currentRepo;
     
     switch (step) {
       case 'analyze_repository_structure':
         await this.analyzeRepositoryStructure(owner, repo);
         break;
       case 'create_workflow_files':
-        await this.createWorkflowFiles(owner, repo, coordinationPlan.pipeline);
+        await this.createWorkflowFiles(owner, repo, coordinationPlan.pipeline || 'nodejs');
         break;
       case 'setup_environment_secrets':
         await this.setupEnvironmentSecrets(owner, repo);
@@ -184,7 +209,7 @@ class GitHubCoordinator {
   /**
    * Analyze repository structure
    */
-  async analyzeRepositoryStructure(owner, repo) {
+  private async analyzeRepositoryStructure(owner: string, repo: string): Promise<RepositoryAnalysis> {
     printInfo('📊 Analyzing repository structure...');
     
     const response = await this.api.getRepository(owner, repo);
@@ -192,8 +217,8 @@ class GitHubCoordinator {
       throw new Error(`Failed to get repository info: ${response.error}`);
     }
 
-    const repoData = response.data;
-    const analysis = {
+    const repoData = response.data as GitHubRepository;
+    const analysis: RepositoryAnalysis = {
       language: repoData.language,
       size: repoData.size,
       defaultBranch: repoData.default_branch,
@@ -205,7 +230,8 @@ class GitHubCoordinator {
     // Check for existing workflows
     const workflowsResponse = await this.api.listWorkflows(owner, repo);
     if (workflowsResponse.success) {
-      analysis.hasWorkflows = workflowsResponse.data.total_count > 0;
+      const workflowsData = workflowsResponse.data as GitHubWorkflowsResponse;
+      analysis.hasWorkflows = workflowsData.total_count > 0;
     }
 
     // Check for package.json (Node.js projects)
@@ -223,14 +249,14 @@ class GitHubCoordinator {
   /**
    * Create workflow files
    */
-  async createWorkflowFiles(owner, repo, pipeline) {
+  private async createWorkflowFiles(owner: string, repo: string, pipeline: string): Promise<void> {
     printInfo('📝 Creating workflow files...');
     
     const workflowContent = this.generateWorkflowContent(pipeline);
     const workflowPath = `.github/workflows/${pipeline}-ci.yml`;
     
     // Create workflow file content
-    const createFileData = {
+    const createFileData: CreateFileData = {
       message: `Add ${pipeline} CI workflow`,
       content: Buffer.from(workflowContent).toString('base64'),
       path: workflowPath
@@ -259,8 +285,8 @@ class GitHubCoordinator {
   /**
    * Generate workflow content based on pipeline type
    */
-  generateWorkflowContent(pipeline) {
-    const templates = {
+  private generateWorkflowContent(pipeline: string): string {
+    const templates: WorkflowTemplate = {
       nodejs: `name: Node.js CI
 
 on:
@@ -379,16 +405,16 @@ jobs:
 `
     };
 
-    return templates[pipeline] || templates.nodejs;
+    return templates[pipeline as keyof WorkflowTemplate] || templates.nodejs;
   }
 
   /**
    * Setup environment secrets
    */
-  async setupEnvironmentSecrets(owner, repo) {
+  private async setupEnvironmentSecrets(owner: string, repo: string): Promise<void> {
     printInfo('🔐 Setting up environment secrets...');
     
-    const secrets = [
+    const secrets: GitHubSecretRecommendation[] = [
       { name: 'NODE_ENV', description: 'Node.js environment' },
       { name: 'DATABASE_URL', description: 'Database connection string' },
       { name: 'API_KEY', description: 'API authentication key' }
@@ -406,10 +432,10 @@ jobs:
   /**
    * Configure branch protection
    */
-  async configureBranchProtection(owner, repo) {
+  private async configureBranchProtection(owner: string, repo: string): Promise<void> {
     printInfo('🛡️  Configuring branch protection...');
     
-    const protectionConfig = {
+    const protectionConfig: GitHubBranchProtection = {
       required_status_checks: {
         strict: true,
         contexts: ['test']
@@ -417,7 +443,8 @@ jobs:
       enforce_admins: true,
       required_pull_request_reviews: {
         required_approving_review_count: 1,
-        dismiss_stale_reviews: true
+        dismiss_stale_reviews: true,
+        require_code_owner_reviews: false
       },
       restrictions: null
     };
@@ -434,7 +461,7 @@ jobs:
   /**
    * Test pipeline execution
    */
-  async testPipelineExecution(owner, repo) {
+  private async testPipelineExecution(owner: string, repo: string): Promise<void> {
     printInfo('🧪 Testing pipeline execution...');
     
     const workflows = await this.api.listWorkflows(owner, repo);
@@ -445,9 +472,10 @@ jobs:
 
     const recentRuns = await this.api.listWorkflowRuns(owner, repo, { per_page: 5 });
     if (recentRuns.success) {
-      printInfo(`Found ${recentRuns.data.total_count} recent workflow runs`);
+      const runsData = recentRuns.data as GitHubWorkflowRunsResponse;
+      printInfo(`Found ${runsData.total_count} recent workflow runs`);
       
-      const latestRun = recentRuns.data.workflow_runs[0];
+      const latestRun = runsData.workflow_runs[0];
       if (latestRun) {
         printInfo(`Latest run: ${latestRun.conclusion} (${latestRun.status})`);
       }
@@ -459,10 +487,10 @@ jobs:
   /**
    * Setup notifications
    */
-  async setupNotifications(owner, repo) {
+  private async setupNotifications(owner: string, repo: string): Promise<void> {
     printInfo('📢 Setting up notifications...');
     
-    const webhookConfig = {
+    const webhookConfig: GitHubCreateWebhookData = {
       name: 'web',
       active: true,
       events: ['push', 'pull_request', 'issues', 'workflow_run'],
@@ -483,18 +511,18 @@ jobs:
   /**
    * Coordinate release process
    */
-  async coordinateRelease(options = {}) {
+  async coordinateRelease(options: CoordinatorOptions = {}): Promise<WorkflowConfiguration> {
     printInfo('🚀 Coordinating release process...');
     
-    if (!this.currentRepo) {
+    if (!this.state.currentRepo) {
       throw new Error('No GitHub repository context available');
     }
 
-    const { owner, repo } = this.currentRepo;
+    const { owner, repo } = this.state.currentRepo;
     const version = options.version || 'auto';
     const prerelease = options.prerelease || false;
 
-    const coordinationPlan = {
+    const coordinationPlan: WorkflowConfiguration = {
       id: `release-${Date.now()}`,
       type: 'release_coordination',
       repository: `${owner}/${repo}`,
@@ -511,9 +539,9 @@ jobs:
       status: 'planning'
     };
 
-    this.activeCoordinations.set(coordinationPlan.id, coordinationPlan);
+    this.state.activeCoordinations.set(coordinationPlan.id, coordinationPlan);
 
-    if (this.swarmEnabled) {
+    if (this.state.swarmEnabled) {
       await this.executeWithSwarm(coordinationPlan);
     } else {
       await this.executeCoordination(coordinationPlan);
@@ -525,25 +553,25 @@ jobs:
   /**
    * Get coordination status
    */
-  getCoordinationStatus(coordinationId) {
-    return this.activeCoordinations.get(coordinationId) || null;
+  getCoordinationStatus(coordinationId: string): WorkflowConfiguration | null {
+    return this.state.activeCoordinations.get(coordinationId) || null;
   }
 
   /**
    * List active coordinations
    */
-  listActiveCoordinations() {
-    return Array.from(this.activeCoordinations.values());
+  listActiveCoordinations(): WorkflowConfiguration[] {
+    return Array.from(this.state.activeCoordinations.values());
   }
 
   /**
    * Cancel coordination
    */
-  cancelCoordination(coordinationId) {
-    const coordination = this.activeCoordinations.get(coordinationId);
+  cancelCoordination(coordinationId: string): boolean {
+    const coordination = this.state.activeCoordinations.get(coordinationId);
     if (coordination) {
       coordination.status = 'cancelled';
-      this.activeCoordinations.delete(coordinationId);
+      this.state.activeCoordinations.delete(coordinationId);
       printSuccess(`✅ Coordination ${coordinationId} cancelled`);
       return true;
     }
@@ -552,7 +580,7 @@ jobs:
 }
 
 // Export coordination function
-export async function coordinateGitHubWorkflow(args, flags = {}) {
+export async function coordinateGitHubWorkflow(args: string[], flags: CoordinatorOptions = {}): Promise<WorkflowConfiguration> {
   const coordinator = new GitHubCoordinator();
   
   try {
@@ -568,17 +596,20 @@ export async function coordinateGitHubWorkflow(args, flags = {}) {
       // General coordination
       printInfo(`🎯 Coordinating: ${objective}`);
       
-      const coordinationPlan = {
+      const coordinationPlan: WorkflowConfiguration = {
         id: `general-${Date.now()}`,
         type: 'general_coordination',
         objective,
         steps: ['analyze_requirements', 'create_action_plan', 'execute_plan'],
-        status: 'planning'
+        status: 'planning',
+        repository: coordinator.state.currentRepo ? 
+          `${coordinator.state.currentRepo.owner}/${coordinator.state.currentRepo.repo}` : 
+          'unknown'
       };
 
-      coordinator.activeCoordinations.set(coordinationPlan.id, coordinationPlan);
+      coordinator.state.activeCoordinations.set(coordinationPlan.id, coordinationPlan);
       
-      if (coordinator.swarmEnabled) {
+      if (coordinator.state.swarmEnabled) {
         await coordinator.executeWithSwarm(coordinationPlan);
       } else {
         await coordinator.executeCoordination(coordinationPlan);
@@ -587,7 +618,7 @@ export async function coordinateGitHubWorkflow(args, flags = {}) {
       return coordinationPlan;
     }
   } catch (error) {
-    printError(`❌ GitHub coordination failed: ${error.message}`);
+    printError(`❌ GitHub coordination failed: ${(error as Error).message}`);
     throw error;
   }
 }
