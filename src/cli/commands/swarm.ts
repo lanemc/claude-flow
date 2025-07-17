@@ -236,7 +236,11 @@ export async function swarmAction(ctx: CommandContext): Promise<SwarmExecutionRe
     await Deno.mkdir(swarmDir, { recursive: true });
 
     // Create objective in coordinator
-    const objectiveId = await coordinator.createObjective(objective, options.strategy);
+    const objectiveId = await coordinator.createObjective(
+      `Swarm Task ${Date.now()}`,
+      objective,
+      options.strategy || 'auto'
+    );
     
     console.log(`\n📝 Objective created with ID: ${objectiveId}`);
 
