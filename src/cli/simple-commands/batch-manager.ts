@@ -1,9 +1,75 @@
-// batch-manager.js - Batch configuration management utility
+// batch-manager.ts - Batch configuration management utility with TypeScript types
 import { printSuccess, printError, printInfo, printWarning } from '../utils.js';
 import { PROJECT_TEMPLATES, ENVIRONMENT_CONFIGS } from './init/batch-init.js';
 import { Deno, cwd, exit, existsSync } from '../node-compat.js';
 
-export async function batchManagerCommand(subArgs, flags) {
+// Types for batch management
+export interface BatchManagerFlags {
+  interactive?: boolean;
+  i?: boolean;
+  help?: boolean;
+  h?: boolean;
+}
+
+export interface BaseOptions {
+  sparc?: boolean;
+  parallel?: boolean;
+  maxConcurrency?: number;
+  force?: boolean;
+  minimal?: boolean;
+  progressTracking?: boolean;
+  template?: string;
+  environments?: string[];
+}
+
+export interface ProjectConfig {
+  template: string;
+  environment: string;
+  customConfig?: Record<string, any>;
+}
+
+export interface BatchConfig {
+  _comment?: string;
+  _templates?: string[];
+  _environments?: string[];
+  baseOptions?: BaseOptions;
+  projects?: string[] | {
+    _simple_list?: string[];
+    _or_use_projectConfigs_below?: string;
+  };
+  projectConfigs?: Record<string, ProjectConfig>;
+}
+
+export interface ValidationIssue {
+  type: 'error' | 'warning';
+  message: string;
+}
+
+export interface BatchEstimation {
+  projectCount: number;
+  totalEnvironments: number;
+  parallel: boolean;
+  maxConcurrency: number;
+  sequentialTime: number;
+  parallelTime: number;
+  timeSavings: number;
+  diskUsageGB: number;
+}
+
+export interface TemplateInfo {
+  name: string;
+  description: string;
+  extraDirs?: string[];
+  extraFiles?: Record<string, string>;
+}
+
+export interface EnvironmentInfo {
+  name: string;
+  features: string[];
+  config: Record<string, any>;
+}
+
+export async function batchManagerCommand(subArgs: string[], flags: BatchManagerFlags): Promise<void> {
   const command = subArgs[0];
   
   switch (command) {
@@ -23,7 +89,7 @@ export async function batchManagerCommand(subArgs, flags) {
   }
 }
 
-async function createBatchConfig(args, flags) {
+async function createBatchConfig(args: string[], flags: BatchManagerFlags): Promise<void> {
   const outputFile = args[0] || 'batch-config.json';
   const interactive = flags.interactive || flags.i;
   
@@ -32,7 +98,7 @@ async function createBatchConfig(args, flags) {
   }
   
   // Create basic template
-  const config = {
+  const config: BatchConfig = {
     projects: ['project1', 'project2', 'project3'],
     baseOptions: {
       sparc: true,
@@ -48,17 +114,18 @@ async function createBatchConfig(args, flags) {
     printSuccess(`Created batch configuration template: ${outputFile}`);
     console.log('Edit the file to customize your batch initialization setup.');
   } catch (error) {
-    printError(`Failed to create config file: ${error.message}`);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    printError(`Failed to create config file: ${errorMessage}`);
   }
 }
 
-async function createInteractiveConfig(outputFile) {
+async function createInteractiveConfig(outputFile: string): Promise<void> {
   console.log('🚀 Interactive Batch Configuration Creator');
   console.log('==========================================\n');
   
   // This would require a proper CLI prompt library in a real implementation
   // For now, we'll create a comprehensive template with comments
-  const config = {
+  const config: BatchConfig = {
     "_comment": "Batch initialization configuration",
     "_templates": Object.keys(PROJECT_TEMPLATES),
     "_environments": Object.keys(ENVIRONMENT_CONFIGS),
@@ -106,11 +173,12 @@ async function createInteractiveConfig(outputFile) {
     console.log('3. Use either "projects" array OR "projectConfigs" object');
     console.log(`4. Run: claude-flow init --config ${outputFile}`);
   } catch (error) {
-    printError(`Failed to create interactive config: ${error.message}`);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    printError(`Failed to create interactive config: ${errorMessage}`);
   }
 }
 
-async function validateBatchConfig(args, flags) {
+async function validateBatchConfig(args: string[], flags: BatchManagerFlags): Promise<void> {
   const configFile = args[0];
   
   if (!configFile) {
@@ -120,13 +188,13 @@ async function validateBatchConfig(args, flags) {
   
   try {
     const content = await Deno.readTextFile(configFile);
-    const config = JSON.parse(content);
+    const config: BatchConfig = JSON.parse(content);
     
     console.log(`📋 Validating batch configuration: ${configFile}`);
     console.log('================================================\n');
     
-    const issues = [];
-    const warnings = [];
+    const issues: string[] = [];
+    const warnings: string[] = [];
     
     // Validate structure
     if (!config.projects && !config.projectConfigs) {
@@ -182,7 +250,7 @@ async function validateBatchConfig(args, flags) {
       
       // Summary
       console.log('\n📊 Configuration Summary:');
-      const projectCount = config.projects ? config.projects.length : 
+      const projectCount = Array.isArray(config.projects) ? config.projects.length : 
                           config.projectConfigs ? Object.keys(config.projectConfigs).length : 0;
       console.log(`  Projects: ${projectCount}`);
       
@@ -209,39 +277,42 @@ async function validateBatchConfig(args, flags) {
     } else if (error instanceof SyntaxError) {
       printError(`Invalid JSON in configuration file: ${error.message}`);
     } else {
-      printError(`Failed to validate configuration: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      printError(`Failed to validate configuration: ${errorMessage}`);
     }
   }
 }
 
-function listTemplates() {
+function listTemplates(): void {
   console.log('📋 Available Project Templates');
   console.log('==============================\n');
   
   for (const [key, template] of Object.entries(PROJECT_TEMPLATES)) {
+    const templateInfo = template as TemplateInfo;
     console.log(`🏗️  ${key}`);
-    console.log(`   Name: ${template.name}`);
-    console.log(`   Description: ${template.description}`);
-    console.log(`   Extra Directories: ${template.extraDirs ? template.extraDirs.length : 0}`);
-    console.log(`   Extra Files: ${template.extraFiles ? Object.keys(template.extraFiles).length : 0}`);
+    console.log(`   Name: ${templateInfo.name}`);
+    console.log(`   Description: ${templateInfo.description}`);
+    console.log(`   Extra Directories: ${templateInfo.extraDirs ? templateInfo.extraDirs.length : 0}`);
+    console.log(`   Extra Files: ${templateInfo.extraFiles ? Object.keys(templateInfo.extraFiles).length : 0}`);
     console.log();
   }
 }
 
-function listEnvironments() {
+function listEnvironments(): void {
   console.log('🌍 Available Environment Configurations');
   console.log('=======================================\n');
   
   for (const [key, env] of Object.entries(ENVIRONMENT_CONFIGS)) {
+    const envInfo = env as EnvironmentInfo;
     console.log(`⚙️  ${key}`);
-    console.log(`   Name: ${env.name}`);
-    console.log(`   Features: ${env.features.join(', ')}`);
-    console.log(`   Config Variables: ${Object.keys(env.config).length}`);
+    console.log(`   Name: ${envInfo.name}`);
+    console.log(`   Features: ${envInfo.features.join(', ')}`);
+    console.log(`   Config Variables: ${Object.keys(envInfo.config).length}`);
     console.log();
   }
 }
 
-async function estimateBatchOperation(args, flags) {
+async function estimateBatchOperation(args: string[], flags: BatchManagerFlags): Promise<void> {
   const configFile = args[0];
   
   if (!configFile) {
@@ -251,7 +322,7 @@ async function estimateBatchOperation(args, flags) {
   
   try {
     const content = await Deno.readTextFile(configFile);
-    const config = JSON.parse(content);
+    const config: BatchConfig = JSON.parse(content);
     
     console.log('⏱️  Batch Operation Estimation');
     console.log('=============================\n');
@@ -259,7 +330,7 @@ async function estimateBatchOperation(args, flags) {
     let projectCount = 0;
     let totalEnvironments = 0;
     
-    if (config.projects) {
+    if (Array.isArray(config.projects)) {
       projectCount = config.projects.length;
       const environments = config.baseOptions?.environments || ['dev'];
       totalEnvironments = projectCount * environments.length;
@@ -290,11 +361,12 @@ async function estimateBatchOperation(args, flags) {
     console.log(`   Total: ~${Math.ceil(totalEnvironments * 125 / 1024)} GB`);
     
   } catch (error) {
-    printError(`Failed to estimate batch operation: ${error.message}`);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    printError(`Failed to estimate batch operation: ${errorMessage}`);
   }
 }
 
-function showBatchManagerHelp() {
+export function showBatchManagerHelp(): void {
   console.log('🛠️  Batch Manager - Configuration and Estimation Tools');
   console.log('====================================================\n');
   

@@ -11,10 +11,111 @@ import type { CommandContext } from "../cli-core.js";
 import { BackgroundExecutor } from '../../coordination/background-executor.js';
 import { SwarmCoordinator } from '../../coordination/swarm-coordinator.js';
 import { SwarmMemoryManager } from '../../memory/swarm-memory.js';
-export async function swarmAction(ctx: CommandContext) {
+import type { 
+  SwarmStrategy, 
+  SwarmMode, 
+  AgentType, 
+  SwarmObjective, 
+  SwarmConfig 
+} from '../../swarm/types.js';
+
+// ===== TYPE DEFINITIONS =====
+
+export interface SwarmOptions {
+  strategy: SwarmStrategy;
+  mode?: SwarmMode;
+  maxAgents: number;
+  maxDepth: number;
+  research: boolean;
+  parallel: boolean;
+  memoryNamespace: string;
+  timeout: number;
+  review: boolean;
+  coordinator: boolean;
+  config?: string;
+  verbose: boolean;
+  dryRun: boolean;
+  monitor: boolean;
+  ui: boolean;
+  background: boolean;
+  persistence: boolean;
+  distributed: boolean;
+  taskTimeoutMinutes?: number;
+}
+
+export interface SwarmExecutionResult {
+  swarmId: string;
+  objective: string;
+  status: 'success' | 'failure' | 'timeout' | 'cancelled';
+  startTime: Date;
+  endTime?: Date;
+  results?: any;
+  error?: Error;
+  metrics?: {
+    tasksCompleted: number;
+    tasksFailed: number;
+    agentsUsed: number;
+    totalDuration: number;
+  };
+}
+
+export interface AgentCapabilities {
+  [key: string]: string[];
+}
+
+const VALID_STRATEGIES: SwarmStrategy[] = ['auto', 'research', 'development', 'analysis', 'testing', 'optimization', 'maintenance'];
+const VALID_AGENT_TYPES: AgentType[] = ['coordinator', 'researcher', 'coder', 'analyst', 'architect', 'tester', 'reviewer'];
+
+// ===== HELPER FUNCTIONS =====
+
+function validateSwarmOptions(options: SwarmOptions): { valid: boolean; errors: string[] } {
+  const errors: string[] = [];
+  
+  if (!VALID_STRATEGIES.includes(options.strategy)) {
+    errors.push(`Invalid strategy: ${options.strategy}. Valid strategies: ${VALID_STRATEGIES.join(', ')}`);
+  }
+  
+  if (options.maxAgents < 1 || options.maxAgents > 50) {
+    errors.push('Max agents must be between 1 and 50');
+  }
+  
+  if (options.timeout < 1 || options.timeout > 1440) {
+    errors.push('Timeout must be between 1 minute and 24 hours');
+  }
+  
+  if (options.maxDepth < 1 || options.maxDepth > 10) {
+    errors.push('Max depth must be between 1 and 10');
+  }
+  
+  return { valid: errors.length === 0, errors };
+}
+
+function parseSwarmOptions(ctx: CommandContext): SwarmOptions {
+  return {
+    strategy: (ctx.flags.strategy as SwarmStrategy) || 'auto',
+    maxAgents: (ctx.flags.maxAgents as number) || (ctx.flags['max-agents'] as number) || 5,
+    maxDepth: (ctx.flags.maxDepth as number) || (ctx.flags['max-depth'] as number) || 3,
+    research: (ctx.flags.research as boolean) || false,
+    parallel: (ctx.flags.parallel as boolean) || false,
+    memoryNamespace: (ctx.flags.memoryNamespace as string) || (ctx.flags['memory-namespace'] as string) || 'swarm',
+    timeout: (ctx.flags.timeout as number) || 60,
+    review: (ctx.flags.review as boolean) || false,
+    coordinator: (ctx.flags.coordinator as boolean) || false,
+    config: (ctx.flags.config as string) || (ctx.flags.c as string),
+    verbose: (ctx.flags.verbose as boolean) || (ctx.flags.v as boolean) || false,
+    dryRun: (ctx.flags.dryRun as boolean) || (ctx.flags['dry-run'] as boolean) || (ctx.flags.d as boolean) || false,
+    monitor: (ctx.flags.monitor as boolean) || false,
+    ui: (ctx.flags.ui as boolean) || false,
+    background: (ctx.flags.background as boolean) || false,
+    persistence: (ctx.flags.persistence as boolean) !== false,
+    distributed: (ctx.flags.distributed as boolean) || false,
+    taskTimeoutMinutes: (ctx.flags.taskTimeoutMinutes as number) || (ctx.flags['task-timeout-minutes'] as number)
+  };
+}
+export async function swarmAction(ctx: CommandContext): Promise<SwarmExecutionResult | void> {
   // First check if help is requested
   if (ctx.flags.help || ctx.flags.h) {
-    // Show help is handled by the CLI framework
+    showSwarmHelp();
     return;
   }
   
@@ -23,45 +124,19 @@ export async function swarmAction(ctx: CommandContext) {
   
   if (!objective) {
     error("Usage: swarm <objective>");
-    console.log("\nExamples:");
-    console.log('  claude-flow swarm "Build a REST API"');
-    console.log('  claude-flow swarm "Research cloud architecture"');
-    console.log("\nOptions:");
-    console.log('  --dry-run              Show configuration without executing');
-    console.log('  --strategy <type>      Strategy: auto, research, development, analysis');
-    console.log('  --max-agents <n>       Maximum number of agents (default: 5)');
-    console.log('  --timeout <minutes>    Timeout in minutes (default: 60)');
-    console.log('  --research             Enable research capabilities');
-    console.log('  --parallel             Enable parallel execution');
-    console.log('  --review               Enable peer review between agents');
-    console.log('  --monitor              Enable real-time monitoring');
-    console.log('  --ui                   Use blessed terminal UI (requires node.js)');
-    console.log('  --background           Run swarm in background mode');
-    console.log('  --distributed          Enable distributed coordination');
-    console.log('  --memory-namespace     Memory namespace for swarm (default: swarm)');
-    console.log('  --persistence          Enable task persistence (default: true)');
+    showSwarmHelp();
     return;
   }
   
-  const options = {
-    strategy: ctx.flags.strategy as string || 'auto',
-    maxAgents: ctx.flags.maxAgents as number || ctx.flags['max-agents'] as number || 5,
-    maxDepth: ctx.flags.maxDepth as number || ctx.flags['max-depth'] as number || 3,
-    research: ctx.flags.research as boolean || false,
-    parallel: ctx.flags.parallel as boolean || false,
-    memoryNamespace: ctx.flags.memoryNamespace as string || ctx.flags['memory-namespace'] as string || 'swarm',
-    timeout: ctx.flags.timeout as number || 60,
-    review: ctx.flags.review as boolean || false,
-    coordinator: ctx.flags.coordinator as boolean || false,
-    config: ctx.flags.config as string || ctx.flags.c as string,
-    verbose: ctx.flags.verbose as boolean || ctx.flags.v as boolean || false,
-    dryRun: ctx.flags.dryRun as boolean || ctx.flags['dry-run'] as boolean || ctx.flags.d as boolean || false,
-    monitor: ctx.flags.monitor as boolean || false,
-    ui: ctx.flags.ui as boolean || false,
-    background: ctx.flags.background as boolean || false,
-    persistence: ctx.flags.persistence as boolean || true,
-    distributed: ctx.flags.distributed as boolean || false,
-  };
+  const options = parseSwarmOptions(ctx);
+  
+  // Validate options
+  const validation = validateSwarmOptions(options);
+  if (!validation.valid) {
+    error('Invalid swarm configuration:');
+    validation.errors.forEach(err => console.log(`  - ${err}`));
+    return;
+  }
   
   const swarmId = generateId('swarm');
   
@@ -519,7 +594,51 @@ exit \${PIPESTATUS[0]}`;
   }
 }
 
-function getAgentTypesForStrategy(strategy: string): ('researcher' | 'coder' | 'analyst' | 'coordinator' | 'reviewer')[] {
+function showSwarmHelp(): void {
+  console.log(`
+🐝 Claude Flow Swarm System
+
+USAGE:
+  claude-flow swarm <objective> [options]
+
+EXAMPLES:
+  claude-flow swarm "Build a REST API with authentication"
+  claude-flow swarm "Research cloud architecture patterns" --strategy research
+  claude-flow swarm "Analyze database performance" --max-agents 3 --parallel
+
+STRATEGIES:
+  auto           Automatically determine best approach (default)
+  research       Research and information gathering focused
+  development    Software development and coding focused
+  analysis       Data analysis and insights focused
+  testing        Testing and quality assurance focused
+  optimization   Performance optimization focused
+  maintenance    System maintenance focused
+
+OPTIONS:
+  --strategy <type>          Execution strategy (default: auto)
+  --max-agents <n>           Maximum number of agents (1-50, default: 5)
+  --timeout <minutes>        Timeout in minutes (1-1440, default: 60)
+  --task-timeout-minutes <n> Task execution timeout in minutes
+  --max-depth <n>            Maximum task decomposition depth (1-10, default: 3)
+  --memory-namespace <name>  Memory namespace for swarm (default: swarm)
+  --dry-run                  Show configuration without executing
+  --parallel                 Enable parallel execution of tasks
+  --distributed              Enable distributed coordination
+  --research                 Enable research capabilities
+  --review                   Enable peer review between agents
+  --monitor                  Enable real-time monitoring
+  --ui                       Use blessed terminal UI interface
+  --background               Run swarm in background mode
+  --persistence              Enable task persistence (default: true)
+  --verbose                  Enable detailed logging
+  --config <path>            Path to configuration file
+
+For more information: https://github.com/ruvnet/claude-flow/docs/swarm.md
+`);
+}
+
+function getAgentTypesForStrategy(strategy: SwarmStrategy): AgentType[] {
   switch (strategy) {
     case 'research':
       return ['researcher', 'analyst', 'coordinator'];
@@ -527,7 +646,13 @@ function getAgentTypesForStrategy(strategy: string): ('researcher' | 'coder' | '
       return ['coder', 'analyst', 'reviewer', 'coordinator'];
     case 'analysis':
       return ['analyst', 'researcher', 'coordinator'];
-    default: // auto
+    case 'testing':
+      return ['tester', 'reviewer', 'coordinator'];
+    case 'optimization':
+      return ['analyst', 'coder', 'coordinator'];
+    case 'maintenance':
+      return ['coder', 'tester', 'coordinator'];
+    default: // auto and custom
       return ['coordinator', 'researcher', 'coder', 'analyst'];
   }
 }
