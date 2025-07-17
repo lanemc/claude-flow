@@ -72,7 +72,7 @@ class CLI {
 
   command(cmd: Command): this {
     // Handle both our Command interface and Commander.js Command objects
-    const cmdName = typeof cmd.name === 'function' ? cmd.name() : (cmd.name || 'unknown');
+    const cmdName = typeof (cmd as any).name === 'function' ? (cmd as any).name() : (cmd.name || 'unknown');
     this.commands.set(cmdName, cmd);
     if (cmd.aliases && Array.isArray(cmd.aliases)) {
       for (const alias of cmd.aliases) {
